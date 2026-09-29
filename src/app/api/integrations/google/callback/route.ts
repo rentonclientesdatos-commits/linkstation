@@ -79,7 +79,7 @@ export async function GET(request: Request) {
       const admin = await getAdminSupabaseClient();
       const newMeta = { ...(row.metadata ?? {}), connected_email: connectedEmail };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await admin.from("integrations").update({ metadata: newMeta }).eq("id", row.id);
+      await (admin.from("integrations") as any).update({ metadata: newMeta }).eq("id", row.id);
     }
 
     return NextResponse.redirect(backUrl("connected=1"));

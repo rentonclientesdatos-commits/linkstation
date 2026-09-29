@@ -2,7 +2,7 @@
 
 import { getAdminSupabaseClient, getActiveTenantId } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/actions/session";
-import type { AIAgent, AIAgentVariant, Database } from "@/types/database";
+import type { AIAgent, AIAgentVariant } from "@/types/database";
 import { ModelNameSchema } from "@/lib/schemas/ai-agents";
 
 /**
@@ -98,7 +98,6 @@ export async function saveAIAgent(agent: Partial<AIAgent> & { tenant_id?: string
 
       const { data, error } = await supabase
         .from("ai_agents")
-        // @ts-expect-error - Supabase inference issue with table keys
         .update(updateData)
         .eq("id", agent.id)
         .eq("tenant_id", tenantId)
@@ -121,7 +120,6 @@ export async function saveAIAgent(agent: Partial<AIAgent> & { tenant_id?: string
 
       const { data, error } = await supabase
         .from("ai_agents")
-        // @ts-expect-error - Supabase inference issue with table keys
         .insert([insertData])
         .select()
         .single();
@@ -160,7 +158,6 @@ export async function saveAIAgent(agent: Partial<AIAgent> & { tenant_id?: string
           };
           const { error: variantInsertErr } = await supabase
             .from("ai_agent_variants")
-            // @ts-expect-error - Supabase generic table inference
             .insert([defaultVariant]);
           if (variantInsertErr) {
             console.warn("[saveAIAgent] Default variant insert error:", variantInsertErr.message);
@@ -228,8 +225,8 @@ export async function saveAgentVariant(variant: Partial<AIAgentVariant> & { tena
 
     const { data, error } = await supabase
       .from("ai_agent_variants")
-      // @ts-expect-error - Supabase inference issue with table keys
-      .upsert(dataToUpsert as Database["public"]["Tables"]["ai_agent_variants"]["Insert"], {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .upsert(dataToUpsert as any, {
         onConflict: "agent_id,is_variant_b",
         ignoreDuplicates: false,
       })

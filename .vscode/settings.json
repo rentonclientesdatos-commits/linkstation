@@ -32,6 +32,11 @@
   },
 
   "files.associations": {
-    "*.sql": "plaintext"
-  }
+    "*.sql": "pgsql",
+    "**/supabase/**/*.sql": "pgsql"
+  },
+  "mssql.enableIntelliSense": false,
+  "mssql.intelliSense.enableErrorLowercasing": false,
+  "mssql.intelliSense.enableQuickInfo": false,
+  "mssql.intelliSense.enableSuggestions": false
 }

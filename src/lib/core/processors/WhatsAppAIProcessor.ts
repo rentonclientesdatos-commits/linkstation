@@ -243,7 +243,7 @@ export async function generateAIWhatsAppResponse(
 
     let programRequirements = leadPrograms
       .filter((p) => p.programas?.requisitos_cualificacion)
-      .map((p) => `### ${p.programas.nombre}:\n${p.programas.requisitos_cualificacion}`)
+      .map((p) => `### ${p.programas?.nombre}:\n${p.programas?.requisitos_cualificacion}`)
       .join("\n\n");
 
     if (allProgramNames) {
@@ -263,15 +263,12 @@ export async function generateAIWhatsAppResponse(
 
     let formattedMenu = "";
     if (menuProducts.length > 0) {
-      const groupedMenu = menuProducts.reduce(
-        (acc: Record<string, typeof menuProducts>, item) => {
-          const cat = item.category || "General";
-          if (!acc[cat]) acc[cat] = [];
-          acc[cat].push(item);
-          return acc;
-        },
-        {}
-      );
+      const groupedMenu = menuProducts.reduce((acc: Record<string, typeof menuProducts>, item) => {
+        const cat = item.category || "General";
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(item);
+        return acc;
+      }, {});
 
       formattedMenu = Object.entries(groupedMenu)
         .map(([cat, prods]) => {
@@ -383,7 +380,7 @@ export async function generateAIWhatsAppResponse(
               }
             ).telefono
           ) || "Desconocido";
-    const leadTZ = getTimezoneByCountry(leadPais);
+    const leadTZ = getTimezoneByCountry((leadPais as string) || "");
     const variableMap: Record<string, string> = {
       nombre:
         (
@@ -422,7 +419,7 @@ export async function generateAIWhatsAppResponse(
       fecha: now.toLocaleDateString("es-ES", { timeZone: leadTZ }),
       hora: now.toLocaleTimeString("es-ES", { timeZone: leadTZ }),
       now: now.toLocaleString("es-ES", { timeZone: leadTZ }),
-      pais: leadPais,
+      pais: leadPais ?? "",
       $now: now.toLocaleString("es-ES", { timeZone: leadTZ }),
       $date: now.toLocaleDateString("es-ES", { timeZone: leadTZ }),
       $time: now.toLocaleTimeString("es-ES", { timeZone: leadTZ }),
@@ -591,16 +588,23 @@ export async function generateAIWhatsAppResponse(
             parameters: {
               type: "object",
               properties: {
-                date: { type: "string", description: "Fecha de la reserva (ej: YYYY-MM-DD o 'Hoy' / 'Mañana')" },
+                date: {
+                  type: "string",
+                  description: "Fecha de la reserva (ej: YYYY-MM-DD o 'Hoy' / 'Mañana')",
+                },
                 time: { type: "string", description: "Hora de la reserva (ej: 21:00)" },
                 guests: { type: "number", description: "Número de comensales / personas" },
                 customerName: { type: "string", description: "Nombre del cliente para la reserva" },
                 customerPhone: { type: "string", description: "Teléfono de contacto del cliente" },
                 zonePreference: {
                   type: "string",
-                  description: "Zona preferida opcional: 'terraza', 'salon_principal', 'pub_bar', 'vip'",
+                  description:
+                    "Zona preferida opcional: 'terraza', 'salon_principal', 'pub_bar', 'vip'",
                 },
-                notes: { type: "string", description: "Notas adicionales, ocasión especial o peticiones" },
+                notes: {
+                  type: "string",
+                  description: "Notas adicionales, ocasión especial o peticiones",
+                },
               },
               required: ["date", "time", "guests", "customerName", "customerPhone"],
             },
@@ -617,14 +621,20 @@ export async function generateAIWhatsAppResponse(
               properties: {
                 customerName: { type: "string", description: "Nombre completo del cliente" },
                 customerPhone: { type: "string", description: "Teléfono de contacto" },
-                deliveryAddress: { type: "string", description: "Dirección completa de entrega del pedido" },
+                deliveryAddress: {
+                  type: "string",
+                  description: "Dirección completa de entrega del pedido",
+                },
                 items: {
                   type: "array",
                   description: "Lista de platos o productos pedidos",
                   items: {
                     type: "object",
                     properties: {
-                      name: { type: "string", description: "Nombre del plato o bebida según la carta" },
+                      name: {
+                        type: "string",
+                        description: "Nombre del plato o bebida según la carta",
+                      },
                       quantity: { type: "number", description: "Cantidad pedida" },
                       unitPrice: { type: "number", description: "Precio unitario según la carta" },
                       notes: { type: "string", description: "Modificaciones o notas especiales" },
@@ -632,10 +642,19 @@ export async function generateAIWhatsAppResponse(
                     required: ["name", "quantity", "unitPrice"],
                   },
                 },
-                totalAmount: { type: "number", description: "Total a pagar según los precios de la carta" },
+                totalAmount: {
+                  type: "number",
+                  description: "Total a pagar según los precios de la carta",
+                },
                 notes: { type: "string", description: "Notas adicionales de entrega o pago" },
               },
-              required: ["customerName", "customerPhone", "deliveryAddress", "items", "totalAmount"],
+              required: [
+                "customerName",
+                "customerPhone",
+                "deliveryAddress",
+                "items",
+                "totalAmount",
+              ],
             },
           },
         }
@@ -839,11 +858,12 @@ ${restaurantPromptSection}`;
 
             result = JSON.stringify({ success: true, appointment: appt });
           } else if (name === "cancel_appointment") {
-            const res = await AppointmentService.cancelAppointment(args.appointmentId);
+            const res = await AppointmentService.cancelAppointment(args.appointmentId, tenantId);
             result = JSON.stringify(res);
           } else if (name === "reschedule_appointment") {
             const res = await AppointmentService.rescheduleAppointment(
               args.appointmentId,
+              tenantId,
               args.newDate,
               args.newTime
             );
@@ -859,7 +879,7 @@ ${restaurantPromptSection}`;
                   email?: string;
                   metadata?: Record<string, unknown>;
                 }
-              ).pais
+              ).pais ?? ""
             );
             const res = await AppointmentService.checkAvailability(
               tenantId,
@@ -956,10 +976,10 @@ ${restaurantPromptSection}`;
                 email?: string;
                 metadata?: Record<string, unknown>;
               }
-            ).telefono
+            ).telefono ?? ""
           ),
           aiResponse,
-          waConfig
+          waConfig as { accessToken: string; phoneNumberId: string }
         );
 
         // 11b. Resilient Save to Database (Ensures visibility in Dashboard)
@@ -1024,7 +1044,7 @@ ${restaurantPromptSection}`;
             .insert({
               tenant_id: tenantId,
               level: "ERROR",
-              message: `No se pudo guardar mensaje de IA en chat_messages: ${lastInsertError.message}`,
+              message: `No se pudo guardar mensaje de IA en chat_messages: ${(lastInsertError as any)?.message ?? String(lastInsertError)}`,
               metadata: { leadId, error: lastInsertError },
             })
             .catch(() => {});

@@ -17,10 +17,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useTenantStore } from "@/store/tenant";
-import type { ChatMessage } from "@/lib/actions/inbox";
 import type { Database, Lead } from "@/types/database";
 
-type ChatMessageWithLead = ChatMessage & { lead?: Lead };
 type LlamadaRow = Database["public"]["Tables"]["llamadas"]["Row"] & {
   lead?: Lead;
   created_at?: string;
@@ -111,7 +109,8 @@ export default function CostsPage() {
       const dayMap = new Map<string, DailyCost>();
 
       // Process Messages
-      messages?.forEach((msg: ChatMessageWithLead) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      messages?.forEach((msg: any) => {
         let msgCost = 0;
         let msgAiCost = 0;
         let msgMetaCost = 0;

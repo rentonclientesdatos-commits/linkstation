@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getAdminSupabaseClient } from "@/lib/supabase/server";
 import { type SupabaseClient } from "@supabase/supabase-js";
@@ -13,7 +14,11 @@ export async function POST(req: Request) {
       parameters?: Record<string, unknown>;
       args?: Record<string, unknown>; // Fallback
       callId?: string;
-      call?: { callId?: string; systemMetadata?: Record<string, string>; templateContext?: Record<string, string> };
+      call?: {
+        callId?: string;
+        systemMetadata?: Record<string, string>;
+        templateContext?: Record<string, string>;
+      };
     };
     try {
       payload = JSON.parse(rawBody);
@@ -34,9 +39,7 @@ export async function POST(req: Request) {
     const tenantId = metadata.tenant_id;
 
     if (!leadId || !tenantId) {
-      console.warn(
-        "[ULTRAVOX TOOLS] Missing lead_id or tenant_id in call metadata."
-      );
+      console.warn("[ULTRAVOX TOOLS] Missing lead_id or tenant_id in call metadata.");
     }
 
     switch (toolName) {
@@ -46,11 +49,11 @@ export async function POST(req: Request) {
 
       case "cancel_appointment":
       case "cancelar_cita":
-        return await handleCancelAppointment(supabase, args);
+        return await handleCancelAppointment(supabase, tenantId ?? "", args);
 
       case "reschedule_appointment":
       case "reprogramar_cita":
-        return await handleRescheduleAppointment(supabase, args);
+        return await handleRescheduleAppointment(supabase, tenantId ?? "", args);
 
       case "check_availability":
       case "consultar_disponibilidad":
@@ -99,7 +102,11 @@ async function handleBookAppointment(
 
   let scheduledAt = date;
   if (time) {
-    const timeStr = time.includes(":") ? (time.split(":").length === 2 ? `${time}:00` : time) : `${time}:00:00`;
+    const timeStr = time.includes(":")
+      ? time.split(":").length === 2
+        ? `${time}:00`
+        : time
+      : `${time}:00:00`;
     scheduledAt = `${date}T${timeStr}Z`;
   }
 
@@ -111,8 +118,13 @@ async function handleBookAppointment(
 
   let selectedAdvisor = null;
   if (allAdvisors && allAdvisors.length > 0) {
-    selectedAdvisor = allAdvisors.find(a => a.specialties?.includes(programId) || a.specialties?.includes(programName)) || null;
-    if (!selectedAdvisor) selectedAdvisor = allAdvisors.find(a => a.handled_lead_types?.includes(leadData?.tipo_lead)) || null;
+    selectedAdvisor =
+      allAdvisors.find(
+        (a) => a.specialties?.includes(programId) || a.specialties?.includes(programName)
+      ) || null;
+    if (!selectedAdvisor)
+      selectedAdvisor =
+        allAdvisors.find((a) => a.handled_lead_types?.includes(leadData?.tipo_lead)) || null;
     if (!selectedAdvisor) selectedAdvisor = allAdvisors[0] || null;
   }
 
@@ -129,80 +141,101 @@ async function handleBookAppointment(
 
   const { AppointmentService } = await import("@/lib/services/appointment-service");
 
-  let appointmentData;
+  let appointmentData: any = null;
   try {
     appointmentData = await AppointmentService.bookAppointment(tenantId, leadId, date, time, notes);
   } catch (e) {
     throw e;
   }
 
-  try {
-    const { getOrchestratorConfigForTenant } = await import("@/lib/actions/orchestrator-config");
-    const { enqueueLeadStep } = await import("@/lib/core/queue/lead-sequence-queue");
+  if (appointmentData?.scheduled_at && appointmentData?.id) {
+    try {
+      const { getOrchestratorConfigForTenant } = await import("@/lib/actions/orchestrator-config");
+      const { enqueueLeadStep } = await import("@/lib/core/queue/lead-sequence-queue");
 
-    const config = await getOrchestratorConfigForTenant(tenantId);
-    const reminderLeadTimeHours = config.scheduling?.reminder_hours || 24;
+      const config = await getOrchestratorConfigForTenant(tenantId);
+      const reminderLeadTimeHours = config.scheduling?.reminder_hours || 24;
 
-    const appointmentTime = new Date(appointmentData.scheduled_at).getTime();
-    const reminderTime = appointmentTime - reminderLeadTimeHours * 60 * 60 * 1000;
-    const now = Date.now();
-    const delayMs = Math.max(0, reminderTime - now);
+      const appointmentTime = new Date(appointmentData.scheduled_at as string).getTime();
+      const reminderTime = appointmentTime - reminderLeadTimeHours * 60 * 60 * 1000;
+      const now = Date.now();
+      const delayMs = Math.max(0, reminderTime - now);
 
-    if (delayMs > 0 || Math.abs(reminderTime - now) < 1000 * 60 * 5) {
-      await enqueueLeadStep(
-        {
-          leadId,
-          tenantId,
-          action: "APPOINTMENT_REMINDER",
-          appointmentId: appointmentData.id,
-          template: config.scheduling?.reminder_template || "appointment_reminder_es",
-        },
-        delayMs
-      );
+      if (delayMs > 0 || Math.abs(reminderTime - now) < 1000 * 60 * 5) {
+        await enqueueLeadStep(
+          {
+            leadId,
+            tenantId,
+            action: "APPOINTMENT_REMINDER",
+            appointmentId: appointmentData.id as string,
+            template: config.scheduling?.reminder_template || "appointment_reminder_es",
+          },
+          delayMs
+        );
+      }
+    } catch (reminderErr) {
+      console.error("Failed to queue reminder:", reminderErr);
     }
-  } catch (reminderErr) {
-    console.error("Failed to queue reminder:", reminderErr);
   }
 
   return NextResponse.json({
     success: true,
     message: "Cita agendada correctamente",
-    appointment_id: appointmentData.id,
+    appointment_id: appointmentData?.id,
     advisor_name: selectedAdvisor?.name || "Sin asignar",
     is_overlap: (overlaps || 0) > 0,
   });
 }
 
-async function handleCancelAppointment(supabase: SupabaseClient<Database>, args: Record<string, unknown>) {
+async function handleCancelAppointment(
+  supabase: SupabaseClient<Database>,
+  tenantId: string,
+  args: Record<string, unknown>
+) {
   const { AppointmentService } = await import("@/lib/services/appointment-service");
   const appointmentId = args.appointmentId as string;
-  if (!appointmentId) return NextResponse.json({ error: "appointmentId is required" }, { status: 400 });
+  if (!appointmentId)
+    return NextResponse.json({ error: "appointmentId is required" }, { status: 400 });
 
   try {
-    const result = await AppointmentService.cancelAppointment(appointmentId);
+    const result = await AppointmentService.cancelAppointment(appointmentId, tenantId);
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
-async function handleRescheduleAppointment(supabase: SupabaseClient<Database>, args: Record<string, unknown>) {
+async function handleRescheduleAppointment(
+  supabase: SupabaseClient<Database>,
+  tenantId: string,
+  args: Record<string, unknown>
+) {
   const { AppointmentService } = await import("@/lib/services/appointment-service");
   const appointmentId = args.appointmentId as string;
   const newDate = args.newDate as string;
   const newTime = args.newTime as string | undefined;
 
-  if (!appointmentId || !newDate) return NextResponse.json({ error: "appointmentId and newDate are required" }, { status: 400 });
+  if (!appointmentId || !newDate)
+    return NextResponse.json({ error: "appointmentId and newDate are required" }, { status: 400 });
 
   try {
-    const result = await AppointmentService.rescheduleAppointment(appointmentId, newDate, newTime);
+    const result = await AppointmentService.rescheduleAppointment(
+      appointmentId,
+      tenantId,
+      newDate,
+      newTime
+    );
     return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
-async function handleCheckAvailability(supabase: SupabaseClient<Database>, tenantId: string, args: Record<string, unknown>) {
+async function handleCheckAvailability(
+  supabase: SupabaseClient<Database>,
+  tenantId: string,
+  args: Record<string, unknown>
+) {
   const { AppointmentService } = await import("@/lib/services/appointment-service");
   const date = args.date as string;
   if (!date) return NextResponse.json({ error: "date is required" }, { status: 400 });

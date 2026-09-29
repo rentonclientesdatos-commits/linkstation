@@ -205,8 +205,6 @@ export default function VoiceAgentsPage() {
         }
       };
       loadVariants(selectedAgent.id);
-
-
     }
   }, [selectedAgent?.id, retellApiKey]);
 
@@ -225,8 +223,6 @@ export default function VoiceAgentsPage() {
       setSaving(false);
     }
   };
-
-
 
   const handleSyncUltravoxResources = async (keyOverride?: string, showToast = false) => {
     const key = keyOverride || ultravoxApiKey;
@@ -318,7 +314,11 @@ export default function VoiceAgentsPage() {
       }
     } catch (e) {
       console.error("[Ultravox Import] Error:", e);
-      toast({ variant: "error", title: "Error", description: "No se pudo importar el agente de Ultravox." });
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "No se pudo importar el agente de Ultravox.",
+      });
     } finally {
       setIsImporting(false);
     }
@@ -341,8 +341,6 @@ export default function VoiceAgentsPage() {
       setIsSyncing(false);
     }
   };
-
-
 
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [ultravoxApiKey, setUltravoxApiKey] = useState("");
@@ -399,16 +397,13 @@ export default function VoiceAgentsPage() {
   // Load Retell/Ultravox API Key and tenant ID on mount — auto-sync if keys exist
   useEffect(() => {
     refreshConfiguration();
-     
   }, []);
-
-
 
   const handleCreateOrUpdateAgent = async () => {
     if (!editingAgentData.name?.trim()) return;
     setSaving(true);
 
-    let agentDataToSave = { ...editingAgentData };
+    const agentDataToSave = { ...editingAgentData };
 
     if (
       ultravoxApiKey &&
@@ -755,10 +750,12 @@ export default function VoiceAgentsPage() {
               <button
                 onClick={() => handleSyncUltravoxResources(ultravoxApiKey, true)}
                 disabled={isSyncing}
-                className="flex items-center justify-center rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center rounded p-1.5 transition-colors"
                 title="Sincronizar recursos de Ultravox"
               >
-                <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin text-purple-500")} />
+                <RefreshCw
+                  className={cn("h-3.5 w-3.5", isSyncing && "animate-spin text-purple-500")}
+                />
               </button>
             )}
             <button
@@ -803,7 +800,7 @@ export default function VoiceAgentsPage() {
                   .filter((a) => a.agentId || a.id)
                   .map((a) => [a.agentId || a.id || "", a])
               ).values()
-            ).filter((a) => !localIds.has(a.agentId || a.id));
+            ).filter((a) => !localIds.has((a.agentId || a.id) ?? null));
 
             const hasAnyAgents =
               agents.length > 0 || uniqueUltravoxAgents.length > 0 || unimportedRetell.length > 0;
@@ -861,7 +858,7 @@ export default function VoiceAgentsPage() {
                     )}
                   >
                     <span className="truncate">{a.name}</span>
-                    <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase opacity-75">
+                    <span className="bg-muted rounded px-1.5 py-0.5 text-[9px] font-bold uppercase opacity-75">
                       {a.provider || "Ultravox"}
                     </span>
                   </button>
@@ -881,7 +878,7 @@ export default function VoiceAgentsPage() {
                       <div className="flex items-center gap-1.5 truncate">
                         <span className="truncate">{u.name || "Agente Ultravox"}</span>
                       </div>
-                      <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-1 rounded uppercase">
+                      <span className="rounded bg-purple-500/10 px-1 text-[9px] font-bold text-purple-400 uppercase">
                         Importar
                       </span>
                     </button>
@@ -1005,23 +1002,29 @@ export default function VoiceAgentsPage() {
       <AnimatePresence>
         {isCreateModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-            <div className="border-border bg-card w-full max-w-lg rounded-2xl border p-6 shadow-2xl space-y-4">
-              <h3 className="text-lg font-bold text-foreground">Crear Nuevo Agente de Voz</h3>
-              
+            <div className="border-border bg-card w-full max-w-lg space-y-4 rounded-2xl border p-6 shadow-2xl">
+              <h3 className="text-foreground text-lg font-bold">Crear Nuevo Agente de Voz</h3>
+
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nombre del Agente</label>
+                <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Nombre del Agente
+                </label>
                 <input
                   type="text"
                   placeholder="Ej: Asistente de Ventas"
                   value={editingAgentData.name || ""}
-                  onChange={(e) => setEditingAgentData({ ...editingAgentData, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditingAgentData({ ...editingAgentData, name: e.target.value })
+                  }
                   className="border-border bg-background w-full rounded-xl border px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Proveedor</label>
+                  <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Proveedor
+                  </label>
                   <select
                     title="Proveedor"
                     value={editingAgentData.provider || "ULTRAVOX"}
@@ -1031,7 +1034,7 @@ export default function VoiceAgentsPage() {
                         provider: e.target.value as VoiceAgent["provider"],
                       })
                     }
-                    className="border-border bg-background w-full rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none text-foreground"
+                    className="border-border bg-background text-foreground w-full rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   >
                     <option value="ULTRAVOX">🎙️ Ultravox</option>
                     <option value="RETELL">📞 Retell AI</option>
@@ -1039,14 +1042,16 @@ export default function VoiceAgentsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Voz</label>
+                  <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Voz
+                  </label>
                   <select
                     title="Seleccionar Voz"
                     value={editingAgentData.voice_id || ""}
                     onChange={(e) =>
                       setEditingAgentData({ ...editingAgentData, voice_id: e.target.value })
                     }
-                    className="border-border bg-background w-full rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none text-foreground"
+                    className="border-border bg-background text-foreground w-full rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   >
                     <option value="">Seleccionar Voz...</option>
                     {(editingAgentData.provider === "ULTRAVOX" || !editingAgentData.provider
@@ -1063,14 +1068,16 @@ export default function VoiceAgentsPage() {
 
               {editingAgentData.provider === "ULTRAVOX" && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Modelo de IA</label>
+                  <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Modelo de IA
+                  </label>
                   <select
                     title="Modelo de IA"
                     value={editingAgentData.retell_llm_id || ""}
                     onChange={(e) =>
                       setEditingAgentData({ ...editingAgentData, retell_llm_id: e.target.value })
                     }
-                    className="border-border bg-background w-full rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none text-foreground"
+                    className="border-border bg-background text-foreground w-full rounded-xl border px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   >
                     <option value="">Seleccionar Modelo...</option>
                     {availableUltravoxModels.map((m) => (
@@ -1083,13 +1090,15 @@ export default function VoiceAgentsPage() {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Instrucciones iniciales (Prompt)</label>
+                <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Instrucciones iniciales (Prompt)
+                </label>
                 <textarea
                   rows={4}
                   value={variantA.prompt_text || ""}
                   onChange={(e) => setVariantA({ ...variantA, prompt_text: e.target.value })}
                   placeholder="Instrucciones para el agente de voz..."
-                  className="border-border bg-background w-full rounded-xl border p-3 text-sm font-mono leading-relaxed focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                  className="border-border bg-background w-full rounded-xl border p-3 font-mono text-sm leading-relaxed focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 />
               </div>
 
@@ -1112,7 +1121,6 @@ export default function VoiceAgentsPage() {
           </div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
