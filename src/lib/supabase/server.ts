@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
-import { requireEnv, requireEnvAny } from "@/lib/env";
+import { requireEnvAny } from "@/lib/env";
 
 /**
  * Server-side Supabase client helpers.
@@ -11,7 +11,7 @@ export async function getActiveTenantId(): Promise<string | null> {
     const cookieStore = await cookies();
     const cookieVal = cookieStore.get("esden-tenant-id")?.value;
     if (cookieVal) return cookieVal;
-  } catch (cookieErr) {
+  } catch {
     // cookies() unavailable or out of request scope
   }
 
@@ -70,11 +70,7 @@ export async function getAdminSupabaseClient() {
     process.env.SUPABASE_SECRET_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.SUPABASE_ANON_KEY ||
-    requireEnvAny([
-      "SUPABASE_SERVICE_ROLE_KEY",
-      "SERVICE_ROLE_KEY",
-      "SUPABASE_SECRET_KEY",
-    ]) ||
+    requireEnvAny(["SUPABASE_SERVICE_ROLE_KEY", "SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"]) ||
     "placeholder-key";
 
   return createClient<Database>(url, key, {

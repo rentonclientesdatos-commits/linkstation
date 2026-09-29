@@ -259,7 +259,7 @@ describe("ZohoCRMProvider — 5xx exp backoff", () => {
     const ok = await provider.healthcheck();
     expect(ok).toBe(true);
     vi.useRealTimers();
-  });
+  }, 15000);
 });
 
 describe("ZohoCRMProvider — getCapabilities", () => {

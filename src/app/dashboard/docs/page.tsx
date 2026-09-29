@@ -28,9 +28,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
-import { Outfit } from "next/font/google";
-
-const outfit = Outfit({ subsets: ["latin"], weight: ["400", "700", "900"] });
 const MermaidDiagram = dynamic(() => import("@/components/docs/MermaidDiagram"), { ssr: false });
 
 // Fases y Tomos — Lenguaje de negocio para el cliente
@@ -175,9 +172,7 @@ export default function DocsPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen w-full overflow-x-hidden bg-[#f8fafc] dark:bg-slate-900 ${outfit.className}`}
-    >
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f8fafc] dark:bg-slate-900">
       <style jsx global>{`
         .edgeLabel {
           background-color: #f1f5f9 !important;
