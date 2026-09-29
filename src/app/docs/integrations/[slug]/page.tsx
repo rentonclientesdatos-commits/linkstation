@@ -47,8 +47,29 @@ const GUIDE_META: Record<string, { title: string; subtitle: string; badge: strin
 function resolveGuidePath(slug: string): string | null {
   // Anti path-traversal: solo kebab-case + dígitos.
   if (!/^[a-z0-9-]+$/.test(slug)) return null;
-  const filePath = path.join(process.cwd(), "docs", "integrations", `${slug}.md`);
-  return fs.existsSync(filePath) ? filePath : null;
+  const candidates = [
+    path.join(process.cwd(), "docs", "integrations", `${slug}.md`),
+    path.join(
+      process.cwd(),
+      "Automatiza-Formacion-DashBoard-developer",
+      "docs",
+      "integrations",
+      `${slug}.md`
+    ),
+    path.resolve(__dirname, "..", "..", "..", "..", "docs", "integrations", `${slug}.md`),
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+export function generateStaticParams() {
+  return [
+    { slug: "zoho-webhook-manual" },
+    { slug: "google-sheets-setup-tenant" },
+    { slug: "hubspot-app-setup" },
+  ];
 }
 
 // Quita el primer "# Título" del markdown: ya lo mostramos en la cabecera grande.
@@ -75,7 +96,12 @@ export default async function IntegrationGuidePage({
   const filePath = resolveGuidePath(slug);
   if (!filePath) notFound();
 
-  const raw = fs.readFileSync(filePath, "utf8");
+  let raw = "";
+  try {
+    raw = fs.readFileSync(filePath, "utf8");
+  } catch {
+    notFound();
+  }
   const content = stripLeadingH1(raw);
   const meta = GUIDE_META[slug] ?? {
     title: "Guía de integración",

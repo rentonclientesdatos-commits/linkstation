@@ -39,12 +39,30 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const push = React.useCallback<ToastContextValue["push"]>(
     (opts) => {
-      const normalized: ToastOptions = typeof opts === "string" ? { description: opts } : opts;
+      const normalized: ToastOptions =
+        typeof opts === "string" ? { description: opts } : opts || {};
       const id = `t_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      const safeTitle =
+        typeof normalized.title === "string"
+          ? normalized.title
+          : normalized.title
+            ? String(normalized.title)
+            : undefined;
+      const safeDescription =
+        typeof normalized.description === "string"
+          ? normalized.description
+          : normalized.description
+            ? typeof normalized.description === "object" &&
+              normalized.description !== null &&
+              "message" in (normalized.description as Record<string, unknown>)
+              ? String((normalized.description as Record<string, unknown>).message)
+              : JSON.stringify(normalized.description)
+            : undefined;
+
       const item: ToastItem = {
         id,
-        title: normalized.title,
-        description: normalized.description,
+        title: safeTitle,
+        description: safeDescription,
         variant: normalized.variant ?? "info",
         duration: normalized.duration ?? 5000,
       };
