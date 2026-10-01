@@ -1,7 +1,7 @@
-# INFORME FINAL — E2E Full Run (VPS) Sprint 3
+﻿# INFORME FINAL — E2E Full Run (VPS) Sprint 3
 
 - **Fecha**: 2026-06-03 22:10–22:20 — operator: Claude (Opus 4.8) — mode: **AUTONOMOUS**
-- **Env**: vps (`https://dev.automatizaformacion.com`)
+- **Env**: vps (`https://dev.linkstation.ai`)
 - **Branch / HEAD**: `feature/sp-7-deps-audit-26` @ `73f1610`
 - **App version VPS**: `v0.3.0-rc.1` (Node v22.22.3)
 - **Plan version**: 1.2

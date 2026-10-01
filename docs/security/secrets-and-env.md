@@ -1,4 +1,4 @@
----
+﻿---
 title: "Security — Secrets & Environment"
 date: 2026-05-18
 agent: Audit-Deps+Security (Sonnet)
@@ -82,7 +82,7 @@ if (!key) {
 ### F-05-SEC-003 — URL de Supabase de producción hardcodeada (High)
 
 **Archivos y líneas:**
-- `src/lib/auth-config.ts:9-10` — `https://api-db.automatizaformacion.com`
+- `src/lib/auth-config.ts:9-10` — `https://api-db.linkstation.ai`
 - `src/lib/supabase/client.ts:15,20` — Idem
 - `src/lib/supabase/server.ts:6` — Idem
 - `src/scripts/purge-demo.ts:8` — URL alternativa interna: `http://interno-supabase-a201be-46-62-193-169.traefik.me`

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Arquitectura — Capas y Estructura del Proyecto"
 date: 2026-05-18
 agent: Audit-Structure (Sonnet)
@@ -50,7 +50,7 @@ Detalle ampliado + screenshots de validación: [docs/dev-team-handover.md §4.bi
 ## Árbol de directorios resumido
 
 ```
-automatiza-formacion-dashboard/   # (renombrado desde `dashboard-af-main` el 2026-05-20)
+linkstation-dashboard/   # (renombrado desde `linkstation-main` el 2026-05-20)
 ├── src/
 │   ├── app/                          # Next.js App Router — rutas y API
 │   │   ├── layout.tsx                # Root layout (ThemeProvider, Inter font)

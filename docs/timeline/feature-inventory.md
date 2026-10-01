@@ -1,9 +1,9 @@
----
+﻿---
 title: "Inventario de features entregadas - Dashboard Esden"
 date: 2026-05-18
 agent: Timeline (Haiku)
 phase: 7
-source_repo: renzo1111ia/dashboard-af (clonado local en dashboard-af-git)
+source_repo: LinkStation/linkstation-dashboard (clonado local en linkstation-git)
 total_features: 32
 ---
 

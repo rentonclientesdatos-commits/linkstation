@@ -1,4 +1,4 @@
----
+﻿---
 title: "Phase 04 — WCAG 2.2 AA Refactor (4-05) — 24 findings DA-5"
 sprint: 4
 phase: 4
@@ -335,11 +335,11 @@ En cada `src/app/dashboard/*/page.tsx`:
 
 ```typescript
 export const metadata: Metadata = {
-  title: "Historial — Automatiza Formación",
+  title: "Historial — LinkStation",
 };
 // O para títulos dinámicos:
 export async function generateMetadata({ params }): Promise<Metadata> {
-  return { title: `Agente ${params.id} — Automatiza Formación` };
+  return { title: `Agente ${params.id} — LinkStation` };
 }
 ```
 

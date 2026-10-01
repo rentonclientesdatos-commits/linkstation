@@ -1,4 +1,4 @@
----
+﻿---
 title: "Spec funcional — Doc Admin + Docs Clientes"
 audience: equipo de desarrollo (uxui + frontend + database + api)
 owner_agent: af-agents:help-docs-keeper
@@ -17,7 +17,7 @@ Especificación de las DOS páginas de documentación del dashboard. Mantenidas 
 
 > **Decisión 24-05-2026 (autoexec plan)**: el spec original proponía UNA página con 3 tabs (SuperAdmin / Organization / My Space). El usuario optó por **DOS páginas separadas** para mayor visibilidad en sidebar y separación clara de audiencias. El layout interno (cards + TOC scroll-spy + estados provisional/completada) se mantiene en cada página.
 
-> **Inspiración visual**: layout tipo "help dev portal" con sidebar TOC + contenido en scroll vertical. Estilo coherente con el dashboard actual de dashboard-af (dark theme, accent indigo/violet para admin, accent emerald/teal para clientes).
+> **Inspiración visual**: layout tipo "help dev portal" con sidebar TOC + contenido en scroll vertical. Estilo coherente con el dashboard actual de linkstation (dark theme, accent indigo/violet para admin, accent emerald/teal para clientes).
 
 ---
 

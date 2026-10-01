@@ -1,5 +1,5 @@
 /**
- * API Auth helpers — dashboard-af
+ * API Auth helpers — LinkStation
  *
  * Sprint 0 tareas 1-07 (auth endpoints orquestación) y 1-08 (auth cron).
  *

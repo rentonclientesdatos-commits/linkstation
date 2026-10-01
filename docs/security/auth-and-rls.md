@@ -1,7 +1,7 @@
-# Auth & RLS Security
+﻿# Auth & RLS Security
 
 **Versión:** 1.0.0 — 2026-05-18 (Audit-Data, análisis estático)
-**Proyecto:** dashboard-af (Next.js 16 + Supabase)
+**Proyecto:** linkstation (Next.js 16 + Supabase)
 
 ---
 

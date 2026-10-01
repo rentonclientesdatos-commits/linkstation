@@ -1,9 +1,9 @@
----
-title: "Brainstorm — Audit técnico + Documentación integral del dashboard-af"
+﻿---
+title: "Brainstorm — Audit técnico + Documentación integral del linkstation"
 date: 2026-05-18
 status: approved
 type: brainstorm-summary
-project: dashboard-af-main
+project: linkstation-main
 audience: programadores (interno)
 next_step: ejecución del plan de agentes (próxima sesión)
 ---
@@ -11,13 +11,13 @@ next_step: ejecución del plan de agentes (próxima sesión)
 
 ## 1. Problem statement
 
-El proyecto `dashboard-af-main` (AI CRM + Workflow Orchestrator v5.0, Next.js 16 + React 19 + Supabase + BullMQ + LangChain multi-LLM + Retell/Ultravox) ha crecido **sin control**. Carencias detectadas en scout previo:
+El proyecto `linkstation-main` (AI CRM + Workflow Orchestrator v5.0, Next.js 16 + React 19 + Supabase + BullMQ + LangChain multi-LLM + Retell/Ultravox) ha crecido **sin control**. Carencias detectadas en scout previo:
 
 - Sólo 3 .md de proyecto (README, DOCUMENTATION, MASTER_DOSSIER) — sin carpeta `docs/`, sin `plans/`, sin `TASKS.md`.
 - Capas mezcladas: `lib/core/`, `lib/services/`, `lib/integrations/`, `lib/actions/` sin contrato claro.
 - Doble cliente DB: `@supabase/ssr` + `pg`/`postgres` directos coexistiendo — sin documentar quién usa qué ni por qué.
 - Stack LLM disperso: LangChain + Anthropic + OpenAI + Google Genai + AWS Bedrock — sin abstracción visible de proveedor ni gestión de costes documentada.
-- 420 commits en GitHub (`renzo1111ia/dashboard-af`) sin timeline de sprints reconstruido.
+- 420 commits en GitHub (`LinkStation/linkstation-dashboard`) sin timeline de sprints reconstruido.
 - No es repo git localmente (deploy desde zip).
 
 ## 2. Objetivo (lo que el usuario quiere)
@@ -167,13 +167,13 @@ Sin la spec normalizada de la cliente, cada agente auditaría sólo el código e
 
 ## 5. Acceso a GitHub (paso preparatorio para el usuario)
 
-Repo cliente: `https://github.com/renzo1111ia/dashboard-af` (usuario tiene acceso como collaborator).
+Repo cliente: `https://github.com/LinkStation/linkstation-dashboard` (usuario tiene acceso como collaborator).
 
 Acción requerida del usuario **antes de la próxima sesión** (opcional pero recomendado):
 
 ```powershell
-cd e:\ClaudeCode\AutomatizaFormacion
-git clone https://github.com/renzo1111ia/dashboard-af.git dashboard-af-git
+cd e:\ClaudeCode\LinkStation
+git clone https://github.com/LinkStation/linkstation-dashboard.git linkstation-git
 ```
 
 Credenciales: usuario GitHub + Personal Access Token (scope `repo`, read suffices). Generar en <https://github.com/settings/tokens>.
@@ -239,8 +239,8 @@ Si no se hace, el agente #7 (Timeline) queda en pending y todo lo demás procede
 
 ## 10. Próximos pasos (en orden)
 
-0. **Git local + branch `auditoria`** ya inicializado en `dashboard-af-main/.git`. Sin remote (verificable con `git remote -v`). `docs/` y `plans/` gitignored → trabajo del audit nunca subirá a GitHub.
-1. **Usuario clona el repo remoto** según §5 (paralelo, no bloqueante) en carpeta hermana `dashboard-af-git`.
+0. **Git local + branch `auditoria`** ya inicializado en `linkstation-main/.git`. Sin remote (verificable con `git remote -v`). `docs/` y `plans/` gitignored → trabajo del audit nunca subirá a GitHub.
+1. **Usuario clona el repo remoto** según §5 (paralelo, no bloqueante) en carpeta hermana `linkstation-git`.
 2. **Nueva sesión** (tras `/clear`):
    2.1. Lanzar **Fase 0 (Client-Spec-Extractor)** — bloqueante.
    2.2. Cuando termine, lanzar **Fases 1-5 en paralelo**.
@@ -253,17 +253,17 @@ Si no se hace, el agente #7 (Timeline) queda en pending y todo lo demás procede
 
 ## 13. Git workflow del audit
 
-- **Repo local independiente**: `git init` ejecutado en `dashboard-af-main/`. NO conectado al GitHub del cliente (`renzo1111ia/dashboard-af`).
+- **Repo local independiente**: `git init` ejecutado en `linkstation-main/`. NO conectado al GitHub del cliente (`LinkStation/linkstation-dashboard`).
 - **Branch `auditoria`**: rama por defecto donde vive todo el trabajo de auditoría (este `plans/`, futuro `docs/`, configs `.claude/`).
 - **`.gitignore` aplicado** (norma global del proyecto):
   - `.claude/` — estado interno de Claude Code, **siempre ignorado**.
   - `docs/` y `plans/` — **SE VERSIONAN** en la rama `auditoria` (decisión del usuario, Opción 1). Quedan fuera del GitHub del cliente porque este repo local NO tiene `origin` configurado.
   - Más: `node_modules/`, `.next/`, `.env*`, build artifacts, IDE configs.
-- **Sin remote configurado**: este repo local NUNCA se conecta al GitHub del cliente (`renzo1111ia/dashboard-af`). Si en el futuro se quisiera entregar parte del trabajo, se hace export manual selectivo o se configura un remote propio del programador distinto al del cliente.
+- **Sin remote configurado**: este repo local NUNCA se conecta al GitHub del cliente (`LinkStation/linkstation-dashboard`). Si en el futuro se quisiera entregar parte del trabajo, se hace export manual selectivo o se configura un remote propio del programador distinto al del cliente.
 
 ### Garantía operativa (cómo NO contaminar el repo del cliente)
 
-1. **NUNCA ejecutar** `git remote add origin <url-cliente>` en `dashboard-af-main/`.
+1. **NUNCA ejecutar** `git remote add origin <url-cliente>` en `linkstation-main/`.
 2. Si se necesita un remote para backup del audit, usar un repo PRIVADO propio del programador (no del cliente).
 3. Antes de cualquier `git push`, verificar con `git remote -v` que el destino NO sea el repo del cliente.
 4. La rama `auditoria` es el contenedor único de todo el trabajo de auditoría.

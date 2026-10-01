@@ -42,7 +42,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build metadata para endpoint /api/version (SP-4-NEW-13). Inyectados por Dokploy
 # en el `docker build --build-arg` o equivalente. Sin valor → fallback "unknown".
 # Permite verificar post-deploy que el VPS sirve el commit esperado:
-#   curl https://dev.automatizaformacion.com/api/version
+#   curl https://dev.linkstation.ai/api/version
 ARG GIT_COMMIT_SHA
 ARG GIT_BRANCH
 ARG BUILD_TIMESTAMP

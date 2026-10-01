@@ -1,4 +1,4 @@
-# Tests — dashboard-af
+﻿# Tests — linkstation
 
 Carpeta de tests E2E (Playwright) del proyecto.
 

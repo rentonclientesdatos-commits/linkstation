@@ -1,5 +1,5 @@
-{
-  "_doc": "Hooks configuration for dashboard-af. Combines ClaudeKit Engineer (14 hooks via cjs scripts) + 4 AF-specific prompt-based hooks adapted from saas-agents pattern.",
+﻿{
+  "_doc": "Hooks configuration for linkstation. Combines ClaudeKit Engineer (14 hooks via cjs scripts) + 4 AF-specific prompt-based hooks adapted from saas-agents pattern.",
   "SessionStart": [
     {
       "matcher": ".*",

@@ -1,4 +1,4 @@
----
+﻿---
 title: Stack tecnológico — Actual vs Objetivo
 date: 2026-05-19
 status: LIVING_DOCUMENT
@@ -8,7 +8,7 @@ sources: package.json v0.1.0 + DECISIONES-AUDITOR-JAVIER-HP.md (9 R-### tomadas)
 type: stack-overview
 ---
 
-# Stack tecnológico — `dashboard-af`
+# Stack tecnológico — `linkstation`
 
 > **Documento de doble lectura.** Las tablas marcadas como **ACTUAL** reflejan lo que existe hoy en el repositorio (extraído de `package.json` y código). Las marcadas como **OBJETIVO** reflejan decisiones cerradas del Auditor que el equipo de desarrollo debe implementar en Sprint 0 → Sprint 3.
 >
@@ -74,7 +74,7 @@ type: stack-overview
 
 ### 1.5 — Despliegue actual
 
-- **Repositorio:** GitHub `renzo1111ia/dashboard-af` · branch `auditoria`
+- **Repositorio:** GitHub `LinkStation/linkstation-dashboard` · branch `auditoria`
 - **Hosting Supabase:** managed cloud · pila detrás con **Kong 2.8.1 EOL** + GoTrue/Postgres con 2-3 años de retraso (ver [R-023.c](DECISIONES-AUDITOR-JAVIER-HP.md#r-023c-versiones-de-supabase-postgres-gotrue-respondida-investigacion-del-auditor))
 - **Frontend hosting:** Vercel-ready (Dockerfile + docker-compose presentes)
 

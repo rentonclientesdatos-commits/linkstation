@@ -1,16 +1,16 @@
----
-title: "Snapshot de BD local → VPS dev.automatizaformacion.com (Dokploy)"
+﻿---
+title: "Snapshot de BD local → VPS dev.linkstation.ai (Dokploy)"
 audience: Renzo (dev VPS)
 status: handoff document
 date: 2026-05-22
 updated: 2026-05-22 (adaptado a Dokploy, no Easypanel)
 ---
 
-# Snapshot de BD local → VPS `dev.automatizaformacion.com`
+# Snapshot de BD local → VPS `dev.linkstation.ai`
 
 > Instrucciones para **Renzo** sobre cómo restaurar el snapshot de BD local de Javi en el VPS de desarrollo gestionado con **Dokploy**.
 >
-> **Contexto**: Javi tiene una Supabase self-hosted (Docker local) con datos de prueba. Te lo pasa cifrado para que lo cargues en el Postgres del VPS apuntado por `dev.automatizaformacion.com` (rama `developer`).
+> **Contexto**: Javi tiene una Supabase self-hosted (Docker local) con datos de prueba. Te lo pasa cifrado para que lo cargues en el Postgres del VPS apuntado por `dev.linkstation.ai` (rama `developer`).
 
 ---
 
@@ -20,16 +20,16 @@ Un único archivo ZIP cifrado vía WhatsApp:
 
 | Item | Tamaño | Cómo se abre |
 |---|---|---|
-| `dashboard-af-bd-handoff-YYYYMMDD-HHmm.zip` | ~100 KB | Cualquier descompresor (Windows nativo, 7-Zip, WinRAR, `unzip`) con la password que te dará Javi por canal aparte |
+| `linkstation-bd-handoff-YYYYMMDD-HHmm.zip` | ~100 KB | Cualquier descompresor (Windows nativo, 7-Zip, WinRAR, `unzip`) con la password que te dará Javi por canal aparte |
 
 **Password del ZIP**: Javi te la da por canal aparte (Signal / llamada / mensaje aparte).
 
 Contenido del ZIP:
 
 ```
-dashboard-af-bd-handoff-YYYYMMDD-HHmm.zip
-├── dashboard-af-snapshot-YYYYMMDD-HHmm.dump.gz    ← El dump de BD comprimido
-├── dashboard-af-snapshot-YYYYMMDD-HHmm.sha256     ← Hash SHA256 para verificar integridad
+linkstation-bd-handoff-YYYYMMDD-HHmm.zip
+├── linkstation-snapshot-YYYYMMDD-HHmm.dump.gz    ← El dump de BD comprimido
+├── linkstation-snapshot-YYYYMMDD-HHmm.sha256     ← Hash SHA256 para verificar integridad
 ├── INSTRUCCIONES-RENZO.md                          ← Esta guía en markdown
 ├── INSTRUCCIONES-RENZO.html                        ← Misma guía en HTML autocontenido
 └── README.txt                                      ← Léeme primero
@@ -62,10 +62,10 @@ Desde tu máquina local (no el VPS):
 
 ```bash
 # Descomprime el ZIP — te pedirá la password que te dio Javi
-unzip dashboard-af-bd-handoff-YYYYMMDD-HHmm.zip -d ./dashboard-af-handoff/
+unzip linkstation-bd-handoff-YYYYMMDD-HHmm.zip -d ./linkstation-handoff/
 # Password: <la que te dio Javi por canal aparte>
 
-cd dashboard-af-handoff/
+cd linkstation-handoff/
 ls
 # Verás: .dump.gz, .sha256, INSTRUCCIONES-RENZO.md, INSTRUCCIONES-RENZO.html, README.txt
 ```
@@ -76,8 +76,8 @@ En Windows puedes hacer doble click al ZIP, te pide password, y arrastras los ar
 
 ```bash
 # Usando scp (ajusta usuario/host de tu VPS Dokploy)
-scp dashboard-af-snapshot-YYYYMMDD-HHmm.dump.gz user@vps-host:/tmp/
-scp dashboard-af-snapshot-YYYYMMDD-HHmm.sha256   user@vps-host:/tmp/
+scp linkstation-snapshot-YYYYMMDD-HHmm.dump.gz user@vps-host:/tmp/
+scp linkstation-snapshot-YYYYMMDD-HHmm.sha256   user@vps-host:/tmp/
 ```
 
 ### 3.3. Verificar integridad en el VPS
@@ -85,15 +85,15 @@ scp dashboard-af-snapshot-YYYYMMDD-HHmm.sha256   user@vps-host:/tmp/
 ```bash
 ssh user@vps-host
 cd /tmp
-sha256sum -c dashboard-af-snapshot-YYYYMMDD-HHmm.sha256
-# Debe imprimir:  dashboard-af-snapshot-...dump.gz: OK
+sha256sum -c linkstation-snapshot-YYYYMMDD-HHmm.sha256
+# Debe imprimir:  linkstation-snapshot-...dump.gz: OK
 ```
 
 Si dice `FAILED`, avisa a Javi y NO restaures — el archivo se corrompió en tránsito (vuelve a 3.2).
 
 ### 3.4. Identificar el container Postgres en Dokploy
 
-Dokploy nombra sus containers como `<project>-<service>-<id>` o similar. Identifica el del Postgres del proyecto `dashboard-af`:
+Dokploy nombra sus containers como `<project>-<service>-<id>` o similar. Identifica el del Postgres del proyecto `linkstation`:
 
 ```bash
 docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}' | grep -iE "postgres|supabase"
@@ -105,7 +105,7 @@ Si Dokploy gestiona el Postgres como **Database resource** (no como parte de un 
 
 ```bash
 # Dokploy a veces nombra DBs como: <project-name>-postgres-<random>
-docker ps | grep -i "dashboard-af"
+docker ps | grep -i "linkstation"
 ```
 
 ### 3.5. Preparar la BD destino (limpieza si procede)
@@ -122,14 +122,14 @@ docker exec -it $PG_CONTAINER pg_dump -U postgres -d postgres -Fc -f /tmp/pre-re
 docker cp $PG_CONTAINER:/tmp/pre-restore-backup.dump /tmp/
 ```
 
-> ⚠️ **Este flujo es para `dev.automatizaformacion.com`** (entorno de DESARROLLO). Si por error apuntas a una BD de producción, AVISA A JAVI ANTES DE EJECUTAR EL RESTORE.
+> ⚠️ **Este flujo es para `dev.linkstation.ai`** (entorno de DESARROLLO). Si por error apuntas a una BD de producción, AVISA A JAVI ANTES DE EJECUTAR EL RESTORE.
 
 ### 3.6. Ejecutar el `pg_restore` vía docker exec
 
 Este es el comando clave. Pipea el `.dump.gz` directamente al `pg_restore` dentro del container, sin necesidad de copiar el archivo al container ni descomprimir en disco:
 
 ```bash
-gunzip -c /tmp/dashboard-af-snapshot-YYYYMMDD-HHmm.dump.gz | \
+gunzip -c /tmp/linkstation-snapshot-YYYYMMDD-HHmm.dump.gz | \
   docker exec -i $PG_CONTAINER pg_restore \
     -U postgres \
     -d postgres \
@@ -183,16 +183,16 @@ Debe listar al menos `tenants`, `knowledge_base`, `users` con `rowsecurity = tru
 
 ---
 
-## 4. Configurar `dev.automatizaformacion.com` en Dokploy
+## 4. Configurar `dev.linkstation.ai` en Dokploy
 
 Dentro del dashboard Dokploy (`https://<tu-dokploy-host>`):
 
 ### 4.1. Crear/editar el Application del Next.js
 
-1. **Project**: `dashboard-af` (créalo si no existe)
+1. **Project**: `linkstation` (créalo si no existe)
 2. **Application** (servicio Next.js) → tab **General**:
    - **Source**: Git repository
-   - **Repository**: el remote del equipo (NO `renzo1111ia/dashboard-af`, ver memoria/CLAUDE.md)
+   - **Repository**: el remote del equipo (NO `LinkStation/linkstation-dashboard`, ver memoria/CLAUDE.md)
    - **Branch**: `developer` ← MUY IMPORTANTE, no `main` ni `staging`
    - **Build Path**: `/`
    - **Build Type**: Dockerfile / Nixpacks (lo que tengas configurado)
@@ -206,19 +206,19 @@ NEXT_PUBLIC_SUPABASE_URL=https://<supabase-vps-host-o-internal>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key-del-supabase-vps>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key-del-supabase-vps>
 DATABASE_URL=postgresql://postgres:<password>@<postgres-host-interno>:5432/postgres
-NEXT_PUBLIC_APP_URL=https://dev.automatizaformacion.com
+NEXT_PUBLIC_APP_URL=https://dev.linkstation.ai
 NODE_ENV=production
 ```
 
 > **Cómo obtener las keys de Supabase**: en Dokploy, si tienes Supabase desplegado como Compose, las keys están en su `docker-compose.yml` o en el Environment del servicio `auth`/`rest`. Si tu Postgres NO está dentro de un stack Supabase completo (solo Postgres pelado), avisa — el plan original asume Supabase completo (no solo Postgres).
 
-> **Hostname interno**: en Dokploy los servicios se ven entre sí por su nombre de container. Si tu Postgres se llama `dashboard-af-postgres-xyz`, en el DATABASE_URL del Next.js usas ese hostname (sin puerto externo, puerto interno 5432).
+> **Hostname interno**: en Dokploy los servicios se ven entre sí por su nombre de container. Si tu Postgres se llama `linkstation-postgres-xyz`, en el DATABASE_URL del Next.js usas ese hostname (sin puerto externo, puerto interno 5432).
 
 ### 4.3. Dominio
 
 Tab **Domains** del Application:
 
-- **Host**: `dev.automatizaformacion.com`
+- **Host**: `dev.linkstation.ai`
 - **Path**: `/`
 - **Port**: `3000` (o el que exponga tu Next.js)
 - **HTTPS**: ON (Dokploy usa Traefik + Let's Encrypt automático)
@@ -228,7 +228,7 @@ Tab **Domains** del Application:
 DNS previo: en tu proveedor de DNS, crea un registro `A` o `CNAME`:
 
 ```
-dev.automatizaformacion.com    A    <IP-pública-del-VPS-Dokploy>
+dev.linkstation.ai    A    <IP-pública-del-VPS-Dokploy>
 ```
 
 Espera 1–5 min a la propagación + emisión del cert.
@@ -245,14 +245,14 @@ Tab **Deployments** → click **Deploy**. Mira los logs:
 
 ```bash
 # Desde tu máquina local
-curl -I https://dev.automatizaformacion.com
+curl -I https://dev.linkstation.ai
 # Debe responder: HTTP/2 200  o  HTTP/2 307 (redirect a /login)
 
 # Si responde 502/503 → el container del Next.js no está arriba todavía. Espera 30s y reintenta.
 # Si responde 404 → revisa Domains config (Host correcto, Port correcto).
 ```
 
-Abre en navegador `https://dev.automatizaformacion.com` y comprueba:
+Abre en navegador `https://dev.linkstation.ai` y comprueba:
 
 - Carga la home / login.
 - Login con un usuario demo (Javi te dirá cuál tras el restore).
@@ -264,11 +264,11 @@ Abre en navegador `https://dev.automatizaformacion.com` y comprueba:
 
 ```bash
 # En el VPS
-rm /tmp/dashboard-af-snapshot-*.dump.gz
-rm /tmp/dashboard-af-snapshot-*.sha256
+rm /tmp/linkstation-snapshot-*.dump.gz
+rm /tmp/linkstation-snapshot-*.sha256
 # (Mantén /tmp/pre-restore-backup.dump si lo hiciste, por si acaso 1-2 días)
 
-# Avisa a Javi: "Restore OK en VPS, BD operativa en dev.automatizaformacion.com.
+# Avisa a Javi: "Restore OK en VPS, BD operativa en dev.linkstation.ai.
 #                 Borra tu copia local del .zip"
 ```
 
@@ -284,10 +284,10 @@ Para debugging detallado:
 
 ```bash
 # Listar contenido del dump sin restaurar
-gunzip -c /tmp/dashboard-af-snapshot-*.dump.gz | docker exec -i $PG_CONTAINER pg_restore --list | head -50
+gunzip -c /tmp/linkstation-snapshot-*.dump.gz | docker exec -i $PG_CONTAINER pg_restore --list | head -50
 
 # Restaurar SOLO una tabla concreta (útil para diagnosticar tabla problemática)
-gunzip -c /tmp/dashboard-af-snapshot-*.dump.gz | \
+gunzip -c /tmp/linkstation-snapshot-*.dump.gz | \
   docker exec -i $PG_CONTAINER pg_restore \
     -U postgres -d postgres \
     --no-owner --no-privileges \

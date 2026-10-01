@@ -1,4 +1,4 @@
----
+﻿---
 title: "Sprint 2B — Phase 07B — E2E Manual Bloques B-G (post-fix alturas)"
 status: in_progress
 priority: P2
@@ -15,13 +15,13 @@ last_updated: 25-05-2026
 
 - Bloque A (cerrado): commits `7da995c`, `5d9ddcf`, `a5c444b`, `4c720e1`, `7cfc976`. Suite Playwright sprint-2b-close 18/18 ✅ local + VPS.
 - Fix de alturas validado: `docs/screenshots/verificacion-alturas-25-05-2026-VPS-overview-fixed.png` (4 cards Overview = 389px).
-- Versión actual: v0.2.8 desplegada en VPS `dev.automatizaformacion.com`. Posible bump a v0.2.9 al cerrar este phase.
+- Versión actual: v0.2.8 desplegada en VPS `dev.linkstation.ai`. Posible bump a v0.2.9 al cerrar este phase.
 - Política CLOSE-3 diferido a SP-4B (CLAUDE.md): este phase ADELANTA el bloque manual al sprint actual a petición explícita del usuario 25-05-2026.
 
 ## Overview
 
 **Priority:** P2 (validación adicional pre-bump v0.2.9, no bloqueante para promote staging).
-**Brief:** Validación manual cross-funcional con cobertura máxima. 6 bloques (B-G), ~3h 30min total. Ejecutados en VPS `dev.automatizaformacion.com` con sesión admin (`automatizaformacion@gmail.com / BeaOli#AF*2026!`).
+**Brief:** Validación manual cross-funcional con cobertura máxima. 6 bloques (B-G), ~3h 30min total. Ejecutados en VPS `dev.linkstation.ai` con sesión admin (`LinkStation@gmail.com / BeaOli#AF*2026!`).
 
 ## Pre-requisitos
 

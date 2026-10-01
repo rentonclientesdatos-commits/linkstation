@@ -1,4 +1,4 @@
-# Zoho CRM Multi-DC + OAuth Refresh — Research Report
+﻿# Zoho CRM Multi-DC + OAuth Refresh — Research Report
 
 **Date:** 2026-05-24
 **Scope:** Multi-datacenter URL mapping, OAuth refresh peculiarities, scopes, rate limits, search API, Blueprints, bugs in current adapter.
@@ -78,7 +78,7 @@ Refresh tokens are **NOT cross-DC**. A refresh_token issued by `accounts.zoho.eu
 
 ## 3. OAuth 2.0 Scopes
 
-### Minimal scope set for dashboard-af operations
+### Minimal scope set for linkstation operations
 
 ```
 ZohoCRM.modules.leads.ALL
@@ -522,7 +522,7 @@ The encrypted token store (AES-256-GCM, `token-crypto.ts`) must persist `account
 
 1. **Which Zoho editions do tenants use?** Free (5k credits/day) is very limiting for automation-heavy workflows. This affects whether the adapter needs aggressive credit budgeting.
 
-2. **Are tenants expected to be in multiple DCs?** If dashboard-af is Spain-only, EU DC dominates. If Latam → US DC. Knowing this helps prioritize DC support order.
+2. **Are tenants expected to be in multiple DCs?** If linkstation is Spain-only, EU DC dominates. If Latam → US DC. Knowing this helps prioritize DC support order.
 
 3. **Custom modules in scope?** The adapter hardcodes `Leads`. If any tenant tracks alumnos in a custom module (e.g., `Alumnos__c`), the module name needs to be per-tenant config.
 

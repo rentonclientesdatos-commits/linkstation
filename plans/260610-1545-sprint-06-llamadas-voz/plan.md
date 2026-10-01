@@ -1,4 +1,4 @@
----
+﻿---
 title: "Sprint 6 — Llamadas de Voz (v0.6.0)"
 plan_id: 260610-1545-sprint-06-llamadas-voz
 status: PLANNED
@@ -16,7 +16,7 @@ relates_to:
 
 # Sprint 6 — Llamadas de Voz (v0.6.0)
 
-> CRM comercial dashboard-af. Sprint dedicado a llevar el canal **voz** a paridad
+> CRM comercial linkstation. Sprint dedicado a llevar el canal **voz** a paridad
 > funcional con WhatsApp en la experiencia de inbox, métricas y lista de leads.
 > Backend de voz (Retell + Ultravox + webhook + tabla `llamadas`) **ya existe y es real**.
 

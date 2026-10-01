@@ -1,5 +1,5 @@
----
-title: "Dev Team Handover — dashboard-af"
+﻿---
+title: "Dev Team Handover — linkstation"
 audience: equipo de desarrollo interno (Esden + Auditor)
 status: LIVING_DOCUMENT
 maintained_by: agente `team-knowledge-keeper` (proactivo) + manager (orquestador)
@@ -7,7 +7,7 @@ date: 20-05-2026
 excluded_from: [staging, main]
 ---
 
-# Dev Team Handover — dashboard-af
+# Dev Team Handover — linkstation
 
 > ⚠️ **Documento vivo**. Lo mantiene el agente `team-knowledge-keeper` proactivamente cada vez que el equipo necesita saber algo nuevo. NO editar directamente sin orden del lead — pide al agente que lo haga.
 >
@@ -42,10 +42,10 @@ Todo lo que el equipo de desarrollo necesita saber para trabajar en este proyect
 
 ## 1. Identidad del proyecto
 
-**dashboard-af** — AI CRM + Workflow Orchestrator multi-tenant para academias formativas (ES + Latam).
+**linkstation** — AI CRM + Workflow Orchestrator multi-tenant para academias formativas (ES + Latam).
 
 - Versión actual: **v0.0.0**.
-- Repositorio: `<configurar remote propio del equipo>` (NUNCA conectar a `renzo1111ia/dashboard-af`).
+- Repositorio: `<configurar remote propio del equipo>` (NUNCA conectar a `LinkStation/linkstation-dashboard`).
 - Rama de trabajo activa: `developer`.
 - Audiencia interna: equipo AF + Auditor (Javier HP).
 
@@ -56,8 +56,8 @@ Todo lo que el equipo de desarrollo necesita saber para trabajar en este proyect
 Ver [docs/dev-onboarding.md](dev-onboarding.md) para el setup completo paso a paso. Resumen mínimo:
 
 ```powershell
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 git checkout developer
 cp .env.example .env.local                # rellena con secretos del vault
 npm install

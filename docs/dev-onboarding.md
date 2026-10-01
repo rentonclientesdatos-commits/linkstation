@@ -1,17 +1,17 @@
----
-title: "Dev Onboarding — dashboard-af"
+﻿---
+title: "Dev Onboarding — linkstation"
 audience: equipo de desarrollo (interno)
 status: vigente
 date: 2026-05-20
 ---
 
-# Dev Onboarding — dashboard-af
+# Dev Onboarding — linkstation
 
 Guía de arranque para cualquier dev que se incorpore al proyecto. Lee esto antes de tocar nada.
 
 ## 1. Qué es este proyecto
 
-dashboard-af — AI CRM + Workflow Orchestrator multi-tenant para academias formativas. Stack: Next.js 16 + React 19 + Supabase (sin ORM nuevo) + Zod + BullMQ + LangChain multi-LLM + Retell/Ultravox + Easypanel. Versión actual: **v0.0.0**.
+linkstation — AI CRM + Workflow Orchestrator multi-tenant para academias formativas. Stack: Next.js 16 + React 19 + Supabase (sin ORM nuevo) + Zod + BullMQ + LangChain multi-LLM + Retell/Ultravox + Easypanel. Versión actual: **v0.0.0**.
 
 Lee [`CLAUDE.md`](../CLAUDE.md) del repo raíz para la visión completa del proyecto y las reglas top-level.
 
@@ -45,8 +45,8 @@ Verifica: `node --version` debe devolver `v22.22.3`.
 ### 2.2 Clonar el repo
 
 ```powershell
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 git checkout developer    # la rama de integración del equipo
 ```
 
@@ -115,7 +115,7 @@ node worker.js
 
 ### 2.7 Credenciales de producción del cliente — política de aislamiento
 
-El equipo de desarrollo del cliente (Automatiza Formación) entregó (22-05-2026) un bundle de credenciales reales de producción en [docs/Docs-entrega-clienta/Estructura/app data doc/env_local_setup.md](./Docs-entrega-clienta/Estructura/app data doc/env_local_setup.md) (folder ignorado por git, regla `.gitignore:64`).
+El equipo de desarrollo del cliente (LinkStation) entregó (22-05-2026) un bundle de credenciales reales de producción en [docs/Docs-entrega-clienta/Estructura/app data doc/env_local_setup.md](./Docs-entrega-clienta/Estructura/app data doc/env_local_setup.md) (folder ignorado por git, regla `.gitignore:64`).
 
 **Política**: estas credenciales **NO** son el entorno local del dev. El local sigue siendo el Supabase Docker self-hosted en `localhost:8100/8200/8300`. La razón:
 
@@ -131,25 +131,25 @@ El equipo de desarrollo del cliente (Automatiza Formación) entregó (22-05-2026
 
 ### 2.8 Credenciales de acceso — admin y root del VPS (actualizado 23-05-2026)
 
-**TL;DR:** desde 23-05-2026 los usuarios `demo@af.local` y `viewer@af.local` están **deprecated**. El único admin oficial es `automatizaformacion@gmail.com`. Las passwords reales NO van a git — están en el vault (`infra/supabase-vps/.vault/`) y/o en `.env.local` de cada dev.
+**TL;DR:** desde 23-05-2026 los usuarios `demo@af.local` y `viewer@af.local` están **deprecated**. El único admin oficial es `LinkStation@gmail.com`. Las passwords reales NO van a git — están en el vault (`infra/supabase-vps/.vault/`) y/o en `.env.local` de cada dev.
 
 #### Admin del dashboard (local + VPS)
 
 | Item             | Valor                                                                                                  |
 | ---------------- | ------------------------------------------------------------------------------------------------------ |
-| Email            | `automatizaformacion@gmail.com`                                                                        |
+| Email            | `LinkStation@gmail.com`                                                                        |
 | Password (local) | en `.env.local` → variable `DEMO_USER_PASSWORD` (escapar `#` con comillas: `DEMO_USER_PASSWORD="..."`) |
 | Password (VPS)   | misma password que local, pídela al lead por canal seguro                                              |
-| Tenant default   | `Automatiza Formación` (`e3ec5649-5d75-4917-89f3-4b75dfceac54` en local)                               |
+| Tenant default   | `LinkStation` (`e3ec5649-5d75-4917-89f3-4b75dfceac54` en local)                               |
 | Rol              | admin (`user_metadata.is_admin=true`)                                                                  |
 | URL local        | <http://localhost:8500/login>                                                                          |
-| URL VPS          | <https://dev.automatizaformacion.com/login>                                                            |
+| URL VPS          | <https://dev.linkstation.ai/login>                                                            |
 
 **Script reutilizable** para (re)crear este usuario en cualquier instancia Supabase:
 
 ```bash
 # LOCAL (lee .env.local automáticamente)
-NEW_ADMIN_EMAIL="automatizaformacion@gmail.com" \
+NEW_ADMIN_EMAIL="LinkStation@gmail.com" \
 NEW_ADMIN_PASSWORD='BeaOli#AF*2026!' \
 npx tsx scripts/set-admin-user.ts
 
@@ -157,7 +157,7 @@ npx tsx scripts/set-admin-user.ts
 # vía proxy/tunnel; el Supabase del VPS NO está expuesto públicamente)
 SUPABASE_URL_OVERRIDE="http://supabase-kong:8000" \
 SUPABASE_SERVICE_ROLE_KEY_OVERRIDE="<service_role_key del vault dev-dash-envs.env>" \
-NEW_ADMIN_EMAIL="automatizaformacion@gmail.com" \
+NEW_ADMIN_EMAIL="LinkStation@gmail.com" \
 NEW_ADMIN_PASSWORD='BeaOli#AF*2026!' \
 npx tsx scripts/set-admin-user.ts
 ```
@@ -176,7 +176,7 @@ El script:
 #### Root SSH del VPS Hetzner
 
 - Host: `46.62.193.169` (puerto 22, user `root`).
-- Auth recomendado: SSH key ed25519 en `infra/supabase-vps/.vault/dashboard-af-vps-key` (gitignored). Public key fingerprint `SHA256:mOKxnaoIXOpRamauhLjkT9ADOeoE3D3i3Pr9JI49MiE`. Si tu dev no la tiene registrada en `/root/.ssh/authorized_keys` del VPS, pide al lead que la añada vía Hetzner Cloud Console (Server → tab Rescue/Console).
+- Auth recomendado: SSH key ed25519 en `infra/supabase-vps/.vault/linkstation-vps-key` (gitignored). Public key fingerprint `SHA256:mOKxnaoIXOpRamauhLjkT9ADOeoE3D3i3Pr9JI49MiE`. Si tu dev no la tiene registrada en `/root/.ssh/authorized_keys` del VPS, pide al lead que la añada vía Hetzner Cloud Console (Server → tab Rescue/Console).
 - Helper: `bash infra/supabase-vps/scripts/ssh-vps.sh "<cmd>"` o sin argumentos para sesión interactiva. El script auto-detecta OpenSSH (con key) o plink (con password fallback).
 - **Reset password root**: la password actual del root vive en el vault `infra/supabase-vps/.vault/ssh-vps.env` → `VPS_PASSWORD`. Fue **reseteada el 23-05-2026 12:30** vía panel Hetzner → Rescue → Reset Root Password (la anterior `qT6lEE8p7*Nd` no coincidía con `/etc/shadow`). Si la SSH key se pierde, se entra por la consola KVM web de Hetzner con esta password.
 - **NO hardcodear** ninguna de estas credenciales en código, README, docs commiteables, ni commit messages.
@@ -298,6 +298,6 @@ Cada dev puede tener su propia política, pero el proyecto recomienda:
 
 ---
 
-**Última actualización**: 23-05-2026 (sección 2.8 — admin único `automatizaformacion@gmail.com` + nota password root VPS).
+**Última actualización**: 23-05-2026 (sección 2.8 — admin único `LinkStation@gmail.com` + nota password root VPS).
 **Mantenedor**: Javier HP (Auditor).
 **Contacto**: admin@2you.ai.

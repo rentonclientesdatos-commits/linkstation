@@ -1,4 +1,4 @@
-# Pendientes post-/clear — Sprint 4 SPIKE-PULL-8 E2E real
+﻿# Pendientes post-/clear — Sprint 4 SPIKE-PULL-8 E2E real
 
 > **Generado**: 03-06-2026 ~12:00 GMT+2, sesión maratón Sprint 4 cierre OAuth real.
 > **Próxima sesión**: leer este fichero PRIMERO + memoria `MEMORY.md`.
@@ -23,7 +23,7 @@ id=ae023cc1-b68c-4b3c-ba7a-50e7abb7fa7e
 crm_type=google_sheets, is_active=true
 has_cid=t, has_secret=t (cifrados AES-256)
 has_tokens=t (access+refresh cifrados)
-connected_email=automatizaformacion@gmail.com
+connected_email=LinkStation@gmail.com
 
 -- sheet_connection:
 id=4fc3188b-9587-4d43-a6db-d408c2ed1f91
@@ -48,7 +48,7 @@ writeback_enabled=false (default)
 - OAuth Client ID: `30317895538-0k6qp83dlani3fldn0h1q137634471o3.apps.googleusercontent.com`
 - Client Secret: ver `.secrets/client_secret_dev.json` (NUNCA en git)
 - Picker API Key: ver `.secrets/google-test-account.env` (`GOOGLE_PICKER_API_KEY`, gitignored — NUNCA en git)
-- Test users autorizados: automatizaformacion@gmail.com, info@ai2you.ai, renton.clientes.datos@gmail.com
+- Test users autorizados: LinkStation@gmail.com, info@ai2you.ai, renton.clientes.datos@gmail.com
 
 **Authorized redirect URIs en Google Cloud** (debe estar AMBAS):
 
@@ -60,9 +60,9 @@ writeback_enabled=false (default)
 - 7 columnas: Nombre | Apellidos | Email | Teléfono | Empresa | Cargo | Estado
 - 5 leads ficticios pre-cargados (Ana, Luis, María, Carlos, Sara)
 
-**Usuario admin dashboard**: `automatizaformacion@gmail.com` / `BeaOli#AF*2026!`
+**Usuario admin dashboard**: `LinkStation@gmail.com` / `BeaOli#AF*2026!`
 
-- Tenant default: "Automatiza Formación" (id=521a95da-fdce-48e1-8e53-7255bf039585)
+- Tenant default: "LinkStation" (id=521a95da-fdce-48e1-8e53-7255bf039585)
 - `is_admin=true` en `app_metadata` (ya promoted)
 
 ## 🔧 Commits pendientes en worktree (sin pushear)

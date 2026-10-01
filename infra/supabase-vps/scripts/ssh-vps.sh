@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-# Helper SSH al VPS Hetzner del proyecto dashboard-af.
+﻿#!/usr/bin/env bash
+# Helper SSH al VPS Hetzner del proyecto linkstation.
 # Usa plink (PuTTY) en Windows porque OpenSSH built-in no acepta password en CLI.
 #
 # Uso:

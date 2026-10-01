@@ -3,7 +3,7 @@
 -- ============================================================================
 -- Cada tenant que use Google Sheets como CRM trae su propia app OAuth de
 -- Google Cloud Console (decision arquitectonica 27-05-2026). Esto evita que
--- todos los tenants compartan la cuota Sheets API de Automatiza Formacion y
+-- todos los tenants compartan la cuota Sheets API de LinkStation y
 -- elimina la necesidad de OAuth Verification de Google para la app central.
 --
 -- Modelo:

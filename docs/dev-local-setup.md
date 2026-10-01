@@ -1,5 +1,5 @@
----
-title: "Setup Local — dashboard-af"
+﻿---
+title: "Setup Local — linkstation"
 audience: dev team
 status: vigente
 date: 2026-05-21

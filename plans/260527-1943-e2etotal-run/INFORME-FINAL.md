@@ -1,11 +1,11 @@
-# INFORME FINAL — /e2etotal smoke focal VPS (run 260527-1943)
+﻿# INFORME FINAL — /e2etotal smoke focal VPS (run 260527-1943)
 
 **Inicio:** 2026-05-27 19:43 UTC
 **Cierre:** 2026-05-27 20:25 UTC
 **Duración total:** ~42 min
 **Operator:** Claude (Sonnet)
 **Modo:** smoke focal (--only-fase 00,01,02,05,08)
-**Env:** `vps` (`https://dev.automatizaformacion.com`)
+**Env:** `vps` (`https://dev.linkstation.ai`)
 **Resultado:** 🟡 **PASS con warnings**
 
 ## Cabecera
@@ -41,7 +41,7 @@
 | ID                                                     | Severity | Surface         | Acción                                                                                                                                      |
 | ------------------------------------------------------ | -------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `E2E-260527-001-MED-vps-version-empty`                 | MED      | Infra Dokploy   | **YA CONOCIDO** — RoadMap nota `SP-4-NEW-13`. Acción usuario panel Dokploy Build Args.                                                      |
-| `E2E-260527-002-HIGH-vps-deploy-41d429c-pendiente`     | HIGH     | Infra Dokploy   | **NUEVO** — verificar autodeploy en `panel.automatizaformacion.com`. Lanzar build manual si no se disparó. Re-correr Fase 01.A tras deploy. |
+| `E2E-260527-002-HIGH-vps-deploy-41d429c-pendiente`     | HIGH     | Infra Dokploy   | **NUEVO** — verificar autodeploy en `panel.linkstation.ai`. Lanzar build manual si no se disparó. Re-correr Fase 01.A tras deploy. |
 | `E2E-260527-003-MED-crm-webhook-leak-validation-order` | MED      | S3 Webhook HMAC | **NUEVO** — invertir orden validación firma↔tenant en `src/app/api/webhooks/crm/route.ts`. Sprint 4 post-MVP.                               |
 
 ### Cerrados in-session
@@ -71,7 +71,7 @@ Ninguno (los bugs detectados requieren acción usuario o sprint dedicado, no fix
 
 ### Prioridad ALTA (bloqueante para próximo cierre)
 
-- [ ] **Verificar autodeploy Dokploy** de `41d429c` en `panel.automatizaformacion.com` (login `hola@automatizaformacion.com`). Si no se disparó, lanzar build manual del servicio `dev.dash`.
+- [ ] **Verificar autodeploy Dokploy** de `41d429c` en `panel.linkstation.ai` (login `hola@linkstation.ai`). Si no se disparó, lanzar build manual del servicio `dev.dash`.
 - [ ] **Re-correr Fase 01.A** tras deploy confirmado para validar rate-limit en producción.
 
 ### Prioridad MEDIA (próximo sprint)

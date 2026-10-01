@@ -1,4 +1,4 @@
-# dashboard-af — E2E Runs History
+﻿# linkstation — E2E Runs History
 
 > Histórico acumulativo de ejecuciones del plan E2E Full (ver [`e2e-full-test-plan.md`](./e2e-full-test-plan.md)).
 >
@@ -353,7 +353,7 @@
 - **Pg-meta REST con service_role**: el sandbox classifier puede bloquear queries SQL arbitrarias sobre VPS por considerar "shared production read". Usar para verificaciones estructurales mínimas (RLS habilitada, count tablas) — para queries profundas, pedir autorización explícita al usuario.
 - **Webhooks fail-closed**: el patrón `503 not configured` cuando secret vacío es defensivo correcto. Mantener este comportamiento como invariant en futuros endpoints webhook.
 - **2026-05-27 run barrido**: Detectado patrón sistémico — varios handlers (`webhooks/whatsapp`, `cron/appointments/reminders`, `leads/ingest`) inicializan dependencias externas (Redis/BullMQ) antes de validar auth/firma. Vigilar en runs futuros si se introduce un cuarto caso.
-- **2026-05-27 run barrido**: CSP `connect-src` no contempla URLs de entornos dev/VPS (`localhost:8100`, `127.0.0.1:8100`, `dev.automatizaformacion.com`). Bug raíz que oculta otros bugs en client-side. Verificar en cada bump de plan que las URLs target están en CSP.
+- **2026-05-27 run barrido**: CSP `connect-src` no contempla URLs de entornos dev/VPS (`localhost:8100`, `127.0.0.1:8100`, `dev.linkstation.ai`). Bug raíz que oculta otros bugs en client-side. Verificar en cada bump de plan que las URLs target están en CSP.
 - **2026-05-27 run barrido**: Modo barrido (~17min) es 10x más rápido que CRUD completo (~3h) y detectó 9 bugs significativos. Útil como pre-screen antes de invertir en CRUD completo.
 
 ## Convenciones

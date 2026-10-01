@@ -1,4 +1,4 @@
----
+﻿---
 title: "Sprint 3 — Phase 03 — Migración Node 20 → 22 LTS"
 status: pending
 priority: P1
@@ -147,7 +147,7 @@ Sin cambios de código de aplicación.
 
 10. **E2C local + E2E VPS:**
     - Smoke en localhost:8500 (recorrido principal).
-    - Smoke en `dev.automatizaformacion.com` (spec `tests/e2e/sprint-2-close/smoke-crm-vps.spec.ts`).
+    - Smoke en `dev.linkstation.ai` (spec `tests/e2e/sprint-2-close/smoke-crm-vps.spec.ts`).
     - Inspección de logs Dokploy: NO debe haber warnings EBADENGINE.
 
 11. **Actualizar memoria** del proyecto (memory/project-stack-runtime.md o equivalente): "Node 22 LTS desde Sprint 3".
@@ -177,7 +177,7 @@ Sin cambios de código de aplicación.
 
 - `node --version` en local devuelve `v22.13.x` (o superior 22 LTS).
 - Logs Dokploy build NO contienen `npm warn EBADENGINE`.
-- VPS `dev.automatizaformacion.com` sirve correctamente todas las rutas (smoke E2E verde).
+- VPS `dev.linkstation.ai` sirve correctamente todas las rutas (smoke E2E verde).
 - `lint-staged@17` activo, pre-commit hook funciona sin warnings.
 - `.nvmrc` selecciona automáticamente la versión correcta para devs con auto-switch.
 

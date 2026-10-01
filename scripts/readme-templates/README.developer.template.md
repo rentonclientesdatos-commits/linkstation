@@ -1,8 +1,8 @@
-# dashboard-af
+﻿# LinkStation
 
 > **Versión:** {{PROJECT_VERSION}} &nbsp;·&nbsp; **Actualizado:** {{LAST_UPDATED}}
 
-AI CRM + Workflow Orchestrator multi-tenant para academias formativas. Sistema que orquesta flujos de captación, cualificación y conversión de leads mediante agentes de IA conversacional (voz + chat), sincronización bidireccional con CRMs (HubSpot, Zoho) y paneles de gestión por tenant.
+AI CRM + Workflow Orchestrator SaaS multi-tenant. Plataforma integral de gestión de llamadas IA, agendamiento y contactabilidad para cualquier tipo de negocio.
 
 ---
 
@@ -25,8 +25,8 @@ AI CRM + Workflow Orchestrator multi-tenant para academias formativas. Sistema q
 
 ```bash
 # 1. Clonar y entrar al proyecto
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 git checkout developer
 
 # 2. Variables de entorno
@@ -49,7 +49,7 @@ npm run dev
 ## Estructura del proyecto (resumida)
 
 ```
-dashboard-af/
+linkstation/
 ├── src/                    # Código fuente (Next.js App Router)
 │   ├── app/                # Rutas y API routes
 │   ├── lib/                # Lógica de negocio, repositories, schemas Zod

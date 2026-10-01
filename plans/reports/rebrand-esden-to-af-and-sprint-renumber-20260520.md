@@ -1,4 +1,4 @@
-# Rebrand esden→af y renumeración de sprints A-E → 0-4
+﻿# Rebrand esden→af y renumeración de sprints A-E → 0-4
 
 **Fecha:** 20-05-2026  
 **Rama:** `auditoria`  
@@ -87,13 +87,13 @@ Sustituciones aplicadas en todos los archivos excepto `docs/Docs-entrega-clienta
 | Antes | Después |
 |-------|---------|
 | `esden-agents` | `af-agents` |
-| `dashboard-esden` | `dashboard-af` |
+| `dashboard-esden` | `linkstation` |
 | `esden-deps-guard` | `af-deps-guard` |
 | `esden-roadmap-check` | `af-roadmap-check` |
 | `esden-stop-checkpoint` | `af-stop-checkpoint` |
 | `esden-task-tracker` | `af-task-tracker` |
 | `Esden Agents` | `AF Agents` |
-| `equipo de desarrollo Esden` | `equipo de desarrollo Automatiza Formación` |
+| `equipo de desarrollo Esden` | `equipo de desarrollo LinkStation` |
 | `adaptados a Esden` | `adaptados a AF` |
 | `esden-tenant-id` (cookie) | `af-tenant-id` |
 | `x-esden-tenant` (header) | `x-af-tenant` |

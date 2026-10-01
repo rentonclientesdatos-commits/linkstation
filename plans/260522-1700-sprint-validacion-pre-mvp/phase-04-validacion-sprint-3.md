@@ -1,4 +1,4 @@
-# Fase 04 — Validación Sprint 3 (Hardening — release candidate v0.3.0-rc.1)
+﻿# Fase 04 — Validación Sprint 3 (Hardening — release candidate v0.3.0-rc.1)
 
 > **Auto-fill completado 29-05-2026** en SP-4-CLOSE-1/1.5/2 por `roadmap-keeper`. Specs exactas, BUG-SEC detectados, vars VPS y notas deploy actualizados desde los resultados reales del cierre.
 
@@ -118,15 +118,15 @@ npx playwright test tests/e2e/a11y/   # si existe directorio a11y
 
 Esperado: 0 violations critical. Los 3 bugs WCAG (BUG-2B-08/09/10) están resueltos en Sprint 3.
 
-## 3. Test E2E VPS (Playwright contra `dev.automatizaformacion.com`)
+## 3. Test E2E VPS (Playwright contra `dev.linkstation.ai`)
 
 ```bash
-PLAYWRIGHT_BASE_URL=https://dev.automatizaformacion.com npx playwright test
+PLAYWRIGHT_BASE_URL=https://dev.linkstation.ai npx playwright test
 ```
 
 ### 3.1 Headers de seguridad (phase-05 Sprint 3)
 
-Validar con `curl -I https://dev.automatizaformacion.com`:
+Validar con `curl -I https://dev.linkstation.ai`:
 
 - [ ] `Content-Security-Policy` presente (CSP completo con LLM/Supabase/Sentry/CRM whitelisted)
 - [ ] `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
@@ -144,10 +144,10 @@ Validar con `curl -I https://dev.automatizaformacion.com`:
 ### 3.3 Endpoints /api/health + /api/version (SP-4-NEW-13)
 
 ```bash
-curl https://dev.automatizaformacion.com/api/health
+curl https://dev.linkstation.ai/api/health
 # {"status":"ok","timestamp":"..."}
 
-curl https://dev.automatizaformacion.com/api/version
+curl https://dev.linkstation.ai/api/version
 # {"version":"v0.3.0-rc.1","commit":"<sha>","branch":"feature/sprint-03-hardening","deployedAt":"...","nodeVersion":"v22.x.x"}
 ```
 
@@ -256,7 +256,7 @@ Confirmar que todas estén configuradas en el panel Dokploy tab **Environment** 
 ## 8. Notas de despliegue (Dokploy)
 
 1. **Dockerfile cambia a `node:22-alpine`** (3 stages). Dokploy debe hacer **Clean Cache OBLIGATORIO** en el próximo deploy para que Node 22 se instale correctamente (native deps precompilados para Node 20 son incompatibles).
-2. **Migración SQL campaigns + holidays**: `supabase/migrations/20260526100000_campaigns_and_holidays.sql` — aplicar al VPS vía pg-meta REST (`POST https://dev.automatizaformacion.com/supabase/pg/query`) antes del primer acceso a esas tablas.
+2. **Migración SQL campaigns + holidays**: `supabase/migrations/20260526100000_campaigns_and_holidays.sql` — aplicar al VPS vía pg-meta REST (`POST https://dev.linkstation.ai/supabase/pg/query`) antes del primer acceso a esas tablas.
 3. **Build Args en Dokploy**: añadir `GIT_COMMIT_SHA`, `GIT_BRANCH`, `BUILD_TIMESTAMP` como Build Args para que `/api/version` devuelva valores reales (no `"unknown"`).
 4. **SUPABASE_SERVICE_ROLE_KEY**: verificar que está en tab Environment (no Build Args) — cambio de Sprint 3 SP-4-DEPRECATIONS-DEPLOY.
 5. **Sentry setup**: si no está configurado, crear proyecto en Sentry.io, obtener DSN, añadir `SENTRY_DSN` en Environment. Sin DSN Sentry funciona silenciosamente (no lanza errores).
@@ -272,7 +272,7 @@ Confirmar que todas estén configuradas en el panel Dokploy tab **Environment** 
 | -------------------------------- | --------------------------------------------------------------------------- |
 | 1. Test automático               | 🟢 CLOSE-1 verde: typecheck 0 + lint 0 + build 42 rutas + 236/240 Vitest    |
 | 2. Test E2C local Sprint-3-close | 🟢 CLOSE-2 verde: 14/14 specs                                               |
-| 3. Test E2E VPS                  | 🔘 Pendiente Renzo — ejecutar specs contra `dev.automatizaformacion.com`    |
+| 3. Test E2E VPS                  | 🔘 Pendiente Renzo — ejecutar specs contra `dev.linkstation.ai`    |
 | 4. Test manual                   | 🔘 Pendiente Renzo — checklist Bloques A-D                                  |
 | 5. Hotfixes validación           | 🔘 Plantilla — rellenar durante SP-4B                                       |
 | 6. Bugs regression               | 🟢 Baseline documentado (12 bugs Sprint 3 + 4 BUG-SEC)                      |

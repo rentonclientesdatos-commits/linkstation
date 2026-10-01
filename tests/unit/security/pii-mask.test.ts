@@ -15,7 +15,7 @@ describe("maskEmail (BUG-SEC-03)", () => {
   });
 
   it("preserva el dominio completo (útil para debug)", () => {
-    expect(maskEmail("alice@automatizaformacion.com")).toBe("ali***@automatizaformacion.com");
+    expect(maskEmail("alice@linkstation.ai")).toBe("ali***@linkstation.ai");
   });
 
   it("retorna '***' para email sin @", () => {

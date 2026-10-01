@@ -1,5 +1,5 @@
----
-title: "Rename Guide — dashboard-af → Automatiza Formación Dashboard"
+﻿---
+title: "Rename Guide — linkstation → LinkStation Dashboard"
 audience: Auditor (Javier HP) + lead del equipo
 date: 20-05-2026
 status: pendiente ejecución coordinada
@@ -17,16 +17,16 @@ GitHub no permite espacios en el nombre del repo. Por consistencia, propongo est
 
 | Contexto | Nombre propuesto | Razón |
 | --- | --- | --- |
-| **Repo GitHub (slug oficial)** | `automatiza-formacion-dashboard` | kebab-case, sin espacios, sin acentos (limitación GitHub) |
-| **Carpeta local Windows** | `Automatiza Formacion DashBoard` | Lo que pediste literal. Las comillas funcionan en PowerShell |
-| **Nombre humano / display** | "Automatiza Formación Dashboard" | Con tilde correcta, capitalización natural — para docs, READMEs, headers |
-| **`package.json` name** | `automatiza-formacion-dashboard` | npm exige kebab-case sin acentos |
-| **`.claude-plugin/plugin.json` name** | `automatiza-formacion-agents` | Reemplaza `af-agents`. kebab-case sin acentos |
-| **Namespace de subagentes** | `automatiza-formacion-agents:manager`, etc | Reemplaza `af-agents:*` |
-| **Display interno en docs (markdown)** | "Automatiza Formación Dashboard" | Texto humano |
-| **Identificador corto en código** | `af-dashboard` o `automatizaformacion-dashboard` | Opcional, para logs |
+| **Repo GitHub (slug oficial)** | `linkstation-dashboard` | kebab-case, sin espacios, sin acentos (limitación GitHub) |
+| **Carpeta local Windows** | `LinkStation DashBoard` | Lo que pediste literal. Las comillas funcionan en PowerShell |
+| **Nombre humano / display** | "LinkStation Dashboard" | Con tilde correcta, capitalización natural — para docs, READMEs, headers |
+| **`package.json` name** | `linkstation-dashboard` | npm exige kebab-case sin acentos |
+| **`.claude-plugin/plugin.json` name** | `linkstation-agents` | Reemplaza `af-agents`. kebab-case sin acentos |
+| **Namespace de subagentes** | `linkstation-agents:manager`, etc | Reemplaza `af-agents:*` |
+| **Display interno en docs (markdown)** | "LinkStation Dashboard" | Texto humano |
+| **Identificador corto en código** | `af-dashboard` o `LinkStation-dashboard` | Opcional, para logs |
 
-> ⚠️ **Pregunta abierta**: ¿prefieres mantener el namespace `af-agents:*` por ahorrar 57 reemplazos en docs y código, o lo cambiamos a `automatiza-formacion-agents:*` para ser totalmente coherentes? Te recomiendo cambiarlo — son edits mecánicos y mejor tenerlo limpio desde el principio.
+> ⚠️ **Pregunta abierta**: ¿prefieres mantener el namespace `af-agents:*` por ahorrar 57 reemplazos en docs y código, o lo cambiamos a `linkstation-agents:*` para ser totalmente coherentes? Te recomiendo cambiarlo — son edits mecánicos y mejor tenerlo limpio desde el principio.
 
 **Te pregunto antes de ejecutar el cambio de namespace** porque toca ~24 archivos (agentes, hooks, docs, settings).
 
@@ -38,8 +38,8 @@ GitHub no permite espacios en el nombre del repo. Por consistencia, propongo est
 
 Antes de tocar nada:
 
-- [ ] ¿Carpeta local con espacios `Automatiza Formacion DashBoard` o kebab-case `automatiza-formacion-dashboard`?
-- [ ] ¿Cambio el namespace de subagentes de `af-agents:*` a `automatiza-formacion-agents:*`? (recomendado)
+- [ ] ¿Carpeta local con espacios `LinkStation DashBoard` o kebab-case `linkstation-dashboard`?
+- [ ] ¿Cambio el namespace de subagentes de `af-agents:*` a `linkstation-agents:*`? (recomendado)
 - [ ] ¿Tilde en "Formación" en los textos humanos? (recomendado sí)
 - [ ] ¿El nombre del proyecto en Antigravity lo cambias tú directamente o necesitas que te diga dónde está la config?
 
@@ -50,18 +50,18 @@ A. **Cerrar todas las sesiones de Claude Code / VS Code / Antigravity abiertas e
 B. **Renombrar la carpeta local** (PowerShell):
 
 ```powershell
-cd e:\ClaudeCode\AutomatizaFormacion
+cd e:\ClaudeCode\LinkStation
 # Verifica primero que no queda nada con lock:
-Get-ChildItem -Path "dashboard-af-main" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.PSIsContainer -eq $false } | Select-Object -First 5
+Get-ChildItem -Path "linkstation-main" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.PSIsContainer -eq $false } | Select-Object -First 5
 # Renombrar:
-Rename-Item -Path "dashboard-af-main" -NewName "Automatiza Formacion DashBoard"
+Rename-Item -Path "linkstation-main" -NewName "LinkStation DashBoard"
 # (o si prefieres kebab-case)
-# Rename-Item -Path "dashboard-af-main" -NewName "automatiza-formacion-dashboard"
+# Rename-Item -Path "linkstation-main" -NewName "linkstation-dashboard"
 ```
 
 C. **Renombrar el proyecto en Antigravity**:
 
-Si Antigravity guarda nombre en algún `.json` propio: abrirlo y editar. Si pregunta al abrir la carpeta nueva qué nombre dar al proyecto, ponerle "Automatiza Formación Dashboard". Yo no tengo visibilidad sobre dónde guarda Antigravity esa config — confirmamelo cuando lo hagas.
+Si Antigravity guarda nombre en algún `.json` propio: abrirlo y editar. Si pregunta al abrir la carpeta nueva qué nombre dar al proyecto, ponerle "LinkStation Dashboard". Yo no tengo visibilidad sobre dónde guarda Antigravity esa config — confirmamelo cuando lo hagas.
 
 D. **Cuando termines, abre Claude Code apuntando a la nueva ruta** y dime: "carpeta renombrada, dale".
 
@@ -69,10 +69,10 @@ D. **Cuando termines, abre Claude Code apuntando a la nueva ruta** y dime: "carp
 
 Hago todos los edits internos del repo en una sola tanda:
 
-1. Actualizar `package.json` → `"name": "automatiza-formacion-dashboard"`
+1. Actualizar `package.json` → `"name": "linkstation-dashboard"`
 2. Actualizar `.claude-plugin/plugin.json` → nuevo manifest
-3. Renombrar el namespace de subagentes (si confirmas): `af-agents:*` → `automatiza-formacion-agents:*` en ~24 archivos
-4. Actualizar TODOS los textos humanos: "dashboard-af" → "Automatiza Formación Dashboard"
+3. Renombrar el namespace de subagentes (si confirmas): `af-agents:*` → `linkstation-agents:*` en ~24 archivos
+4. Actualizar TODOS los textos humanos: "linkstation" → "LinkStation Dashboard"
 5. Actualizar `CLAUDE.md` raíz + docs/dev-onboarding.md + docs/dev-team-handover.md + docs/release-process.md + plans/RoadMap.md + docs/audit/* + hooks `.cjs`
 6. Actualizar `.env.example` si tiene refs
 7. Actualizar scripts `promote.ps1` + `promote.sh` si referencian nombre antiguo
@@ -95,8 +95,8 @@ npm run dev              # debe arrancar sin errores con el nuevo nombre
 
 | Archivo | Qué cambia |
 | --- | --- |
-| `package.json` | `"name": "af-dashboard"` → `"name": "automatiza-formacion-dashboard"` |
-| `.claude-plugin/plugin.json` | `"name": "af-agents"` → `"name": "automatiza-formacion-agents"` + descripción + email author si quieres |
+| `package.json` | `"name": "af-dashboard"` → `"name": "linkstation-dashboard"` |
+| `.claude-plugin/plugin.json` | `"name": "af-agents"` → `"name": "linkstation-agents"` + descripción + email author si quieres |
 | `.claude/settings.json` | Limpiar refs (si hubiera) al nombre antiguo |
 | `.env.example` | Refs en comentarios |
 | `package-lock.json` | Regenerar con `npm install` tras cambio de name |
@@ -137,7 +137,7 @@ npm run dev              # debe arrancar sin errores con el nuevo nombre
 
 ### 3.5 Agentes y hooks (.claude/) (~24 archivos)
 
-Si confirmas cambio de namespace `af-agents` → `automatiza-formacion-agents`:
+Si confirmas cambio de namespace `af-agents` → `linkstation-agents`:
 
 | Archivo | Cambios principales |
 | --- | --- |
@@ -185,19 +185,19 @@ Te recomiendo SÍ renombrar los hooks (coherencia total). Confirmar.
 
 | Archivo | Cambios |
 | --- | --- |
-| `~/.claude/projects/e--ClaudeCode-AutomatizaFormacion-dashboard-af-main/memory/MEMORY.md` | La carpeta `projects/` de Claude Code está nombrada según la ruta. Cuando renombres la carpeta del repo, Claude Code creará una nueva entrada `projects/...Automatiza-Formacion-DashBoard/`. **Hay que mover los `.md` de memoria a esa nueva ubicación** para no perderlos. Yo te lo hago. |
+| `~/.claude/projects/e--ClaudeCode-LinkStation-linkstation-main/memory/MEMORY.md` | La carpeta `projects/` de Claude Code está nombrada según la ruta. Cuando renombres la carpeta del repo, Claude Code creará una nueva entrada `projects/...linkstation-DashBoard/`. **Hay que mover los `.md` de memoria a esa nueva ubicación** para no perderlos. Yo te lo hago. |
 
 ### 3.9 GitHub repo (cuando lo crees)
 
 | Acción | Cómo |
 | --- | --- |
-| Crear repo nuevo en GitHub | Nombre `automatiza-formacion-dashboard`. Visibilidad **privada**. |
-| Añadir remote local | `git remote add origin https://github.com/<tu-org>/automatiza-formacion-dashboard.git` |
+| Crear repo nuevo en GitHub | Nombre `linkstation-dashboard`. Visibilidad **privada**. |
+| Añadir remote local | `git remote add origin https://github.com/<tu-org>/linkstation-dashboard.git` |
 | Push inicial de `auditoria` | `git push -u origin auditoria` (la rama actual) |
 | Crear `developer`, `staging`, `main` | Como ramas de `auditoria` o vacías |
 | Configurar branch protection | Settings → Branches (según `docs/release-process.md` §5) |
 
-> ⚠️ **NUNCA** añadas remote al GitHub del cliente `renzo1111ia/dashboard-af`. Repo separado del equipo.
+> ⚠️ **NUNCA** añadas remote al GitHub del cliente `LinkStation/linkstation-dashboard`. Repo separado del equipo.
 
 ---
 
@@ -230,7 +230,7 @@ Cuando renombres la carpeta local, Claude Code creará una nueva entrada en `~/.
 ## 6. Reversibilidad
 
 - El rename es **totalmente reversible** mientras no hayas pusheado a GitHub.
-- Si algo sale mal: renombras la carpeta de vuelta a `dashboard-af-main`, revertimos los edits con `git checkout -- .` (en caso de que hayamos commiteado, `git revert`).
+- Si algo sale mal: renombras la carpeta de vuelta a `linkstation-main`, revertimos los edits con `git checkout -- .` (en caso de que hayamos commiteado, `git revert`).
 - Por seguridad: **NO commitees nada durante el proceso de rename**. Hacemos todo el sweep + 1 commit final cuando esté limpio.
 
 ---

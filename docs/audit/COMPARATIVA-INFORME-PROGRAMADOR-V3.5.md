@@ -1,4 +1,4 @@
----
+﻿---
 title: "Comparativa — Informe del Programador v3.5 vs Auditoría Externa"
 date: 2026-05-19
 audience: Cliente
@@ -383,5 +383,5 @@ Las divergencias 3-007 a 3-009 están documentadas con archivo:línea en los rep
 
 **Status:** PUBLISHED
 **Author:** Equipo de auditoría externa
-**Para:** Cliente Automatiza Formación
+**Para:** Cliente LinkStation
 **Fecha:** 2026-05-19

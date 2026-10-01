@@ -14,7 +14,7 @@ import fs from "fs";
  */
 
 // Credenciales: VPS_ADMIN_EMAIL / VPS_ADMIN_PASS (mismas creds local+VPS — alineadas con seed-demo.ts).
-const ADMIN_EMAIL = process.env.VPS_ADMIN_EMAIL ?? "automatizaformacion@gmail.com";
+const ADMIN_EMAIL = process.env.VPS_ADMIN_EMAIL ?? "admin@linkstation.ai";
 const ADMIN_PASS = process.env.VPS_ADMIN_PASS ?? "BeaOli#AF*2026!";
 const VIEWER_EMAIL = "viewer@af.local";
 const VIEWER_PASS = "LJVQaI1Pd51rPv6yxVAI-Aa1!"; // credencial correcta de show-demo-credentials

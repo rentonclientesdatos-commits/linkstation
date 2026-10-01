@@ -1,4 +1,4 @@
-# Incidente 2026-05-27 — PAT GitHub leak + Sheets en sesión paralela
+﻿# Incidente 2026-05-27 — PAT GitHub leak + Sheets en sesión paralela
 
 **Detectado:** 2026-05-27 ~20:36 UTC durante inspección Dokploy para diagnosticar deploy pendiente.
 **Severidad:** CRÍTICO (PAT) + INFORMATIVO (sheets paralelo).
@@ -18,8 +18,8 @@ ghp_<REDACTED-22-CHARS>  [prefijo: ghp_ZYmQ — registrado en vault privado de J
 
 ### Dónde estaba expuesto
 
-1. **Panel Dokploy** — `panel.automatizaformacion.com` → Project "dev automatiza formacion" → Service `dev.dash` → tab General → sección Provider → campo "Repository URL".
-   - URL formato: `https://<PAT>@github.com/AutomatizaFormacion/Automatiza-Formacion-DashBoard.git`
+1. **Panel Dokploy** — `panel.linkstation.ai` → Project "dev LinkStation" → Service `dev.dash` → tab General → sección Provider → campo "Repository URL".
+   - URL formato: `https://<PAT>@github.com/LinkStation/linkstation-dashboard.git`
    - **Cualquier user con acceso al panel Dokploy ve el PAT en plano**.
 2. **Snapshot local Playwright MCP** — `.playwright-mcp/page-2026-05-27T20-36-29-852Z.yml` (en disco local, gitignored).
 3. **Screenshot local** — `plans/260527-2056-e2ctotal-local-run/screenshots/dokploy-05-devdash-service.png` (en disco local, iba a commitear).
@@ -27,7 +27,7 @@ ghp_<REDACTED-22-CHARS>  [prefijo: ghp_ZYmQ — registrado en vault privado de J
 
 ### Lo que un atacante puede hacer con este PAT
 
-- **Clone privado completo** del repo `AutomatizaFormacion/Automatiza-Formacion-DashBoard`.
+- **Clone privado completo** del repo `LinkStation/linkstation-dashboard`.
 - **Push a cualquier rama** (incluyendo `main`, `developer`, `staging`).
 - **Acceso a secretos commited históricamente** (revisar git log buscando `.env`, keys, etc.).
 - **Crear releases, tags, eliminar ramas**.

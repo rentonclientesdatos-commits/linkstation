@@ -1,5 +1,5 @@
 # =============================================================================
-# Supabase self-hosted para VPS Dokploy (dev.automatizaformacion.com)
+# Supabase self-hosted para VPS Dokploy (dev.linkstation.ai)
 # =============================================================================
 # Mismas versiones que Supabase local (verificado 2026-05-23):
 #   postgres:17.6.1.106   gotrue:v2.188.1   kong:2.8.1
@@ -7,7 +7,7 @@
 #   studio:2026.04.28     postgres-meta:v0.96.4
 #
 # Uso en Dokploy:
-#   1. Project "dev automatiza formacion" → Create Service → tipo "Compose"
+#   1. Project "linkstation" → Create Service → tipo "Compose"
 #   2. Source: Git (apuntando a este repo, branch developer, path /infra/supabase-vps/)
 #      O alternativa: Source: Raw → pegar contenido inline
 #   3. Environment del Compose → pegar TODAS las env vars del bloque "REQUIRED ENVS" abajo
@@ -28,9 +28,9 @@
 #   DASHBOARD_PASSWORD=<del vault>
 #   VAULT_ENC_KEY=<del vault>
 #   SECRET_KEY_BASE=<del vault>
-#   SITE_URL=https://dev.automatizaformacion.com
-#   API_EXTERNAL_URL=https://supabase.automatizaformacion.com
-#   STUDIO_URL=https://studio.automatizaformacion.com
+#   SITE_URL=https://dev.linkstation.ai
+#   API_EXTERNAL_URL=https://supabase.linkstation.ai
+#   STUDIO_URL=https://studio.linkstation.ai
 #   POSTGRES_HOST=supabase-db
 #   POSTGRES_DB=postgres
 #   POSTGRES_PORT=5432
@@ -124,7 +124,7 @@ services:
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
 
       GOTRUE_SITE_URL: ${SITE_URL}
-      GOTRUE_URI_ALLOW_LIST: ${SITE_URL},https://dev.automatizaformacion.com,http://localhost:8500
+      GOTRUE_URI_ALLOW_LIST: ${SITE_URL},https://dev.linkstation.ai,http://localhost:8500
       GOTRUE_DISABLE_SIGNUP: "false"
 
       GOTRUE_JWT_ADMIN_ROLES: service_role
@@ -267,7 +267,7 @@ services:
     networks: [supabase-net]
 
   # ===========================================================================
-  # Studio — UI admin de Supabase (acceso vía https://studio.automatizaformacion.com)
+  # Studio — UI admin de Supabase (acceso vía https://studio.linkstation.ai)
   # ===========================================================================
   supabase-studio:
     image: public.ecr.aws/supabase/studio:2026.04.28-sha-89d08a2
@@ -284,8 +284,8 @@ services:
     environment:
       STUDIO_PG_META_URL: http://supabase-meta:8080
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      DEFAULT_ORGANIZATION_NAME: "Automatiza Formación"
-      DEFAULT_PROJECT_NAME: "dashboard-af"
+      DEFAULT_ORGANIZATION_NAME: "LinkStation"
+      DEFAULT_PROJECT_NAME: "linkstation"
       SUPABASE_URL: http://supabase-kong:8000
       SUPABASE_PUBLIC_URL: ${API_EXTERNAL_URL}
       SUPABASE_ANON_KEY: ${ANON_KEY}
@@ -320,14 +320,14 @@ services:
     entrypoint: bash -c 'eval "echo \"$$(cat ~/temp.yml)\"" > ~/kong.yml && /docker-entrypoint.sh kong docker-start'
     networks: [supabase-net, dokploy-network]
     # =========================================================================
-    # Traefik labels — publicar Kong bajo path-prefix dev.automatizaformacion.com/supabase
+    # Traefik labels — publicar Kong bajo path-prefix dev.linkstation.ai/supabase
     # Resuelve el bug "dev.dash no resuelve supabase-kong por DNS Swarm overlay"
     # exponiendo Kong vía la traefik del cluster Dokploy (que SÍ es resolvable
     # tanto desde dev.dash como desde el navegador del usuario).
     #
     # Beneficios vs subdominio dedicado:
     #   - Same-origin con dev.dash → cero CORS, cookies Supabase comparten dominio
-    #   - Reusa el cert Let's Encrypt ya emitido para dev.automatizaformacion.com
+    #   - Reusa el cert Let's Encrypt ya emitido para dev.linkstation.ai
     #   - No requiere registro DNS adicional
     #
     # priority=100 fuerza que esta ruta gane vs el catch-all de dev.dash.
@@ -340,7 +340,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.supabase-kong.rule=Host(`dev.automatizaformacion.com`) && PathPrefix(`/supabase`)"
+      - "traefik.http.routers.supabase-kong.rule=Host(`dev.linkstation.ai`) && PathPrefix(`/supabase`)"
       - "traefik.http.routers.supabase-kong.entrypoints=websecure"
       - "traefik.http.routers.supabase-kong.tls=true"
       - "traefik.http.routers.supabase-kong.tls.certresolver=letsencrypt"

@@ -1,7 +1,7 @@
-# Runbook — Recuperación VPS Dokploy cuando los dominios dan `ERR_CONNECTION_REFUSED`
+﻿# Runbook — Recuperación VPS Dokploy cuando los dominios dan `ERR_CONNECTION_REFUSED`
 
-> **Cuándo usar este runbook:** ningún dominio (`dev.automatizaformacion.com`, `/supabase`, `test.*`)
-> responde por HTTPS, pero el panel SÍ carga en `http://panel.automatizaformacion.com:3000`.
+> **Cuándo usar este runbook:** ningún dominio (`dev.linkstation.ai`, `/supabase`, `test.*`)
+> responde por HTTPS, pero el panel SÍ carga en `http://panel.linkstation.ai:3000`.
 > Síntoma raíz: **Traefik (reverse proxy) caído** y/o stack Supabase parado.
 >
 > Origen: incidente 09-06-2026. Tras un crash masivo de contenedores, solo sobrevivían la app
@@ -14,9 +14,9 @@
 
 | Comprobación                                          | Si...                       | Entonces                                     |
 | ----------------------------------------------------- | --------------------------- | -------------------------------------------- |
-| `http://panel.automatizaformacion.com:3000` carga     | ✅                          | El servidor vive, el panel vive (Dokploy OK) |
-| `https://dev.automatizaformacion.com/`                | ❌ `ERR_CONNECTION_REFUSED` | Traefik no sirve 443                         |
-| `https://dev.automatizaformacion.com/supabase/`       | ❌ `ERR_CONNECTION_REFUSED` | NO es la app, es Traefik (afecta a TODO)     |
+| `http://panel.linkstation.ai:3000` carga     | ✅                          | El servidor vive, el panel vive (Dokploy OK) |
+| `https://dev.linkstation.ai/`                | ❌ `ERR_CONNECTION_REFUSED` | Traefik no sirve 443                         |
+| `https://dev.linkstation.ai/supabase/`       | ❌ `ERR_CONNECTION_REFUSED` | NO es la app, es Traefik (afecta a TODO)     |
 | Panel → Docker → no aparece `traefik` ni `supabase-*` | ❌                          | Contenedores caídos                          |
 
 Si encaja → seguir este runbook.
@@ -92,7 +92,7 @@ Si Traefik arranca pero **no publica 80/443**, el problema es el firewall del VP
 
 Forma recomendada — **desde el panel Dokploy** (más seguro que tocar compose a mano):
 
-1. `panel.automatizaformacion.com:3000` → Projects → proyecto **dev automatiza formacion**.
+1. `panel.linkstation.ai:3000` → Projects → proyecto **dev LinkStation**.
 2. Tarjeta **supabase** → entrar → **Deploy** (o Redeploy).
 3. Esperar a que los contenedores `supabase-*` pasen a **Running (Healthy)**.
    - `supabase-db` y `supabase-kong` Healthy son los críticos.
@@ -101,7 +101,7 @@ Forma recomendada — **desde el panel Dokploy** (más seguro que tocar compose 
 Equivalente por terminal (si el panel no responde):
 
 ```bash
-cd /etc/dokploy/compose/dev-automatiza-formacion-supabase-*/code
+cd /etc/dokploy/compose/dev-linkstation-supabase-*/code
 docker compose -f infra/supabase-vps/docker-compose.yml up -d
 ```
 
@@ -137,7 +137,7 @@ schema `realtime` (sin guion bajo), no `_realtime`. La forma correcta de arregla
 `_realtime`):
 
 ```bash
-cd /etc/dokploy/compose/dev-automatiza-formacion-supabase-*/code
+cd /etc/dokploy/compose/dev-linkstation-supabase-*/code
 docker compose -f infra/supabase-vps/docker-compose.yml up -d --force-recreate realtime-dev.supabase-realtime
 ```
 
@@ -174,9 +174,9 @@ docker ps | grep devdash
 
 En el navegador:
 
-1. `https://dev.automatizaformacion.com/supabase/` → debe responder (Kong), NO connection refused.
-2. `https://dev.automatizaformacion.com/api/health` → JSON 200.
-3. `https://dev.automatizaformacion.com/` → login de la app.
+1. `https://dev.linkstation.ai/supabase/` → debe responder (Kong), NO connection refused.
+2. `https://dev.linkstation.ai/api/health` → JSON 200.
+3. `https://dev.linkstation.ai/` → login de la app.
 
 Si los 3 responden → **recuperado.** ✅
 
@@ -184,7 +184,7 @@ Si los 3 responden → **recuperado.** ✅
 
 ## 7. App dev.dash en bucle `Exited (143)`
 
-Si tras todo lo anterior la app `app-automatiza-formacion-devdash-*` sigue reiniciándose:
+Si tras todo lo anterior la app `app-linkstation-devdash-*` sigue reiniciándose:
 
 ```bash
 docker ps -a | grep devdash               # ver cuántos Exited hay

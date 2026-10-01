@@ -1,8 +1,8 @@
-# v0.2.8 — Sprint 2B Dashboard KPIs Overview (vista de conjunto)
+﻿# v0.2.8 — Sprint 2B Dashboard KPIs Overview (vista de conjunto)
 
 ## Resumen
 
-Añade la sección Overview del dashboard con KPIs agregados de todos los canales (WhatsApp + Voz + Web) y 4 gráficos por defecto, configurable vía KPI Builder. Valida end-to-end en el VPS de desarrollo (`https://dev.automatizaformacion.com`) con 15/15 specs Playwright verdes.
+Añade la sección Overview del dashboard con KPIs agregados de todos los canales (WhatsApp + Voz + Web) y 4 gráficos por defecto, configurable vía KPI Builder. Valida end-to-end en el VPS de desarrollo (`https://dev.linkstation.ai`) con 15/15 specs Playwright verdes.
 
 ## Highlights
 
@@ -12,7 +12,7 @@ Añade la sección Overview del dashboard con KPIs agregados de todos los canale
 - KPI Builder opción C: `SummaryManager` reutilizable con prop `editButtonLabel` (Overview / Tablero / Embudo coexisten sin conflictos visuales).
 - Persistencia de `overview_kpis` en `tenant.config` con defense-in-depth (validación Zod en `updateTenant` Y `updateTenantConfig`).
 - WCAG 2.2 AA preventivo: `role="img"` + `aria-label` resumen en todos los charts del Overview.
-- **15/15 specs Playwright verdes contra VPS** (`dev.automatizaformacion.com`) — primer sprint del MVP con cobertura E2E completa contra entorno desplegado.
+- **15/15 specs Playwright verdes contra VPS** (`dev.linkstation.ai`) — primer sprint del MVP con cobertura E2E completa contra entorno desplegado.
 
 ## Detalle por área
 
@@ -71,7 +71,7 @@ NINGUNA. Reutiliza las del Sprint 2.
 - SP-3B-CLOSE-3 — DIFERIDO a SP-4B phase-03b bloque 4 (Renzo + equipo)
 - SP-3B-CLOSE-4 — 3 bugs resueltos (BUG-2B-01, -02, -03)
 - SP-3B-CLOSE-5 — PR #13 + bump v0.2.8 + tag + release notes + hand-off SP-4B
-- E2E VPS — 15/15 specs verdes contra `dev.automatizaformacion.com`
+- E2E VPS — 15/15 specs verdes contra `dev.linkstation.ai`
 
 Subtotal Sprint 2B: **~2h 23min real vs 16h 30min estimado (ratio −86%)**.
 
@@ -96,10 +96,10 @@ NINGUNO nuevo. Sprint puramente aplicación sobre arquitectura ya decidida.
 - **Vitest full local**: 193/193 verdes (4 skipped por env).
 - **Vitest nuevos Sprint 2B**: 24/24 (10 schema overview-kpi + 8 mapper kpi-overview + 6 chart-summary).
 - **Playwright E2C local Sprint 2B**: 15/15 verdes (7 smoke + 8 deep checks).
-- **Playwright E2E VPS Sprint 2B**: **15/15 verdes** contra `https://dev.automatizaformacion.com` (1m 30s total).
+- **Playwright E2E VPS Sprint 2B**: **15/15 verdes** contra `https://dev.linkstation.ai` (1m 30s total).
 - **Typecheck**: ✅ verde.
 - **Build producción local**: ✅ verde.
-- **Build producción VPS (Dokploy)**: ✅ verde — `app-automatiza-formacion-devdash-zwr4mz:latest` desplegado.
+- **Build producción VPS (Dokploy)**: ✅ verde — `app-linkstation-devdash-zwr4mz:latest` desplegado.
 - **Lint**: 116 errores preexistentes (0 nuevos introducidos por Sprint 2B).
 
 ## Contribuidores
@@ -122,7 +122,7 @@ c145491 fix(sprint-2b): remove unused KpiOverviewOutputSchema import in analytic
 941a42a test(sprint-2b): deep E2C checks pre-PR — 15/15 specs verdes
 d97ee44 docs(sprint-2b): PR #13 abierto a developer + RoadMap SP-3B-CLOSE-5 🔵 Subida rama
 b6c49b2 docs(sprint-2b): PR #13 abierto a developer + RoadMap SP-3B-CLOSE-5 a Subida rama
-17b2902 Merge pull request #13 from AutomatizaFormacion/feature/sprint-02b-dashboard-kpis-conjunto
+17b2902 Merge pull request #13 from LinkStation/feature/sprint-02b-dashboard-kpis-conjunto
 a8e9aa5 docs(sprint-2b): sync RoadMap tras merge PR #13 — Sprint 2B 🔵 Subida rama + E2E VPS en curso
 ```
 

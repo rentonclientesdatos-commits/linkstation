@@ -6,8 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import NextImage from "next/image";
 import Link from "next/link";
+
+function LinkStationLogo({ size = "md" }: { size?: "sm" | "md" }) {
+  const textSize = size === "sm" ? "text-2xl" : "text-3xl";
+  const subSize = size === "sm" ? "text-[10px]" : "text-[11px]";
+  const iconSize = size === "sm" ? 28 : 36;
+  return (
+    <div className="flex items-center gap-3">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="16" stroke="#3b82f6" strokeWidth="1.5" opacity="0.6" />
+        <circle cx="18" cy="9"  r="2.5" fill="#60a5fa" />
+        <circle cx="27" cy="23" r="2.5" fill="#60a5fa" />
+        <circle cx="9"  cy="23" r="2.5" fill="#60a5fa" />
+        <circle cx="18" cy="18" r="2" fill="white" />
+        <line x1="18" y1="9" x2="18" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
+        <line x1="27" y1="23" x2="18" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
+        <line x1="9" y1="23" x2="18" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
+        <line x1="18" y1="9" x2="27" y2="23" stroke="#3b82f6" strokeWidth="0.8" opacity="0.4" />
+        <line x1="18" y1="9" x2="9" y2="23" stroke="#3b82f6" strokeWidth="0.8" opacity="0.4" />
+        <line x1="9" y1="23" x2="27" y2="23" stroke="#3b82f6" strokeWidth="0.8" opacity="0.4" />
+      </svg>
+      <div>
+        <p className={`${textSize} font-black tracking-tight text-white leading-none`}>LinkStation</p>
+        <p className={`${subSize} font-bold tracking-[0.2em] text-blue-400 uppercase mt-0.5`}>AI Platform</p>
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -50,17 +76,10 @@ export default function LoginPage() {
 
   if (isForgotPassword) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-[#f8fafc]">
+      <div className="relative flex min-h-screen items-center justify-center bg-black">
         <div className="w-full max-w-[440px] px-6 py-12">
           <div className="mb-10 flex items-center justify-start">
-            <NextImage
-              src="/logo-reforma-light.png"
-              alt="Re_ FORMA Social Media Partner"
-              width={240}
-              height={64}
-              className="h-16 w-auto object-contain"
-              priority
-            />
+            <LinkStationLogo size="sm" />
           </div>
 
           {resetSuccess ? (
@@ -70,7 +89,7 @@ export default function LoginPage() {
                   <CheckCircle2 className="h-10 w-10" />
                 </div>
               </div>
-              <h1 className="mb-3 text-2xl font-black tracking-tight text-[#0f172a]">
+              <h1 className="mb-3 text-2xl font-black tracking-tight text-white">
                 ¡Correo enviado!
               </h1>
               <p className="mb-8 font-medium text-slate-500">
@@ -100,7 +119,7 @@ export default function LoginPage() {
                   <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                   Volver atrás
                 </button>
-                <h1 className="text-3xl font-black tracking-tight text-[#0f172a]">
+                <h1 className="text-3xl font-black tracking-tight text-white">
                   Recuperar contraseña
                 </h1>
                 <p className="mt-2 text-base font-medium text-slate-500">
@@ -111,7 +130,7 @@ export default function LoginPage() {
 
               <form onSubmit={handleResetPassword} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email" className="text-sm font-bold text-slate-700">
+                  <Label htmlFor="reset-email" className="text-sm font-bold text-slate-300">
                     Email Registrado
                   </Label>
                   <Input
@@ -121,7 +140,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-12 rounded-xl border-slate-200 bg-white text-slate-900 transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-100"
+                    className="h-12 rounded-xl border-slate-700 bg-slate-800/50 text-white transition-all placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20"
                   />
                 </div>
 
@@ -152,8 +171,9 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          <p className="mt-8 text-center text-xs font-bold tracking-widest text-slate-400 uppercase">
-            Una aplicación de Renton Connective {new Date().getFullYear()}
+          <p className="mt-8 text-center text-xs font-medium text-slate-500">
+            © {new Date().getFullYear()} Derechos reservados · LinkStation by{" "}
+            <span className="font-bold text-slate-400">Renton Connective</span>
           </p>
         </div>
       </div>
@@ -161,17 +181,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#120b2e]">
+    <div className="relative flex min-h-screen items-center justify-center bg-black">
       <div className="w-full max-w-[440px] px-6 py-12">
-        <div className="mb-4 flex items-center justify-center">
-          <NextImage
-            src="/logo-login.png"
-            alt="Re_ FORMA Social Media Partner"
-            width={400}
-            height={200}
-            className="h-auto w-full max-w-[220px] object-contain sm:max-w-[260px]"
-            priority
-          />
+        <div className="mb-8 flex items-center justify-center">
+          <LinkStationLogo size="md" />
         </div>
 
         <div className="mb-10 text-center">
@@ -266,8 +279,9 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        <p className="mt-8 text-center text-xs font-bold tracking-widest text-slate-400 uppercase">
-          Una aplicación de Renton Connective {new Date().getFullYear()}
+        <p className="mt-8 text-center text-xs font-medium text-slate-500">
+          © {new Date().getFullYear()} Derechos reservados · LinkStation by{" "}
+          <span className="font-bold text-slate-400">Renton Connective</span>
         </p>
       </div>
     </div>

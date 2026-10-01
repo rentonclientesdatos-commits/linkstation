@@ -1,4 +1,4 @@
----
+﻿---
 title: "Stack Decision — Migración a Drizzle ORM (SUPERSEDED)"
 date: 2026-05-19
 type: architecture-decision
@@ -690,5 +690,5 @@ Antes de empezar la Fase 0, conviene confirmar:
 ---
 
 **Status:** APPROVED — listo para ejecutar tras Sprint 0.
-**Owner:** equipo de desarrollo dashboard-af.
+**Owner:** equipo de desarrollo linkstation.
 **Next step:** completar Sprint 0 (hotfixes seguridad) y luego empezar Fase 0 de esta migración.

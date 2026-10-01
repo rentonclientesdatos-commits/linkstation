@@ -1,6 +1,6 @@
-{
+﻿{
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "_doc": "Project-level settings for dashboard-af. Permissions allowlist is intentionally minimal — extend only when needed. Hooks are auto-registered from .claude/hooks/hooks.json by the af-agents plugin.",
+  "_doc": "Project-level settings for linkstation. Permissions allowlist is intentionally minimal — extend only when needed. Hooks are auto-registered from .claude/hooks/hooks.json by the af-agents plugin.",
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
     "playwright@claude-plugins-official": true

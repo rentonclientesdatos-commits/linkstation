@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # db-export-snapshot.sh
 #
 # Genera un snapshot completo de la BD local (Supabase Docker) y lo cifra con AES-256
-# para entrega segura al equipo de desarrollo (VPS dev.automatizaformacion.com).
+# para entrega segura al equipo de desarrollo (VPS dev.linkstation.ai).
 #
 # Uso (desde Git Bash en Windows o cualquier shell POSIX):
 #   bash scripts/db-export-snapshot.sh
@@ -10,14 +10,14 @@
 #   bash scripts/db-export-snapshot.sh --no-encrypt     # solo dump comprimido sin cifrar
 #
 # Requisitos:
-#   - Docker corriendo con el container supabase_db_automatiza-formacion-dashboard activo
+#   - Docker corriendo con el container supabase_db_linkstation-dashboard activo
 #   - openssl (incluido en Git Bash)
 #   - gzip (incluido en Git Bash)
 #
 # Salida: backups/local-db/  (ignorado por git)
-#   - dashboard-af-snapshot-YYYYMMDD-HHmm.dump.gz.enc  (cifrado AES-256-CBC + PBKDF2)
-#   - dashboard-af-snapshot-YYYYMMDD-HHmm.password.txt (pass del cifrado — NO compartir junto al .enc)
-#   - dashboard-af-snapshot-YYYYMMDD-HHmm.sha256       (hash original para verificar integridad)
+#   - linkstation-snapshot-YYYYMMDD-HHmm.dump.gz.enc  (cifrado AES-256-CBC + PBKDF2)
+#   - linkstation-snapshot-YYYYMMDD-HHmm.password.txt (pass del cifrado — NO compartir junto al .enc)
+#   - linkstation-snapshot-YYYYMMDD-HHmm.sha256       (hash original para verificar integridad)
 
 set -euo pipefail
 
@@ -39,7 +39,7 @@ done
 # ── 0. Cabecera ───────────────────────────────────────────────────────────────
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
-echo " dashboard-af — Snapshot de BD local para entrega a VPS"
+echo " linkstation — Snapshot de BD local para entrega a VPS"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
 
@@ -49,7 +49,7 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-CONTAINER="supabase_db_automatiza-formacion-dashboard"
+CONTAINER="supabase_db_linkstation-dashboard"
 if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
   echo "ERROR: container '$CONTAINER' no está corriendo." >&2
   echo "  Arranca Supabase local con: npx supabase start  (o tu setup habitual)" >&2
@@ -70,7 +70,7 @@ OUT_DIR="$REPO_ROOT/backups/local-db"
 mkdir -p "$OUT_DIR"
 
 TIMESTAMP="$(date +%Y%m%d-%H%M)"
-BASE_NAME="dashboard-af-snapshot-${TIMESTAMP}"
+BASE_NAME="linkstation-snapshot-${TIMESTAMP}"
 DUMP_FILE="$OUT_DIR/${BASE_NAME}.dump"
 GZ_FILE="$OUT_DIR/${BASE_NAME}.dump.gz"
 

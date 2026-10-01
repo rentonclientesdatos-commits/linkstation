@@ -1,4 +1,4 @@
----
+﻿---
 title: "6-01 — OAuth2 v2 setup + Marketplace app registry"
 status: pending
 priority: P2
@@ -52,7 +52,7 @@ created: 2026-05-21
 Manual (Marketplace):
   1. marketplace.leadconnectorhq.com > Apps > New app
   2. Configurar OAuth scopes
-  3. Callback URL: https://dashboard-af.example.com/api/oauth/ghl/callback
+  3. Callback URL: https://app.linkstation.ai/api/oauth/ghl/callback
   4. Guardar client_id + client_secret
 
 Código:

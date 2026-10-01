@@ -20,8 +20,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { GuideMarkdown } from "./guide-markdown";
 
-// El contenido vive en el repo; revalidar no aplica (estático por build/dev).
-export const dynamic = "force-static";
+// La ruta lee archivos .md del filesystem en runtime → necesita renderizado dinámico.
+export const dynamic = "force-dynamic";
 
 // Títulos legibles + subtítulo por guía conocida (para la cabecera con gradiente).
 const GUIDE_META: Record<string, { title: string; subtitle: string; badge: string }> = {
@@ -49,13 +49,7 @@ function resolveGuidePath(slug: string): string | null {
   if (!/^[a-z0-9-]+$/.test(slug)) return null;
   const candidates = [
     path.join(process.cwd(), "docs", "integrations", `${slug}.md`),
-    path.join(
-      process.cwd(),
-      "Automatiza-Formacion-DashBoard-developer",
-      "docs",
-      "integrations",
-      `${slug}.md`
-    ),
+    path.join(process.cwd(), "linkstation", "docs", "integrations", `${slug}.md`),
     path.resolve(__dirname, "..", "..", "..", "..", "docs", "integrations", `${slug}.md`),
   ];
   for (const candidate of candidates) {
@@ -162,7 +156,7 @@ export default async function IntegrationGuidePage({
         </div>
 
         <p className="text-muted-foreground mt-8 text-center text-xs">
-          Automatiza Formación · Guía de integración
+          LinkStation · Guía de integración
         </p>
       </article>
     </main>

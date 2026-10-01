@@ -18,11 +18,11 @@
  * Variables (todas opcionales con defaults sensatos):
  *   SUPABASE_URL_OVERRIDE          — si presente, sobrescribe NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY_OVERRIDE — idem
- *   NEW_ADMIN_EMAIL                — default: "automatizaformacion@gmail.com"
+ *   NEW_ADMIN_EMAIL                — default: "admin@linkstation.ai"
  *   NEW_ADMIN_PASSWORD             — default: lee de .env.local NEW_ADMIN_PASSWORD o falla
- *   NEW_ADMIN_FULL_NAME            — default: "Beatriz"
- *   TENANT_NAME                    — default: "Automatiza Formación"
- *   LEGACY_USERS_TO_DELETE         — CSV de emails a borrar. Default: "demo@af.local,viewer@af.local,demo@af.com"
+ *   NEW_ADMIN_FULL_NAME            — default: "Admin"
+ *   TENANT_NAME                    — default: "LinkStation"
+ *   LEGACY_USERS_TO_DELETE         — CSV de emails a borrar.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -34,12 +34,12 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 const SUPABASE_URL = process.env.SUPABASE_URL_OVERRIDE ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY_OVERRIDE ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-const NEW_EMAIL = process.env.NEW_ADMIN_EMAIL ?? "automatizaformacion@gmail.com";
+const NEW_EMAIL = process.env.NEW_ADMIN_EMAIL ?? "admin@linkstation.ai";
 const NEW_PASSWORD = process.env.NEW_ADMIN_PASSWORD;
-const NEW_FULL_NAME = process.env.NEW_ADMIN_FULL_NAME ?? "Beatriz";
-const TENANT_NAME = process.env.TENANT_NAME ?? "Automatiza Formación";
+const NEW_FULL_NAME = process.env.NEW_ADMIN_FULL_NAME ?? "Admin";
+const TENANT_NAME = process.env.TENANT_NAME ?? "LinkStation";
 const LEGACY_USERS = (
-  process.env.LEGACY_USERS_TO_DELETE ?? "demo@af.local,viewer@af.local,demo@af.com"
+  process.env.LEGACY_USERS_TO_DELETE ?? "demo@af.local,viewer@af.local,demo@af.com,admin@linkstation.ai"
 )
   .split(",")
   .map((s) => s.trim())

@@ -1,4 +1,4 @@
-# Plan: RLS Multi-Tenant Hardening
+﻿# Plan: RLS Multi-Tenant Hardening
 
 **Fecha creación:** 2026-05-19 12:00
 **Estado:** 📋 PLANIFICADO (pendiente ejecución)
@@ -9,7 +9,7 @@
 
 ## Objetivo
 
-Garantizar aislamiento estricto entre tenants en el dashboard-af mediante PostgreSQL Row-Level Security, eliminando la dependencia actual del backend en `service_role` y cerrando vulnerabilidades activas detectadas en la auditoría inicial.
+Garantizar aislamiento estricto entre tenants en el linkstation mediante PostgreSQL Row-Level Security, eliminando la dependencia actual del backend en `service_role` y cerrando vulnerabilidades activas detectadas en la auditoría inicial.
 
 ## 🚨 Hallazgos críticos de la auditoría (2026-05-19)
 

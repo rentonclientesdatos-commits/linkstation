@@ -1,5 +1,5 @@
----
-description: Test E2E exhaustivo y reusable contra VPS (Dokploy, dev.automatizaformacion.com). Para local usar /e2ctotal. Cubre auth, RBAC, RLS, CRUD 12 entidades, integrations, webhooks, widget, observabilidad.
+﻿---
+description: Test E2E exhaustivo y reusable contra VPS (Dokploy, dev.linkstation.ai). Para local usar /e2ctotal. Cubre auth, RBAC, RLS, CRUD 12 entidades, integrations, webhooks, widget, observabilidad.
 argument-hint: [--env vps|staging|prod] [--only-fase N] [--skip-fase N,M] [--no-cleanup] [--apps slug1,slug2] [--vps-readonly]
 allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion, Task]
 ---
@@ -8,7 +8,7 @@ allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion,
 
 > **Desde 27-may-2026 este comando NO ejecuta contra local**. Para entorno local usar `/e2ctotal` (mismo plan, contra `localhost:8500`). Regla del proyecto: llamar cada cosa por su nombre — E2C = local, E2E = remoto.
 
-**Default `--env vps`** (`https://dev.automatizaformacion.com`). Si se pasa `--env local` el comando AVISA y redirige a usar `/e2ctotal` (no aborta — sigue siendo válido el override por compatibilidad temporal).
+**Default `--env vps`** (`https://dev.linkstation.ai`). Si se pasa `--env local` el comando AVISA y redirige a usar `/e2ctotal` (no aborta — sigue siendo válido el override por compatibilidad temporal).
 
 **AUTONOMOUS EXECUTION**: no preguntar confirmación en cada paso. Solo pausar:
 
@@ -144,7 +144,7 @@ Más:
 
 ## Notas de adaptación al proyecto
 
-dashboard-af es SaaS multi-tenant → Fase Auth + RLS son críticas (NO se pueden saltar).
+linkstation es SaaS multi-tenant → Fase Auth + RLS son críticas (NO se pueden saltar).
 NO hay catálogo marketplace público → no aplica fase "barrido catálogo".
 SÍ hay pagos (futuro Sprint Costes-LLM) → cuando se implemente Sepay/Stripe, añadir Fase 09 "Monetization" al plan maestro (bump v1.X).
 NO hay backups en MVP → skip esa fase.

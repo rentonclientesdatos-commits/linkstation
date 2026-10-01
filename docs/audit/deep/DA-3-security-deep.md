@@ -1,4 +1,4 @@
----
+﻿---
 title: "DA-3 — Security Deep Audit"
 date: 2026-05-18
 agent: DA-3 Security Deep (Sonnet)
@@ -142,7 +142,7 @@ Cookie: af-tenant-url=http://169.254.169.254/latest/meta-data; af-tenant-key=fak
 
 **Fix textual:**
 ```typescript
-const ALLOWED_SUPABASE_DOMAINS = ['supabase.co', 'automatizaformacion.com', 'supabase.in'];
+const ALLOWED_SUPABASE_DOMAINS = ['supabase.co', 'linkstation.ai', 'supabase.in'];
 
 function validateTenantUrl(url: string): void {
     let parsed: URL;
@@ -195,7 +195,7 @@ const script = `
 
 Un atacante embebe el script en su sitio con un `id` malicioso:
 ```html
-<script src="https://app.automatizaformacion.com/api/widget/embed.js?id=%22%3B%20alert(document.cookie)%3B%20var%20x%3D%22"></script>
+<script src="https://app.linkstation.ai/api/widget/embed.js?id=%22%3B%20alert(document.cookie)%3B%20var%20x%3D%22"></script>
 ```
 
 Que se decodifica como `id = "; alert(document.cookie); var x="`, resultando en:
@@ -308,7 +308,7 @@ async headers() {
                         "script-src 'self' 'unsafe-inline'",  // unsafe-inline needed for dangerouslySetInnerHTML
                         "style-src 'self' 'unsafe-inline'",
                         "img-src 'self' data: https:",
-                        "connect-src 'self' https://api-db.automatizaformacion.com wss://api-db.automatizaformacion.com",
+                        "connect-src 'self' https://api-db.linkstation.ai wss://api-db.linkstation.ai",
                         "frame-ancestors 'none'",
                     ].join('; ')
                 },
@@ -574,9 +574,9 @@ El endpoint de tools es especialmente crítico: un atacante puede POST a `/api/w
 **Vector de explotación:**
 ```bash
 # Sin credenciales, desde internet:
-curl https://app.automatizaformacion.com/api/orchestration/sweep
+curl https://app.linkstation.ai/api/orchestration/sweep
 # → Responde con lista de leads procesados, acciones ejecutadas
-curl https://app.automatizaformacion.com/api/cron/appointments/reminders
+curl https://app.linkstation.ai/api/cron/appointments/reminders
 # → Envía WhatsApp a todos los leads; responde con nombres, estados
 ```
 
@@ -787,7 +787,7 @@ export async function GET() {
 
 `MASTER_DOSSIER.md` es un documento de especificaciones de negocio (prompt, reglas de cualificación, configuración del sistema). Accesible sin autenticación desde internet:
 ```
-curl https://app.automatizaformacion.com/api/docs/content
+curl https://app.linkstation.ai/api/docs/content
 ```
 
 Expone reglas de negocio confidenciales, lógica de cualificación de leads y detalles del sistema que podrían ser usados por competidores o para ingeniería social.

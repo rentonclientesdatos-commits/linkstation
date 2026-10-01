@@ -1,7 +1,7 @@
----
+﻿---
 title: "Auditoría V2 — Medio Proyecto"
 date: 2026-05-27
-project: dashboard-af
+project: linkstation
 audience: equipo de desarrollo + auditor (Javi HP)
 auditor: Javi HP (Auditor del proyecto)
 project_version_at_audit: v0.3.0-rc.1
@@ -15,7 +15,7 @@ relates_to:
 status: final
 ---
 
-# Auditoría V2 — `dashboard-af` · Medio Proyecto
+# Auditoría V2 — `linkstation` · Medio Proyecto
 
 ## 1. Propósito y alcance
 
@@ -39,7 +39,7 @@ El proyecto ha avanzado de **v0.0.0 con 132 findings de auditoría → v0.3.0-rc
 Desde el 27-05-2026 el testing E2E está separado en dos comandos para evitar errores de concepto:
 
 - **`/e2ctotal`** — Test exhaustivo **EN LOCAL** (E2C = End-to-End **C**lient-side / "en Casa"). Contra `localhost:8500`. Recomendado en cada PR, antes del test manual humano y en cierre Sprint CLOSE-2. ~17 min, sin riesgo.
-- **`/e2etotal`** — Test exhaustivo **REMOTO** (VPS / staging / prod). Default `--env vps` contra `dev.automatizaformacion.com` (Dokploy). Para cierre Sprint CLOSE-5 paso 7 y SP-4B Validación Pre-MVP (Renzo). ~25-30 min.
+- **`/e2etotal`** — Test exhaustivo **REMOTO** (VPS / staging / prod). Default `--env vps` contra `dev.linkstation.ai` (Dokploy). Para cierre Sprint CLOSE-5 paso 7 y SP-4B Validación Pre-MVP (Renzo). ~25-30 min.
 
 Plan maestro compartido en [`docs/e2e-full-test-plan.md`](../e2e-full-test-plan.md) (v1.2).
 

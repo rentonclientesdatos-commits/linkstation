@@ -1,4 +1,4 @@
----
+﻿---
 title: "Spec normalizada de la cliente — fuente autoritaria"
 date: 2026-05-18
 status: extracted
@@ -11,7 +11,7 @@ agent: Client-Spec-Extractor (Sonnet)
 
 ## 0. Resumen ejecutivo
 
-Automatiza Formación necesita un AI CRM + Workflow Orchestrator que automatice el contacto, cualificación y agendamiento de leads de másters. El sistema debe ingestar leads desde el CRM existente en tiempo real, iniciar contacto automático via llamada de voz o WhatsApp según zona horaria del lead (9am–9pm), cualificar al lead mediante un agente IA conversacional (Virginia), y si es apto, agendar una llamada con un asesor humano. Todo el estado del lead debe sincronizarse de vuelta al CRM del cliente. El volumen esperado es 3.000–4.000+ leads/mes. La plataforma es multi-tenant (pensada para varios centros educativos). La base de datos es Supabase (NO Airtable).
+LinkStation necesita un AI CRM + Workflow Orchestrator que automatice el contacto, cualificación y agendamiento de leads de másters. El sistema debe ingestar leads desde el CRM existente en tiempo real, iniciar contacto automático via llamada de voz o WhatsApp según zona horaria del lead (9am–9pm), cualificar al lead mediante un agente IA conversacional (Virginia), y si es apto, agendar una llamada con un asesor humano. Todo el estado del lead debe sincronizarse de vuelta al CRM del cliente. El volumen esperado es 3.000–4.000+ leads/mes. La plataforma es multi-tenant (pensada para varios centros educativos). La base de datos es Supabase (NO Airtable).
 
 ---
 
@@ -253,7 +253,7 @@ Fuente: `docs/Docs-entrega-clienta/Promt-Virginia.md`
 
 ### Identidad y rol
 - **Nombre**: Virginia
-- **Rol**: Asistente de admisiones en Automatiza Formación
+- **Rol**: Asistente de admisiones en LinkStation
 - **Canal**: voz + WhatsApp (mismo prompt para ambos canales)
 - **Restricciones absolutas**: no inventa información, no altera lógica de negocio, no omite variables, no improvisa fuera del flujo.
 

@@ -1,5 +1,5 @@
 -- ============================================================
--- ESDEN Analytics Dashboard — Tenants Schema
+-- LinkStation — Tenants Schema
 -- Paste this in the Supabase SQL Editor of your AUTH/MAIN project.
 -- ============================================================
 
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.tenants (
     auth_user_id UUID,
     config JSONB NOT NULL DEFAULT '{
         "headers": [],
-        "dashboard_title": "App Automatiza",
+        "dashboard_title": "LinkStation",
         "primary_color": "#4f46e5"
     }'::jsonb
 );

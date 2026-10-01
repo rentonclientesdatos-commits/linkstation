@@ -1,4 +1,4 @@
----
+﻿---
 title: "Researcher Report — Observabilidad y Dashboard Costes LLM — Sprint 3"
 date: 2026-05-20
 agent: researcher-observability (Sonnet)
@@ -33,7 +33,7 @@ export const logger = pino({
   formatters: {
     level: (label) => ({ level: label }),
   },
-  base: { service: 'dashboard-af' },
+  base: { service: 'linkstation' },
 });
 ```
 
@@ -42,7 +42,7 @@ Campos estructurados recomendados por log entry:
 {
   "level": "info",
   "time": 1716239040000,
-  "service": "dashboard-af",
+  "service": "linkstation",
   "tenant_id": "uuid",
   "user_id": "uuid",
   "trace_id": "uuid",

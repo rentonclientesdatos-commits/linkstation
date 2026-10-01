@@ -1,4 +1,4 @@
----
+﻿---
 title: "Phase 01 — LiteLLM Proxy setup en Dokploy + virtual keys multi-tenant + fallbacks"
 sprint: SP-5B
 phase: 1
@@ -53,7 +53,7 @@ agents: [af-agents:deployment, af-agents:database, af-agents:code]
 - Schema Postgres `litellm_proxy` provisionado en cluster Supabase existente:
   - Migración SQL ad-hoc (NO en `supabase/migrations/` para no mezclar con migraciones del app).
   - Schema separado: `CREATE SCHEMA IF NOT EXISTS litellm_proxy;` + LiteLLM ejecuta sus propias migraciones internas al arrancar.
-  - Sin acceso de la app dashboard-af a este schema (aislamiento estricto).
+  - Sin acceso de la app linkstation a este schema (aislamiento estricto).
 - `config.yaml` del Proxy con:
   - `model_list` cubriendo todos los modelos en uso por el proyecto (Anthropic Claude Opus/Sonnet/Haiku; OpenAI GPT-4o/4o-mini/o1; Google Gemini Flash/Pro).
   - `fallbacks: [["claude-3-5-sonnet-20241022", "gpt-4o", "gemini-2.0-flash"]]` (orden por preferencia + coste).

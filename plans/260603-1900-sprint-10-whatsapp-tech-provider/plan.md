@@ -1,4 +1,4 @@
----
+﻿---
 title: "Sprint 10 — WhatsApp Tech Provider Migration (Meta Embedded Signup)"
 description: "Migración del modelo WhatsApp Cloud API de 'cliente directo replicado' (3 credenciales manuales por tenant) al modelo Tech Provider de Meta: Embedded Signup, System User token central, suscripción de WABAs por app, migración de tenants vivos sin downtime + gestión del proceso de aprobación de Meta (app dedicada, App Review con vídeos, Access Verification)."
 status: pending
@@ -32,7 +32,7 @@ created: 2026-06-03
 | Estimación total      | ~48-72h                                                                                                                                            |
 | Rama sugerida         | `feature/sprint-10-whatsapp-tech-provider`                                                                                                         |
 | ADR de decisión       | [`docs/adr/ADR-025-whatsapp-tech-provider-meta.md`](../../docs/adr/ADR-025-whatsapp-tech-provider-meta.md)                                         |
-| Informe origen        | [`docs/entregables/Informe-Tech-Provider-Meta-AutomatizaFormacion.pdf`](../../docs/entregables/Informe-Tech-Provider-Meta-AutomatizaFormacion.pdf) |
+| Informe origen        | [`docs/entregables/Informe-Tech-Provider-Meta-LinkStation.pdf`](../../docs/entregables/Informe-Tech-Provider-Meta-LinkStation.pdf) |
 | Reporte HTML editable | [`docs/entregables/informe-tech-provider-meta.html`](../../docs/entregables/informe-tech-provider-meta.html)                                       |
 
 ## Contexto
@@ -43,7 +43,7 @@ El proyecto ya integra WhatsApp Cloud API de Meta ([whatsapp.ts](../../src/lib/i
 accessToken   ·   phoneNumberId   ·   wabaId
 ```
 
-La clienta (Automatiza Formación) va a darse de alta como **Tech Provider** en Meta. Este sprint migra el dashboard a ese modelo: el tenant deja de pegar tokens y conecta WhatsApp con **Embedded Signup** (1 clic + login Meta); la plataforma opera con un **Business Integration System User token** central, persiste solo `waba_id` + `phone_number_id` por tenant y suscribe cada WABA nueva al webhook de la app.
+La clienta (LinkStation) va a darse de alta como **Tech Provider** en Meta. Este sprint migra el dashboard a ese modelo: el tenant deja de pegar tokens y conecta WhatsApp con **Embedded Signup** (1 clic + login Meta); la plataforma opera con un **Business Integration System User token** central, persiste solo `waba_id` + `phone_number_id` por tenant y suscribe cada WABA nueva al webhook de la app.
 
 Es análogo a lo que ya hicimos con HubSpot ([ADR-021](../../docs/adr/ADR-021-hubspot-public-app-multi-tenant.md)): una sola app de Meta multi-tenant vía OAuth, en vez de credenciales manuales por cliente.
 
@@ -147,7 +147,7 @@ Final (requiere 10.3+10.4+10.5; 10.6 aprobado por Meta)   │
 ## Referencias
 
 - ADR de decisión: [`docs/adr/ADR-025-whatsapp-tech-provider-meta.md`](../../docs/adr/ADR-025-whatsapp-tech-provider-meta.md)
-- Informe a clienta: [`docs/entregables/Informe-Tech-Provider-Meta-AutomatizaFormacion.pdf`](../../docs/entregables/Informe-Tech-Provider-Meta-AutomatizaFormacion.pdf)
+- Informe a clienta: [`docs/entregables/Informe-Tech-Provider-Meta-LinkStation.pdf`](../../docs/entregables/Informe-Tech-Provider-Meta-LinkStation.pdf)
 - ADR análogo (Public App multi-tenant): [`docs/adr/ADR-021-hubspot-public-app-multi-tenant.md`](../../docs/adr/ADR-021-hubspot-public-app-multi-tenant.md)
 - ADR cifrado tokens: [`docs/adr/ADR-017-cifrado-tokens-oauth-aes-256-gcm.md`](../../docs/adr/ADR-017-cifrado-tokens-oauth-aes-256-gcm.md)
 - Meta docs: Become a Tech Provider · Permissions · App Review · System User access token (ver §7 del informe)

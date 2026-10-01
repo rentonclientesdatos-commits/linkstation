@@ -1,4 +1,4 @@
-# Phase 07 — Sprint Close: CLOSE-1..5 + hand-off SP-4B
+﻿# Phase 07 — Sprint Close: CLOSE-1..5 + hand-off SP-4B
 
 ## Context Links
 
@@ -51,7 +51,7 @@
   5. **Hand-off a SP-4B**: actualizar `plans/260522-1700-sprint-validacion-pre-mvp/phase-03-validacion-sprint-2.md` con:
      - Comandos de test del sprint (`npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test -- --coverage`).
      - Spec Playwright creado (`tests/e2e/integrations-manager.spec.ts`) + ruta cubre `/dashboard/settings`.
-     - Spec listo para E2E VPS: mismo spec con `BASE_URL=https://dev.automatizaformacion.com`.
+     - Spec listo para E2E VPS: mismo spec con `BASE_URL=https://dev.linkstation.ai`.
      - Checklist manual derivado de `docs/testeos-manual.md` sección Sprint 2 (si existe; crear seed si no): "1. Click Conectar HubSpot → URL HubSpot Developer auth abre. 2. Aprobar app → callback completa → card muestra Conectado. 3. Test connection → verde. 4. Toggle write_policy a overwrite_with_audit + override_fields=['phone']. 5. Forzar updateLead desde server action de test → audit row aparece en viewer. 6. Disconnect → card vuelve a empty state. 7. Idem para Zoho EU sandbox."
      - BUG-XXX detectados/corregidos en este sprint (lista commits `fix(sprint-2): ...`).
      - **Env vars nuevas para VPS:** `OAUTH_STATE_SECRET` (generar fresco), `HUBSPOT_CLIENT_ID`, `HUBSPOT_CLIENT_SECRET`, `ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`. Documentar dónde añadirlas (Easypanel env).
@@ -83,14 +83,14 @@ CLOSE-1 → CLOSE-2 → (if bugs) CLOSE-4 → re-run failed → CLOSE-5 push →
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/development-roadmap.md` (vía `roadmap-keeper`)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/plans/260522-1700-sprint-validacion-pre-mvp/phase-03-validacion-sprint-2.md` (rellenar plantilla)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/testeos-manual.md` (añadir sección Sprint 2 si missing)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/development-roadmap.md` (vía `roadmap-keeper`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/plans/260522-1700-sprint-validacion-pre-mvp/phase-03-validacion-sprint-2.md` (rellenar plantilla)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/testeos-manual.md` (añadir sección Sprint 2 si missing)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/plans/260524-1330-sprint-2-adapter-hubspot-zoho/PR-BODY.md`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/plans/260524-1330-sprint-2-adapter-hubspot-zoho/SP-3-CLOSE-summary.md` (resumen tracking tiempos)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/plans/260524-1330-sprint-2-adapter-hubspot-zoho/PR-BODY.md`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/plans/260524-1330-sprint-2-adapter-hubspot-zoho/SP-3-CLOSE-summary.md` (resumen tracking tiempos)
 
 ## Implementation steps
 

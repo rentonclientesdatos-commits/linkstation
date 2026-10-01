@@ -1,4 +1,4 @@
----
+﻿---
 description: Test E2C exhaustivo y reusable EN LOCAL (localhost:8500). Mismo plan maestro que /e2etotal pero contra entorno de desarrollo. Más rápido, sin riesgo, recomendado para cada PR y antes del test manual humano.
 argument-hint: [--only-fase N] [--skip-fase N,M] [--no-cleanup] [--apps slug1,slug2]
 allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion, Task]
@@ -18,7 +18,7 @@ allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion,
 
 | Aspecto            | `/e2ctotal` (este)                                             | `/e2etotal` (VPS)                                              |
 | ------------------ | -------------------------------------------------------------- | -------------------------------------------------------------- |
-| **Entorno**        | `localhost:8500` (E2C local)                                   | `https://dev.automatizaformacion.com` (VPS Dokploy)            |
+| **Entorno**        | `localhost:8500` (E2C local)                                   | `https://dev.linkstation.ai` (VPS Dokploy)            |
 | **Cuándo usarlo**  | Cada PR · antes del test manual humano · cierre Sprint CLOSE-2 | Tras deploy a VPS · cierre Sprint CLOSE-5 paso 7 · SP-4B Renzo |
 | **Velocidad**      | ~17 min                                                        | ~25-30 min (latencia red + deploy)                             |
 | **Riesgo**         | Cero (entorno aislado)                                         | Bajo, pero toca infra real                                     |
@@ -87,6 +87,6 @@ No tiene `--env` (es siempre local) ni `--vps-readonly` (no aplica).
 
 ## Notas de adaptación al proyecto
 
-dashboard-af es SaaS multi-tenant → Fase Auth + RLS son críticas (NO se pueden saltar).
+linkstation es SaaS multi-tenant → Fase Auth + RLS son críticas (NO se pueden saltar).
 
 Ver el resto de notas y sugerencias futuras en [`.claude/commands/e2etotal.md`](./e2etotal.md).

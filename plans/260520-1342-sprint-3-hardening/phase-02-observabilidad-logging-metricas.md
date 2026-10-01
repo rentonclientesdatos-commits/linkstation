@@ -1,4 +1,4 @@
----
+﻿---
 title: "Phase 02 — Observabilidad: Logging estructurado + Métricas BullMQ (4-03 reducido)"
 sprint: 4
 phase: 2
@@ -115,7 +115,7 @@ import pino from "pino";
 export const logger = pino({
   level: process.env.LOG_LEVEL || "info",
   formatters: { level: (label) => ({ level: label }) },
-  base: { service: "dashboard-af", env: process.env.NODE_ENV },
+  base: { service: "linkstation", env: process.env.NODE_ENV },
   timestamp: pino.stdTimeFunctions.isoTime,
   serializers: {
     err: pino.stdSerializers.err,

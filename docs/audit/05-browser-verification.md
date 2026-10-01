@@ -1,9 +1,9 @@
----
+﻿---
 title: "Verificación en navegador — Exposición real de secretos en producción"
 date: 2026-05-18
 agent: Manual verification (Playwright + Claude Code)
 phase: post-audit
-target: https://app.automatizaformacion.com
+target: https://app.linkstation.ai
 related_findings: [F-01-001, F-04-002, F-05-SEC-001, F-05-SEC-002, F-05-SEC-003]
 status: VERIFIED
 ---
@@ -17,7 +17,7 @@ Tras la auditoría estática (Fases 0–7) que marcó como **Critical** la prese
 ## Metodología
 
 - Herramienta: Playwright MCP (Chromium headless con interfaz visible al usuario).
-- Sitio: `https://app.automatizaformacion.com` (producción).
+- Sitio: `https://app.linkstation.ai` (producción).
 - Credenciales: cuenta del cliente proporcionadas por el usuario (`javihp.email@gmail.com`), válidas para tenant `esden`.
 - Acciones:
   1. Navegación a `/login` sin sesión.
@@ -37,7 +37,7 @@ Extraídos de `src/` con `grep -E "eyJ[A-Za-z0-9_-]{20,}"`:
 | ANON-A | JWT role=anon, exp 2030-01-01 | `Wjci QQts4ftXVch4od8` | `auth-config.ts:14`, `supabase/server.ts:8`, `supabase/client.ts:16,20` |
 | SVC-A | JWT role=service_role, exp 2030-01-01 | `vNTBhl88YEB_hg` | `auth-config.ts:19`, `supabase/server.ts:7` |
 | SVC-B | JWT role=service_role, exp 2030-01-01 | `q-5vsASGAbI` | `actions/tenant.ts:52,76`, `scripts/purge-demo.ts:9` |
-| URL interna | hostname | `api-db.automatizaformacion.com` | `supabase/client.ts:20`, `scripts/*` |
+| URL interna | hostname | `api-db.linkstation.ai` | `supabase/client.ts:20`, `scripts/*` |
 | IP interna | IPv4 | `46.62.193.169` | `scripts/migrate-*.ts`, `purge-demo.ts` |
 | Password PG | credencial | `postgres:postgres` | `scripts/migrate-*.ts` |
 | WhatsApp verify token | secret | `automatiza_for_2025` | `app/api/webhooks/whatsapp/route.ts:11` |
@@ -70,7 +70,7 @@ Extraídos de `src/` con `grep -E "eyJ[A-Za-z0-9_-]{20,}"`:
 ### D. Tráfico de red post-login
 
 - Hosts externos contactados desde el navegador: **0**.
-- Todo el tráfico (incluido el del módulo WhatsApp realtime) se proxifica vía `app.automatizaformacion.com` mediante React Server Components (`?_rsc=...`).
+- Todo el tráfico (incluido el del módulo WhatsApp realtime) se proxifica vía `app.linkstation.ai` mediante React Server Components (`?_rsc=...`).
 - **No hay conexión directa cliente ↔ Supabase**.
 
 ### E. Endpoint público de widget embed
@@ -89,14 +89,14 @@ Extraídos de `src/` con `grep -E "eyJ[A-Za-z0-9_-]{20,}"`:
 
 El secreto está expuesto, pero por **otros vectores** distintos al bundle:
 
-1. **Vector "código fuente"** — El JWT está en texto plano en el repositorio GitHub `renzo1111ia/dashboard-af` (422 commits, accesible a todos los collaborators y reflejado en el ZIP del cliente). Un simple `git log -p` o `grep` recupera el token. Vector verificado por Fase 5 (Audit-Deps+Security).
+1. **Vector "código fuente"** — El JWT está en texto plano en el repositorio GitHub `LinkStation/linkstation-dashboard` (422 commits, accesible a todos los collaborators y reflejado en el ZIP del cliente). Un simple `git log -p` o `grep` recupera el token. Vector verificado por Fase 5 (Audit-Deps+Security).
 2. **Vector "fallback silencioso"** — En `supabase/server.ts:7`, `auth-config.ts:19`, `actions/tenant.ts:52,76` el patrón es `process.env.X || "eyJ..."`. Si la env var no está seteada (deploy nuevo, dev local, script ad-hoc), **el fallback comprometido se activa sin error visible** y la app sigue funcionando contra producción con privilegios de admin.
 3. **Vector "scripts de migración"** — `src/scripts/migrate-*.ts` y `purge-demo.ts` se ejecutan **fuera del runtime Next.js**, vía `tsx` directo. Contienen `postgresql://postgres:postgres@46.62.193.169:5432/...` y el JWT SVC-B literales. Cualquiera que clone el repo y ejecute esos scripts tiene admin total a la BD productiva.
 4. **Vector "rotación pendiente"** — Los tres JWTs analizados llevan `exp: 1893456000` (2030-01-01). Aunque hoy no se vean en el bundle, **siguen siendo válidos**. Si en algún momento el repo estuvo expuesto (collaborator dado de baja, fork, logs CI con dump, copia del ZIP filtrada), el token sigue funcionando.
 
 ### Información secundaria confirmada en navegador
 
-- Subdominio interno `api-db.automatizaformacion.com` revelado vía el **nombre** de la cookie `sb-api-db-auth-token`. Esto es comportamiento estándar de `@supabase/ssr` (deriva el nombre del project ref) — no es un fallo de la app, pero sí confirma a un atacante el host real de Supabase. El valor de la cookie **no es legible** desde JS.
+- Subdominio interno `api-db.linkstation.ai` revelado vía el **nombre** de la cookie `sb-api-db-auth-token`. Esto es comportamiento estándar de `@supabase/ssr` (deriva el nombre del project ref) — no es un fallo de la app, pero sí confirma a un atacante el host real de Supabase. El valor de la cookie **no es legible** desde JS.
 - El `tenant_id` viaja en cookie plain (`af-tenant-id`) y NO en el JWT del usuario. Esto **confirma F-04-005/006**: las políticas RLS que esperan `auth.jwt() ->> 'tenant_id'` son inefectivas porque el claim no existe. El aislamiento multi-tenant depende 100% de filtros manuales `.eq("tenant_id", ...)` en código — y por eso `fetchCalls` (F-04-001) sin ese filtro provoca data leak cross-tenant.
 
 ## Reclasificación de severidad

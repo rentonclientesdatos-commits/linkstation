@@ -1,4 +1,4 @@
----
+﻿---
 title: "Improvement Backlog - Hoja de Ruta de Mejoras"
 date: 2026-05-18
 status: final
@@ -6,7 +6,7 @@ phase: 6-consolidation
 agent: Consolidator+GapAnalyst (Sonnet)
 ---
 
-# Improvement Backlog - dashboard-af
+# Improvement Backlog - linkstation
 
 Backlog agrupado por sprints. Sin fechas - solo orden y dependencias.
 Cada item: B-XXX: titulo - Esfuerzo S/M/L - IDs findings

@@ -1,4 +1,4 @@
-# Fase 06 — App Review (2 vídeos) + Access Verification
+﻿# Fase 06 — App Review (2 vídeos) + Access Verification
 
 ## Context Links
 
@@ -9,7 +9,7 @@
 
 - **Prioridad:** P1 (arranca pronto — revisión de Meta es asíncrona y lenta)
 - **Estado:** Pendiente
-- **Descripción:** Gestionar el proceso de aprobación de Meta para conseguir Advanced Access a `whatsapp_business_messaging` y `whatsapp_business_management`, más la Access Verification que declara a Automatiza Formación como Tech Provider.
+- **Descripción:** Gestionar el proceso de aprobación de Meta para conseguir Advanced Access a `whatsapp_business_messaging` y `whatsapp_business_management`, más la Access Verification que declara a LinkStation como Tech Provider.
 
 ## Key Insights
 

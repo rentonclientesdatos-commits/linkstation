@@ -1,4 +1,4 @@
----
+﻿---
 title: "Phase 02 — Langfuse Cloud Hobby integration + masking PII + callbacks LangChain + wrappers SDK directos"
 sprint: SP-5B
 phase: 2
@@ -46,8 +46,8 @@ agents: [af-agents:code, af-agents:security, af-agents:testing]
 
 ### Funcionales
 
-- Cuenta Langfuse Cloud Hobby creada por Javi HP con email `admin@automatizaformacion.com`.
-- 3 Projects creados: `dashboard-af-dev`, `dashboard-af-staging`, `dashboard-af-prod`.
+- Cuenta Langfuse Cloud Hobby creada por Javi HP con email `admin@linkstation.ai`.
+- 3 Projects creados: `linkstation-dev`, `linkstation-staging`, `linkstation-prod`.
 - Variables de entorno `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL=https://cloud.langfuse.com` (o `eu.langfuse.com` si EU). Guardadas en vault del proyecto + Dokploy.
 - `src/lib/observability/langfuse-client.ts`:
   - Singleton del SDK `@langfuse/node` v3.x.
@@ -111,7 +111,7 @@ agents: [af-agents:code, af-agents:security, af-agents:testing]
 - `src/lib/observability/langfuse-client.ts` — singleton SDK + `mask()` + `withLangfuseTags()` helper.
 - `src/lib/observability/pii-mask.ts` — regex DNI/teléfono/email + tests.
 - `src/lib/observability/__tests__/pii-mask.test.ts` — tests de masking con casos sintéticos.
-- `src/lib/observability/__tests__/langfuse-integration.test.ts` — test e2e contra Project `dashboard-af-dev`.
+- `src/lib/observability/__tests__/langfuse-integration.test.ts` — test e2e contra Project `linkstation-dev`.
 - `plans/260522-1430-sprint-costes-llm-post-mvp/runbook-langfuse.md` — operativa Langfuse UI.
 
 ### Modificar
@@ -139,8 +139,8 @@ agents: [af-agents:code, af-agents:security, af-agents:testing]
 ## Implementation Steps
 
 1. **Setup cuenta Langfuse Cloud Hobby** (~30min)
-   - Javi HP registra cuenta con `admin@automatizaformacion.com`.
-   - Crea 3 Projects: `dashboard-af-dev`, `dashboard-af-staging`, `dashboard-af-prod`.
+   - Javi HP registra cuenta con `admin@linkstation.ai`.
+   - Crea 3 Projects: `linkstation-dev`, `linkstation-staging`, `linkstation-prod`.
    - Genera 3 pares Public Key + Secret Key. Guarda en vault `.secrets/langfuse-keys.env`.
    - Solicita DPA via support@langfuse.com.
 

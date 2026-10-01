@@ -1,4 +1,4 @@
-# Phase 05 — UI admin IntegrationsManager (CRM section) + OAuth flow + WCAG
+﻿# Phase 05 — UI admin IntegrationsManager (CRM section) + OAuth flow + WCAG
 
 ## Context Links
 
@@ -123,25 +123,25 @@
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/dashboard/settings/IntegrationsManager.tsx` (añadir CRMSection)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/supabase/migrations/20260524100000_integrations_oauth_and_audit.sql` (ajuste `crm_write_audit.integration_id ON DELETE SET NULL`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/dashboard/settings/IntegrationsManager.tsx` (añadir CRMSection)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/supabase/migrations/20260524100000_integrations_oauth_and_audit.sql` (ajuste `crm_write_audit.integration_id ON DELETE SET NULL`)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/dashboard/settings/integrations/crm-section.tsx`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/dashboard/settings/integrations/crm-provider-card.tsx`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/dashboard/settings/integrations/write-policy-editor.tsx`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/dashboard/settings/integrations/audit-log-viewer.tsx`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/api/integrations/[provider]/auth/start/route.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/api/integrations/[provider]/auth/callback/route.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/api/integrations/[id]/healthcheck/route.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/api/integrations/[id]/disconnect/route.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/api/integrations/[id]/write-policy/route.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/app/api/integrations/[id]/audit/route.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/server-actions.ts` (helpers shared)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/api/oauth-callback.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/api/healthcheck.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/e2e/integrations-manager.spec.ts` (Playwright)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/dashboard/settings/integrations/crm-section.tsx`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/dashboard/settings/integrations/crm-provider-card.tsx`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/dashboard/settings/integrations/write-policy-editor.tsx`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/dashboard/settings/integrations/audit-log-viewer.tsx`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/api/integrations/[provider]/auth/start/route.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/api/integrations/[provider]/auth/callback/route.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/api/integrations/[id]/healthcheck/route.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/api/integrations/[id]/disconnect/route.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/api/integrations/[id]/write-policy/route.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/app/api/integrations/[id]/audit/route.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/server-actions.ts` (helpers shared)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/api/oauth-callback.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/api/healthcheck.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/e2e/integrations-manager.spec.ts` (Playwright)
 
 ## Implementation steps
 

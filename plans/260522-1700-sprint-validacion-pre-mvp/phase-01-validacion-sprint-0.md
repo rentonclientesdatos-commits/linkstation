@@ -1,4 +1,4 @@
-# Fase 01 — Validación Sprint 0 (Hotfixes seguridad)
+﻿# Fase 01 — Validación Sprint 0 (Hotfixes seguridad)
 
 ## Context Links
 
@@ -96,8 +96,8 @@ npm run test:e2e          # corre los 24 tests E2E (16 security + 2 core smoke +
 # Pre-requisito: VPS desplegado con la rama feature/sp-0-sprint-0-hotfixes o developer
 # tras merge, con migración 20260522000000_widget_hardening_*.sql aplicada.
 
-BASE_URL=https://dev.automatizaformacion.com npm run test:e2e -- tests/e2e/core/sprint-0-security.spec.ts
-BASE_URL=https://dev.automatizaformacion.com npm run test:e2e -- tests/e2e/sprint-0-close/smoke-flows.spec.ts
+BASE_URL=https://dev.linkstation.ai npm run test:e2e -- tests/e2e/core/sprint-0-security.spec.ts
+BASE_URL=https://dev.linkstation.ai npm run test:e2e -- tests/e2e/sprint-0-close/smoke-flows.spec.ts
 ```
 
 ### Pre-requisitos VPS

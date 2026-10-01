@@ -1,4 +1,4 @@
-# Phase C — Doc Admin + Docs Clientes implementation
+﻿# Phase C — Doc Admin + Docs Clientes implementation
 
 **Tiempo:** 3-4h
 **Bloquea:** Phase D (necesitas las routes y la DB schema para que el agente pueda escribir).
@@ -119,7 +119,7 @@ Aplicar en VPS via REST API (porque no tenemos SSH directo a VPS Postgres):
 ```bash
 SRK="<service_role_key>"
 SQL="$(cat supabase/migrations/<ts>_create_help_sections.sql)"
-curl -X POST "https://dev.automatizaformacion.com/supabase/rest/v1/rpc/exec_sql" \
+curl -X POST "https://dev.linkstation.ai/supabase/rest/v1/rpc/exec_sql" \
   -H "apikey: $SRK" \
   -H "Authorization: Bearer $SRK" \
   -H "Content-Type: application/json" \

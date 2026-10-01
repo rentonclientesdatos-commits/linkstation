@@ -1,4 +1,4 @@
-# ADR-018 — Hardening de dependencias diferido a post-MVP
+﻿# ADR-018 — Hardening de dependencias diferido a post-MVP
 
 - **Fecha:** 22-05-2026 · **Addendum 30-05-2026** (SP-7-DEPS-AUDIT-26)
 - **Estado:** Aceptado · sección original cerrada · addendum cerrado 02-06-2026 (SP-7-DEPS-AUDIT-26 ejecutada 25→4 vulns)
@@ -127,7 +127,7 @@ Durante el cierre de Sprint 3 (PR #22 a `developer`), el check CI "Security Audi
 
 ### Referencias
 
-- Check CI fallido: [GitHub Actions run 26659624573](https://github.com/AutomatizaFormacion/Automatiza-Formacion-DashBoard/actions/runs/26659624573)
+- Check CI fallido: [GitHub Actions run 26659624573](https://github.com/LinkStation/linkstation-dashboard/actions/runs/26659624573)
 - RELEASE-NOTES v0.3.0-rc.1 sección "Vulnerabilidades en deps transitivas — planificadas para Sprint Refinamiento (v0.5.2)"
 - `plans/RoadMap.md` Sprint Refinamiento Fase 03 (SP-7-DEPS-AUDIT-26)
 

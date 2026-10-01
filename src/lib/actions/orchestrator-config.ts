@@ -120,7 +120,7 @@ const DEFAULT_CONFIG: TenantOrchestratorConfig = {
   },
   advisors: [],
   flow_graph: { nodes: [], edges: [] },
-  company_name: "Automatiza Formación",
+  company_name: "LinkStation",
 };
 
 // ─── Server Actions ───────────────────────────────────────────────

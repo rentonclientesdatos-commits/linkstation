@@ -1,4 +1,4 @@
-# Runbook E2C Local — Sprint 4 Google Sheets (cierre formal)
+﻿# Runbook E2C Local — Sprint 4 Google Sheets (cierre formal)
 
 > **Propósito**: ejecutar el flujo Google Sheets **completo** en local (`http://localhost:8501`), incluyendo el bloque **R-014 audit** integrado en sesión 29-05-2026.
 >
@@ -33,7 +33,7 @@ Migrations Sprint 4 + R-014 aplicadas:
 Verificación rápida:
 
 ```bash
-docker exec supabase_db_automatiza-formacion-dashboard psql -U postgres -d postgres \
+docker exec supabase_db_linkstation-dashboard psql -U postgres -d postgres \
   -c "\d public.crm_write_audit" | grep -E "crm_type|operation|result|payload_hash"
 ```
 

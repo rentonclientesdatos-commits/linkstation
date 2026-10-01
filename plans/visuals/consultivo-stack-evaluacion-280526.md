@@ -1,9 +1,9 @@
-# Reporte consultivo — Evaluación stack ampliado (Engram, Biome, Langfuse, LiteLLM)
+﻿# Reporte consultivo — Evaluación stack ampliado (Engram, Biome, Langfuse, LiteLLM)
 
 **Fecha**: 28-05-2026
 **Solicitante**: Javi HP
 **Carácter**: Consultivo (NO ejecutar, NO instalar — material para decisión)
-**Versión proyecto al evaluar**: dashboard-af tras Sprint 3 cerrado (PR #14), pendientes PR #16 (sentry-test removal) y posible Sprint 4 Sheets SPIKE.
+**Versión proyecto al evaluar**: linkstation tras Sprint 3 cerrado (PR #14), pendientes PR #16 (sentry-test removal) y posible Sprint 4 Sheets SPIKE.
 
 ---
 
@@ -105,7 +105,7 @@ Este reporte propone CAMBIAR la estrategia del SP-5B:
 
 **Performance medida**: pre-commit en repos 1-3k archivos TS baja de ~10-15s a <500ms (10-25x más rápido).
 
-**Reglas ESLint NO cubiertas** relevantes para dashboard-af:
+**Reglas ESLint NO cubiertas** relevantes para linkstation:
 
 | Regla / Plugin                            | Estado en Biome                           | Impacto                                                      |
 | ----------------------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
@@ -144,7 +144,7 @@ Este reporte propone CAMBIAR la estrategia del SP-5B:
 - Cost tracking automático por modelo/tenant/agente
 - Replay de conversaciones para detectar regresiones al cambiar modelo
 
-**Encaje con stack dashboard-af**:
+**Encaje con stack linkstation**:
 
 - **LangChain**: integración 1 línea (`CallbackHandler` en `config.callbacks`)
 - **VPS Hetzner Dokploy**: viable. Stack mínimo: Web + Worker + Postgres separado (NO reusar Supabase) + ClickHouse (single-node 2 vCPU/8 GB para volumen MVP)

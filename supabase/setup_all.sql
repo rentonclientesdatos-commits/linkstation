@@ -43,7 +43,7 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role, p
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role, postgres;
 
 -- 4. USUARIO ADMINISTRADOR INICIAL
--- Email: b.olivar@automatizaformacion.com
+-- Email: admin@linkstation.ai
 -- Password: admin123
 INSERT INTO auth.users (
     id, instance_id, email, encrypted_password, email_confirmed_at, 
@@ -52,7 +52,7 @@ INSERT INTO auth.users (
 ) VALUES (
     'f9782efc-1938-4f79-8df6-7d849d701c52',
     '00000000-0000-0000-0000-000000000000',
-    'b.olivar@automatizaformacion.com', 
+    'admin@linkstation.ai', 
     crypt('admin123', gen_salt('bf')), 
     now(),
     '{"provider":"email","providers":["email"]}',
@@ -69,7 +69,7 @@ INSERT INTO auth.identities (
 ) VALUES (
     gen_random_uuid(),
     'f9782efc-1938-4f79-8df6-7d849d701c52',
-    '{"sub":"f9782efc-1938-4f79-8df6-7d849d701c52","email":"b.olivar@automatizaformacion.com"}',
+    '{"sub":"f9782efc-1938-4f79-8df6-7d849d701c52","email":"admin@linkstation.ai"}',
     'email',
     now(),
     now(),
@@ -83,7 +83,7 @@ INSERT INTO public.tenants (
 ) VALUES (
     'f9782efc-1938-4f79-8df6-7d849d701c52',
     'ADMINISTRADOR SISTEMA',
-    'b.olivar@automatizaformacion.com',
+    'admin@linkstation.ai',
     true,
     'f9782efc-1938-4f79-8df6-7d849d701c52'
 ) ON CONFLICT (id) DO UPDATE SET auth_user_id = EXCLUDED.auth_user_id;

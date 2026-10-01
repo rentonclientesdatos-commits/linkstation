@@ -403,45 +403,81 @@ export default function VoiceAgentsPage() {
     if (!editingAgentData.name?.trim()) return;
     setSaving(true);
 
-    const agentDataToSave = { ...editingAgentData };
+    try {
+      const agentDataToSave = { ...editingAgentData };
 
-    if (
-      ultravoxApiKey &&
-      agentDataToSave.provider === "ULTRAVOX" &&
-      agentDataToSave.provider_agent_id
-    ) {
-      await updateUltravoxAgent(ultravoxApiKey, agentDataToSave.provider_agent_id, {
-        name: agentDataToSave.name || undefined,
-        systemPrompt: variantA.prompt_text || undefined,
-        voice: agentDataToSave.voice_id || undefined,
-      });
-    }
+      // ── ULTRAVOX: Create or Update in the remote API first ──
+      if (ultravoxApiKey && agentDataToSave.provider === "ULTRAVOX") {
+        if (agentDataToSave.provider_agent_id) {
+          // Update existing Ultravox agent
+          await updateUltravoxAgent(ultravoxApiKey, agentDataToSave.provider_agent_id, {
+            name: agentDataToSave.name || undefined,
+            systemPrompt: variantA.prompt_text || undefined,
+            voice: agentDataToSave.voice_id || undefined,
+            model: agentDataToSave.retell_llm_id || undefined,
+          });
+        } else if (!agentDataToSave.id) {
+          // New agent: create in Ultravox API and store the returned agentId
+          const createRes = await createUltravoxAgent(ultravoxApiKey, {
+            name: agentDataToSave.name!,
+            systemPrompt: variantA.prompt_text || "",
+            voice: agentDataToSave.voice_id || undefined,
+            model: agentDataToSave.retell_llm_id || "fixie-ai/ultravox-70b",
+          });
+          if (createRes.success && createRes.data) {
+            const newAgentId =
+              (createRes.data as any).agentId ||
+              (createRes.data as any).id ||
+              (createRes.data as any).agent_id;
+            if (newAgentId) {
+              agentDataToSave.provider_agent_id = newAgentId;
+            }
+          } else {
+            toast({
+              variant: "error",
+              title: "Error al crear en Ultravox",
+              description: createRes.error || "No se pudo crear el agente en la API de Ultravox.",
+            });
+            setSaving(false);
+            return;
+          }
+        }
+      }
 
-    const res = await saveVoiceAgent(
-      {
-        ...agentDataToSave,
-        status: agentDataToSave.id ? agentDataToSave.status : "PAUSED",
-      },
-      tenantId
-    );
+      const res = await saveVoiceAgent(
+        {
+          ...agentDataToSave,
+          status: agentDataToSave.id ? agentDataToSave.status : "PAUSED",
+        },
+        tenantId
+      );
 
-    if (res.success && res.data) {
-      await saveVoiceVariant({ ...variantA, agent_id: res.data.id });
-      await loadAgents();
-      setSelectedAgent(res.data);
-      setIsCreateModalOpen(false);
-      toast({
-        title: "Agente Guardado",
-        description: "Configuración guardada exitosamente.",
-      });
-    } else {
+      if (res.success && res.data) {
+        await saveVoiceVariant({ ...variantA, agent_id: res.data.id });
+        await loadAgents();
+        setSelectedAgent(res.data);
+        setIsCreateModalOpen(false);
+        toast({
+          title: "Agente Guardado",
+          description: "Configuración guardada exitosamente.",
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Error al guardar el agente",
+          description: res.error || "Desconocido",
+        });
+      }
+    } catch (err) {
+      console.error("[handleCreateOrUpdateAgent] Error:", err);
       toast({
         variant: "error",
-        title: "Error al guardar el agente",
-        description: res.error || "Desconocido",
+        title: "Error inesperado",
+        description: err instanceof Error ? err.message : "Ocurrió un error al guardar el agente.",
       });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   // ── Render for the Prompt Editor area based on Retell engine type ──

@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
-const url = "https://api-db.automatizaformacion.com";
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://api-db.linkstation.ai";
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const supabase = createClient(url, key);
 

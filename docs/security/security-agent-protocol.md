@@ -1,4 +1,4 @@
-# Security Agent Protocol — dashboard-af
+﻿# Security Agent Protocol — linkstation
 
 > Política operativa del subagente `af-agents:security` activado proactivamente en cada cierre de fase/sprint desde 27-05-2026 (SP-4-SEC-PROACTIVE).
 
@@ -103,7 +103,7 @@ O delegando vía manager:
 Task(
   (subagent_type = "af-agents:security"),
   (prompt =
-    "Audit delta sobre cambios del sprint 3. Reports path: plans/reports/. Work context: e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard")
+    "Audit delta sobre cambios del sprint 3. Reports path: plans/reports/. Work context: e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard")
 );
 ```
 

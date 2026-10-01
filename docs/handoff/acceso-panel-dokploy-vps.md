@@ -1,4 +1,4 @@
-# Acceso al panel Dokploy (VPS) — fuente de verdad
+﻿# Acceso al panel Dokploy (VPS) — fuente de verdad
 
 > **Documento canónico.** Si hay duda sobre cómo acceder al panel Dokploy o a los
 > servicios del VPS, esta es la referencia. Cualquier otro doc que diga lo contrario
@@ -11,11 +11,11 @@
 ## ✅ URL correcta del panel
 
 ```
-https://panel.automatizaformacion.com/
+https://panel.linkstation.ai/
 ```
 
 - **Sin puerto.** Acceso vía HTTPS a través de Traefik (reverse proxy con TLS).
-- Usuario: `hola@automatizaformacion.com`
+- Usuario: `hola@linkstation.ai`
 - Contraseña: en vault `infra/supabase-vps/.vault/dokploy-panel.env` (gitignored).
 
 ---
@@ -23,8 +23,8 @@ https://panel.automatizaformacion.com/
 ## ❌ URL ANTIGUA — ya NO funciona desde internet
 
 ```
-http://panel.automatizaformacion.com:3000     ← BLOQUEADA al exterior
-https://panel.automatizaformacion.com:3000     ← BLOQUEADA al exterior
+http://panel.linkstation.ai:3000     ← BLOQUEADA al exterior
+https://panel.linkstation.ai:3000     ← BLOQUEADA al exterior
 ```
 
 **Qué cambió (10-06-2026):** durante el hardening del VPS se detectó que el puerto
@@ -33,7 +33,7 @@ https://panel.automatizaformacion.com:3000     ← BLOQUEADA al exterior
 
 Se aplicó un bloqueo en `iptables -t raw PREROUTING` desde la interfaz `eth0`,
 gestionado por el servicio systemd `af-docker-user-rules.service`. El acceso al panel
-quedó **solo vía `panel.automatizaformacion.com` (HTTPS/Traefik)**.
+quedó **solo vía `panel.linkstation.ai` (HTTPS/Traefik)**.
 
 Detalle completo del hardening: `plans/reports/security-hardening-vps-20260610.md`
 (finding F2) y memoria `project-hardening-vps-100626`.
@@ -65,8 +65,8 @@ responde). En operación normal, usa siempre la URL HTTPS.
 | -------------------- | --------------------------------------------------------------- |
 | Host                 | `root@46.62.193.169` (Hetzner)                                  |
 | SSH key (funcional)  | `~/.ssh/af_vps_recovery`                                        |
-| SSH key (vault, ❌)  | `dashboard-af-vps-key` — **rechazada por el servidor**, no usar |
-| Panel Dokploy        | `https://panel.automatizaformacion.com/`                        |
+| SSH key (vault, ❌)  | `linkstation-vps-key` — **rechazada por el servidor**, no usar |
+| Panel Dokploy        | `https://panel.linkstation.ai/`                        |
 | Pass panel (vault)   | `infra/supabase-vps/.vault/dokploy-panel.env`                   |
 | Env vars VPS (vault) | `infra/supabase-vps/.vault/dokploy-env-vps.env` (en el VPS)     |
 
@@ -76,10 +76,10 @@ responde). En operación normal, usa siempre la URL HTTPS.
 
 | Entorno    | Dominio                                                      | Rama        | Proyecto Dokploy          |
 | ---------- | ------------------------------------------------------------ | ----------- | ------------------------- |
-| Developer  | `https://dev.automatizaformacion.com`                        | `developer` | dev automatiza formacion  |
-| Staging    | `https://test.automatizaformacion.com`                       | `staging`   | test automatiza formacion |
-| Production | `https://app.automatizaformacion.com`                        | `main`      | prod automatiza formacion |
-| Supabase   | `https://dev.automatizaformacion.com/supabase` (path-prefix) | —           | dev automatiza formacion  |
+| Developer  | `https://dev.linkstation.ai`                        | `developer` | dev LinkStation  |
+| Staging    | `https://test.linkstation.ai`                       | `staging`   | test LinkStation |
+| Production | `https://app.linkstation.ai`                        | `main`      | prod LinkStation |
+| Supabase   | `https://dev.linkstation.ai/supabase` (path-prefix) | —           | dev LinkStation  |
 
 ---
 
@@ -87,6 +87,6 @@ responde). En operación normal, usa siempre la URL HTTPS.
 
 Cuando un documento, script o memoria mencione el panel Dokploy:
 
-- ✅ Usar `https://panel.automatizaformacion.com/`
+- ✅ Usar `https://panel.linkstation.ai/`
 - ❌ NUNCA `:3000` como URL de acceso externo
 - Si encuentras `:3000` en docs de acceso al panel → corregir y apuntar a este archivo.

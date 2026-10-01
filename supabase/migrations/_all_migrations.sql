@@ -1,4 +1,4 @@
-﻿-- ===== 20260101000000_initial_tenants.sql =====
+-- ===== 20260101000000_initial_tenants.sql =====
 -- ============================================================
 -- Initial migration: tenants table
 -- Originally from supabase/tenants.sql; promoted to migrations/
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.tenants (
     auth_user_id UUID,
     config JSONB NOT NULL DEFAULT '{
         "headers": [],
-        "dashboard_title": "App Automatiza",
+        "dashboard_title": "LinkStation",
         "primary_color": "#4f46e5"
     }'::jsonb
 );
@@ -1987,7 +1987,7 @@ NOTIFY pgrst, 'reload schema';
 -- ============================================================================
 -- Cada tenant que use Google Sheets como CRM trae su propia app OAuth de
 -- Google Cloud Console (decision arquitectonica 27-05-2026). Esto evita que
--- todos los tenants compartan la cuota Sheets API de Automatiza Formacion y
+-- todos los tenants compartan la cuota Sheets API de LinkStation y
 -- elimina la necesidad de OAuth Verification de Google para la app central.
 --
 -- Modelo:
@@ -2928,7 +2928,7 @@ CREATE TRIGGER trg_simulator_sessions_updated_at
 --
 -- Las migraciones originales (20260524110000 / 20260526100000) ya fueron corregidas en su sitio
 -- para que las instalaciones FRESCAS apliquen la versión buena. Esta migración forward existe para
--- CONVERGER entornos YA DESPLEGADOS (VPS dev.automatizaformacion.com) donde la versión bugueada
+-- CONVERGER entornos YA DESPLEGADOS (VPS dev.linkstation.ai) donde la versión bugueada
 -- quedó marcada como aplicada y no se re-ejecuta. Es 100% idempotente.
 
 -- =============================================================================

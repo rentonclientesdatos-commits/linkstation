@@ -1,12 +1,10 @@
 /**
- * Env var helpers — dashboard-af
+ * Env var helpers — LinkStation
  *
- * Política Sprint 0 tarea 1-04: prohibido usar valores fallback hardcoded para
+ * Política: prohibido usar valores fallback hardcoded para
  * credenciales o URLs sensibles. Si una env var requerida falta, la app debe
  * fallar explícitamente con un mensaje claro, NO arrancar con un valor por
  * defecto inseguro.
- *
- * Referencia: plans/260520-1342-sprint-0-hotfixes-seguridad/phase-02-secretos-y-credenciales.md
  */
 
 /**

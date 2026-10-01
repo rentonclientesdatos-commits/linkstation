@@ -1,4 +1,4 @@
----
+﻿---
 adr_id: ADR-002
 title: Upgrade next@16.1.6 → 16.2.6 (cierre CVE middleware bypass + SSRF WebSocket)
 status: Accepted
@@ -28,7 +28,7 @@ Auditoría de seguridad detectó **19 CVEs activos** en `next@16.1.6` (instalado
 | GHSA-8h8q-6873-q5fj | DoS with Server Components (v2)                           | 7.5     | 16.2.5     |
 | GHSA-mg66-mrh9-m8jx | DoS via connection exhaustion en Cache Components         | 7.5     | 16.2.5     |
 
-**Impacto crítico para dashboard-af:** el middleware bypass anula directamente las protecciones de auth de las tareas Sprint 0 `1-07`, `1-08`, `1-16`, `1-17`. Sin este fix, esas tareas son inefectivas en producción.
+**Impacto crítico para linkstation:** el middleware bypass anula directamente las protecciones de auth de las tareas Sprint 0 `1-07`, `1-08`, `1-16`, `1-17`. Sin este fix, esas tareas son inefectivas en producción.
 
 ## Decisión
 

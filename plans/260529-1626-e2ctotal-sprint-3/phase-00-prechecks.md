@@ -1,4 +1,4 @@
----
+﻿---
 phase: 00
 title: "Pre-checks /e2ctotal Sprint 3"
 status: PASS
@@ -35,7 +35,7 @@ blocking: yes
 | 5   | `GET /api/version`         | SemVer                        | `0.3.0-rc.1` + commit `unknown` (dev local)                                                                                         | ✅          |
 | 6   | `npm run db:status`        | running                       | Supabase local API + Storage S3 up                                                                                                  | ✅          |
 | 7   | Redis container            | up healthy                    | `af-redis: Up 8 hours (healthy)` + `dokploy-redis`                                                                                  | ✅          |
-| 8   | Creds admin disponibles    | env shell o `.env.local`      | Node fallback (sandbox bloquea Read .env.local) — `DEMO_USER_EMAIL=automatizaformacion@gmail.com`, `NEW_ADMIN_PASSWORD` 17 chars OK | ⚠️ via Node |
+| 8   | Creds admin disponibles    | env shell o `.env.local`      | Node fallback (sandbox bloquea Read .env.local) — `DEMO_USER_EMAIL=LinkStation@gmail.com`, `NEW_ADMIN_PASSWORD` 17 chars OK | ⚠️ via Node |
 | 9   | `npx playwright --version` | versionado                    | `Version 1.60.0`                                                                                                                    | ✅          |
 
 ## Notas

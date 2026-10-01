@@ -13,7 +13,7 @@
 --
 -- Las migraciones originales (20260524110000 / 20260526100000) ya fueron corregidas en su sitio
 -- para que las instalaciones FRESCAS apliquen la versión buena. Esta migración forward existe para
--- CONVERGER entornos YA DESPLEGADOS (VPS dev.automatizaformacion.com) donde la versión bugueada
+-- CONVERGER entornos YA DESPLEGADOS (VPS dev.linkstation.ai) donde la versión bugueada
 -- quedó marcada como aplicada y no se re-ejecuta. Es 100% idempotente.
 
 -- =============================================================================

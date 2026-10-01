@@ -13,7 +13,7 @@ version: '3.8'
 services:
   redis:
     image: redis:7-alpine
-    container_name: af-redis-dev
+    container_name: linkstation-redis-dev
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -31,12 +31,12 @@ services:
       timeout: 3s
       retries: 5
     labels:
-      - "com.af.service=redis-dev"
-      - "com.af.environment=development"
+      - "com.linkstation.service=redis-dev"
+      - "com.linkstation.environment=development"
 
   minio:
     image: minio/minio
-    container_name: af-minio-dev
+    container_name: linkstation-minio-dev
     restart: unless-stopped
     ports:
       - "9000:9000"
@@ -53,8 +53,8 @@ services:
       timeout: 20s
       retries: 3
     labels:
-      - "com.af.service=minio-dev"
-      - "com.af.environment=development"
+      - "com.linkstation.service=minio-dev"
+      - "com.linkstation.environment=development"
 
 volumes:
   redis_dev_data:

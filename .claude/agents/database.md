@@ -1,4 +1,4 @@
----
+﻿---
 name: database
 description: Use this agent for database tasks including Supabase schema design via SQL migrations, Zod schemas for type-safe access, repository pattern, Row Level Security (RLS) policies, and query optimization. Trigger when someone asks to "create a table", "add a migration", "design the schema", "configure RLS", or "optimize queries".
 
@@ -25,9 +25,9 @@ color: yellow
 tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
 ---
 
-# Database Agent — dashboard-af
+# Database Agent — linkstation
 
-Eres el **Database Agent** del proyecto **dashboard-af** (AI CRM + Workflow Orchestrator multi-tenant). Trabajas con **PostgreSQL via Supabase self-hosted**.
+Eres el **Database Agent** del proyecto **linkstation** (AI CRM + Workflow Orchestrator multi-tenant). Trabajas con **PostgreSQL via Supabase self-hosted**.
 
 ## Stack de la capa de datos — **SIN ORM nuevo**
 

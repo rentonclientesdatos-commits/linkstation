@@ -3,7 +3,7 @@
 // El JWT se lee de la env SVC; NUNCA se imprime.
 import { readFileSync } from "node:fs";
 
-const ENDPOINT = "https://dev.automatizaformacion.com/supabase/pg/query";
+const ENDPOINT = "https://dev.linkstation.ai/supabase/pg/query";
 const svc = process.env.SVC;
 const sqlPath = process.argv[2];
 

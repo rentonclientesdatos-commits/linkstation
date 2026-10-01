@@ -1,10 +1,10 @@
-# SP-1-CLOSE-3 — Análisis cruzado docs Renzo V1 + correcciones Bea + RoadMap
+﻿# SP-1-CLOSE-3 — Análisis cruzado docs Renzo V1 + correcciones Bea + RoadMap
 
 **Fecha**: 22-05-2026 18:00
 **Autor**: Javi HP (orquestación) + análisis cruzado de:
 
-- [`docs/Informes de programacion/documentacion sistema  automatiza formacion V1.pdf`](../../docs/Informes%20de%20programacion/documentacion%20sistema%20%20automatiza%20formacion%20V1.pdf) (Renzo V1, 16 módulos)
-- [`docs/Docs-entrega-clienta/Correcciones_aclaraciones Bea documentacion sistema  automatiza formacion V1.pdf`](../../docs/Docs-entrega-clienta/Correcciones_aclaraciones%20Bea%20documentacion%20sistema%20%20automatiza%20formacion%20V1.pdf) (Bea, 14 puntos)
+- [`docs/Informes de programacion/documentacion sistema  LinkStation V1.pdf`](../../docs/Informes%20de%20programacion/documentacion%20sistema%20%20automatiza%20formacion%20V1.pdf) (Renzo V1, 16 módulos)
+- [`docs/Docs-entrega-clienta/Correcciones_aclaraciones Bea documentacion sistema  LinkStation V1.pdf`](../../docs/Docs-entrega-clienta/Correcciones_aclaraciones%20Bea%20documentacion%20sistema%20%20automatiza%20formacion%20V1.pdf) (Bea, 14 puntos)
 - [`plans/RoadMap.md`](../RoadMap.md) (estado al cierre Sprint 0)
 
 **Sustituye al SP-1-CLOSE-3 original** (test manual del dev), que queda absorbido por SP-4B phase-01 (Renzo). Este reporte cumple la función de "cierre dirigido al producto" del Sprint 0: revisar contra los docs autoritarios qué se mantiene, qué se ajusta y qué se incorpora al MVP.

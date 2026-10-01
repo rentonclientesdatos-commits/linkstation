@@ -1,15 +1,15 @@
----
+﻿---
 title: "Deploy Supabase self-hosted en VPS Dokploy"
 audience: Javi HP (ejecución)
 status: handoff document
 date: 2026-05-23
-target_env: VPS Hetzner + Dokploy panel.automatizaformacion.com
+target_env: VPS Hetzner + Dokploy panel.linkstation.ai
 related: docs/handoff/deploy-vps-v0.2.0.md
 ---
 
 # Deploy Supabase self-hosted en VPS Dokploy
 
-> **Contexto**: el Project "dev automatiza formacion" del panel Dokploy tiene `dev.dash` (Next.js) + `minio` + `Rediscola`, pero **no tiene Supabase**. Esta guía despliega Supabase completo (Postgres + Auth + REST + Realtime + Storage + Studio + Kong) en el mismo Project, con las mismas versiones que tu local.
+> **Contexto**: el Project "dev LinkStation" del panel Dokploy tiene `dev.dash` (Next.js) + `minio` + `Rediscola`, pero **no tiene Supabase**. Esta guía despliega Supabase completo (Postgres + Auth + REST + Realtime + Storage + Studio + Kong) en el mismo Project, con las mismas versiones que tu local.
 >
 > **Tiempo estimado**: 25-40 min (depende de pulls de imágenes Docker).
 
@@ -19,10 +19,10 @@ related: docs/handoff/deploy-vps-v0.2.0.md
 
 - [ ] Vault con los **secretos generados** (mensaje previo del chat — JWT_SECRET, POSTGRES_PASSWORD, ANON_KEY, SERVICE_ROLE_KEY, DASHBOARD_PASSWORD, VAULT_ENC_KEY, SECRET_KEY_BASE, LOGFLARE_API_KEY, NEXTAUTH_SECRET, CRON_SECRET, ENCRYPTION_KEY)
 - [ ] DNS apuntando al VPS Hetzner `46.62.193.169`:
-  - `dev.automatizaformacion.com` (ya configurado para dev.dash)
-  - `supabase.automatizaformacion.com` (NUEVO — para Kong API gateway)
-  - `studio.automatizaformacion.com` (NUEVO — para Supabase Studio UI)
-- [ ] Acceso panel Dokploy `https://panel.automatizaformacion.com`
+  - `dev.linkstation.ai` (ya configurado para dev.dash)
+  - `supabase.linkstation.ai` (NUEVO — para Kong API gateway)
+  - `studio.linkstation.ai` (NUEVO — para Supabase Studio UI)
+- [ ] Acceso panel Dokploy `https://panel.linkstation.ai`
 
 ---
 
@@ -32,12 +32,12 @@ En tu proveedor DNS (Hetzner DNS / Cloudflare / lo que uses), crea 2 registros n
 
 ```
 Tipo:  A
-Nombre: supabase.automatizaformacion.com
+Nombre: supabase.linkstation.ai
 Valor:  46.62.193.169
 TTL:    300
 
 Tipo:  A
-Nombre: studio.automatizaformacion.com
+Nombre: studio.linkstation.ai
 Valor:  46.62.193.169
 TTL:    300
 ```
@@ -45,8 +45,8 @@ TTL:    300
 Verifica propagación (5 min):
 
 ```bash
-dig supabase.automatizaformacion.com +short
-dig studio.automatizaformacion.com +short
+dig supabase.linkstation.ai +short
+dig studio.linkstation.ai +short
 # Ambos deben devolver: 46.62.193.169
 ```
 
@@ -56,7 +56,7 @@ dig studio.automatizaformacion.com +short
 
 ### 2.1. Crear Compose service
 
-En el panel Dokploy → Project **"dev automatiza formacion"** → environment **production**:
+En el panel Dokploy → Project **"dev LinkStation"** → environment **production**:
 
 1. Click **Create Service** (botón arriba derecha)
 2. Tipo: **Compose**
@@ -69,7 +69,7 @@ Dentro del nuevo service `supabase`:
 
 #### Tab **General** → **Provider** = `Git`:
 
-- **Repository URL**: el mismo repo (`Automatiza-Formacion-DashBoard`)
+- **Repository URL**: el mismo repo (`linkstation-DashBoard`)
 - **Branch**: `developer`
 - **Build Path** o **Compose Path**: `infra/supabase-vps/docker-compose.yml`
 
@@ -92,9 +92,9 @@ ANON_KEY=<DEL_VAULT — ANON_KEY>
 SERVICE_ROLE_KEY=<DEL_VAULT — SERVICE_ROLE_KEY>
 
 # URLs públicas (después de configurar dominios en §3)
-SITE_URL=https://dev.automatizaformacion.com
-API_EXTERNAL_URL=https://supabase.automatizaformacion.com
-STUDIO_URL=https://studio.automatizaformacion.com
+SITE_URL=https://dev.linkstation.ai
+API_EXTERNAL_URL=https://supabase.linkstation.ai
+STUDIO_URL=https://studio.linkstation.ai
 
 # Studio admin login
 DASHBOARD_USERNAME=admin
@@ -137,15 +137,15 @@ Si algún container queda en restart loop, captura el log y pásamelo.
 
 ## 3. Configurar acceso público — path-prefix (REVISADO 23-05-2026)
 
-**Decisión arquitectónica**: en lugar de subdominios dedicados, Supabase se publica bajo path-prefix del dominio existente `dev.automatizaformacion.com`. Ver memoria persistente `project-supabase-vps-deploy-state.md` para historial completo.
+**Decisión arquitectónica**: en lugar de subdominios dedicados, Supabase se publica bajo path-prefix del dominio existente `dev.linkstation.ai`. Ver memoria persistente `project-supabase-vps-deploy-state.md` para historial completo.
 
 Razones clave:
 
 - **Same-origin con dev.dash** → cero CORS, cookies Supabase compartidas SSR↔client.
-- **Reusa cert + DNS** ya emitidos para `dev.automatizaformacion.com`.
+- **Reusa cert + DNS** ya emitidos para `dev.linkstation.ai`.
 - **Arregla bug** "Swarm overlay no resuelve supabase-kong por DNS interno": pasa por traefik, que SÍ es resolvable desde Swarm services (dev.dash).
 
-### 3.1. Kong → `dev.automatizaformacion.com/supabase/*`
+### 3.1. Kong → `dev.linkstation.ai/supabase/*`
 
 El `docker-compose.yml` ya incluye las **labels traefik** necesarias (sección `supabase-kong.labels`). Al redeploy del service `supabase`, traefik debería recoger la ruta automáticamente.
 
@@ -153,7 +153,7 @@ El `docker-compose.yml` ya incluye las **labels traefik** necesarias (sección `
 
 | Campo                | Valor                                 |
 | -------------------- | ------------------------------------- |
-| Host                 | `dev.automatizaformacion.com`         |
+| Host                 | `dev.linkstation.ai`         |
 | Path                 | `/supabase`                           |
 | Strip Path           | ON                                    |
 | Container            | `supabase-kong`                       |
@@ -170,7 +170,7 @@ Studio es "god mode" (SQL editor + RLS bypass). Acceso recomendado:
 # Desde tu máquina local:
 bash infra/supabase-vps/scripts/ssh-vps.sh "sudo socat TCP-LISTEN:3010,fork TCP:supabase-studio:3000 &"
 # O usar SSH tunnel directo:
-ssh -L 3010:supabase-studio:3000 -i infra/supabase-vps/.vault/dashboard-af-vps-key root@46.62.193.169
+ssh -L 3010:supabase-studio:3000 -i infra/supabase-vps/.vault/linkstation-vps-key root@46.62.193.169
 # Abrir en navegador: http://localhost:3010
 ```
 
@@ -180,11 +180,11 @@ Si en el futuro se necesita acceso público a Studio, exponerlo con HTTP Basic A
 
 ```bash
 # Health endpoint de GoTrue a través del path-prefix:
-curl -sS "https://dev.automatizaformacion.com/supabase/auth/v1/health" -m 10
+curl -sS "https://dev.linkstation.ai/supabase/auth/v1/health" -m 10
 # Esperado: {"version":"v2.188.1","name":"GoTrue","description":"GoTrue is a user registration..."}
 
 # Headers para confirmar que traefik está stripping correctamente:
-curl -sI "https://dev.automatizaformacion.com/supabase/auth/v1/health" -m 10 | head -5
+curl -sI "https://dev.linkstation.ai/supabase/auth/v1/health" -m 10 | head -5
 # Esperado: HTTP/2 200, x-kong-*, server: kong/...
 ```
 
@@ -194,7 +194,7 @@ curl -sI "https://dev.automatizaformacion.com/supabase/auth/v1/health" -m 10 | h
 
 ### 4.1. Login en Studio
 
-Abre `https://studio.automatizaformacion.com` en navegador:
+Abre `https://studio.linkstation.ai` en navegador:
 
 - Aparece prompt de Basic Auth → usuario `admin` / password `<DASHBOARD_PASSWORD>`
 - Tras login, ves la UI de Supabase Studio
@@ -216,7 +216,7 @@ docker exec -it supabase-db psql -U postgres -c "\l"
 
 ```bash
 curl -H "apikey: <ANON_KEY>" -H "Authorization: Bearer <ANON_KEY>" \
-  https://supabase.automatizaformacion.com/rest/v1/
+  https://supabase.linkstation.ai/rest/v1/
 
 # Esperado: HTTP/2 200 con un JSON descripción del schema
 ```
@@ -275,7 +275,7 @@ Debe listar al menos: `tenants`, `knowledge_base`, `web_widgets`.
 
 ## 6. Cargar snapshot de BD local (datos demo)
 
-Tienes en local el ZIP cifrado: `backups/local-db/dashboard-af-bd-handoff-20260522-1445.zip` (password `AF*2026!`).
+Tienes en local el ZIP cifrado: `backups/local-db/linkstation-bd-handoff-20260522-1445.zip` (password `AF*2026!`).
 
 ### 6.1. Regenerar snapshot fresco (recomendado)
 
@@ -284,14 +284,14 @@ El ZIP de hace ~24h puede estar desactualizado. Genera uno nuevo desde tu local:
 ```powershell
 # En tu máquina local
 bash scripts/db-export-snapshot.sh --no-encrypt
-# Genera backups/local-db/dashboard-af-snapshot-YYYYMMDD-HHmm.dump.gz (sin cifrar)
+# Genera backups/local-db/linkstation-snapshot-YYYYMMDD-HHmm.dump.gz (sin cifrar)
 ```
 
 ### 6.2. Subir al VPS
 
 ```powershell
 & "C:\Program Files\PuTTY\pscp.exe" -pw <SSH_PASS> `
-  backups\local-db\dashboard-af-snapshot-YYYYMMDD-HHmm.dump.gz `
+  backups\local-db\linkstation-snapshot-YYYYMMDD-HHmm.dump.gz `
   root@46.62.193.169:/tmp/
 ```
 
@@ -299,7 +299,7 @@ bash scripts/db-export-snapshot.sh --no-encrypt
 
 ```bash
 # En el VPS
-gunzip -c /tmp/dashboard-af-snapshot-*.dump.gz | \
+gunzip -c /tmp/linkstation-snapshot-*.dump.gz | \
   docker exec -i supabase-db pg_restore \
     -U postgres -d postgres \
     --clean --if-exists \
@@ -310,7 +310,7 @@ gunzip -c /tmp/dashboard-af-snapshot-*.dump.gz | \
 ### 6.4. Limpiar
 
 ```bash
-rm /tmp/dashboard-af-snapshot-*.dump.gz
+rm /tmp/linkstation-snapshot-*.dump.gz
 rm -rf /tmp/af-migrations
 ```
 
@@ -327,14 +327,14 @@ Ahora que Supabase funciona, configura el `dev.dash` Application para apuntar a 
 NODE_ENV=production
 PORT=3000
 NEXT_PUBLIC_APP_ENV=production
-NEXT_PUBLIC_APP_URL=https://dev.automatizaformacion.com
-NEXTAUTH_URL=https://dev.automatizaformacion.com
+NEXT_PUBLIC_APP_URL=https://dev.linkstation.ai
+NEXTAUTH_URL=https://dev.linkstation.ai
 NEXTAUTH_SECRET=<DEL_VAULT — NEXTAUTH_SECRET>
 LOG_LEVEL=info
 
 # === SUPABASE (path-prefix vía traefik — same-origin con dev.dash) ===
-NEXT_PUBLIC_SUPABASE_URL=https://dev.automatizaformacion.com/supabase
-SUPABASE_URL=https://dev.automatizaformacion.com/supabase
+NEXT_PUBLIC_SUPABASE_URL=https://dev.linkstation.ai/supabase
+SUPABASE_URL=https://dev.linkstation.ai/supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<DEL_VAULT — ANON_KEY>
 SUPABASE_SERVICE_ROLE_KEY=<DEL_VAULT — SERVICE_ROLE_KEY>
 DATABASE_URL=postgresql://postgres:<DEL_VAULT_POSTGRES_PASSWORD>@supabase-db:5432/postgres
@@ -367,10 +367,10 @@ WHATSAPP_VERIFY_TOKEN=<copiar>
 # === CRM Sprint 2 (déjalas vacías por ahora) ===
 HUBSPOT_CLIENT_ID=
 HUBSPOT_CLIENT_SECRET=
-HUBSPOT_REDIRECT_URI=https://dev.automatizaformacion.com/api/integrations/hubspot/callback
+HUBSPOT_REDIRECT_URI=https://dev.linkstation.ai/api/integrations/hubspot/callback
 ZOHO_CLIENT_ID=
 ZOHO_CLIENT_SECRET=
-ZOHO_REDIRECT_URI=https://dev.automatizaformacion.com/api/integrations/zoho/callback
+ZOHO_REDIRECT_URI=https://dev.linkstation.ai/api/integrations/zoho/callback
 ZOHO_API_DOMAIN=https://www.zohoapis.eu
 
 # === Feature flags ===
@@ -390,8 +390,8 @@ En Dokploy → service `dev.dash` → tab **Advanced** (o Settings) → **Networ
 Si Dokploy no permite networks múltiples desde UI, fallback: usar **DNS externo** vía la URL pública:
 
 ```env
-REDIS_URL=redis://rediscola-copy-xxx.automatizaformacion.com:6379   # si lo expones
-DATABASE_URL=postgresql://postgres:PASS@supabase.automatizaformacion.com:5432/postgres   # NO recomendado (expone Postgres)
+REDIS_URL=redis://rediscola-copy-xxx.linkstation.ai:6379   # si lo expones
+DATABASE_URL=postgresql://postgres:PASS@supabase.linkstation.ai:5432/postgres   # NO recomendado (expone Postgres)
 ```
 
 Lo limpio es **misma red interna**. Avísame si Dokploy no lo permite en su UI.
@@ -428,19 +428,19 @@ Pega los logs y los interpreto.
 
 ```bash
 # HTTP
-curl -I https://dev.automatizaformacion.com
+curl -I https://dev.linkstation.ai
 # Esperado: HTTP/2 200 OR 307 (redirect login)
 
-curl -I https://supabase.automatizaformacion.com
+curl -I https://supabase.linkstation.ai
 # Esperado: HTTP/2 200 OR 401
 
-curl -I https://studio.automatizaformacion.com
+curl -I https://studio.linkstation.ai
 # Esperado: HTTP/2 401 (basic auth)
 ```
 
 Browser:
 
-- `https://dev.automatizaformacion.com` → login page carga
+- `https://dev.linkstation.ai` → login page carga
 - Login con un usuario que tengas en el snapshot restaurado
 - Dashboard carga con datos
 - Logout funciona
@@ -469,7 +469,7 @@ Tras 24h sin problemas, puedes borrar el snapshot ZIP cifrado de tu local.
 | dev.dash no conecta a Postgres                            | Networks Docker no compartidas                  | §7.2                                                     |
 | Login Supabase Studio falla                               | `DASHBOARD_PASSWORD` mal escrito                | Verifica espacio inicial/final al copiar                 |
 | `ERROR: relation "tenants" does not exist`                | Migrations no aplicadas                         | §5                                                       |
-| LetsEncrypt SSL error en supabase.automatizaformacion.com | DNS no propagado o domain no añadido en Dokploy | §1 + §3                                                  |
+| LetsEncrypt SSL error en supabase.linkstation.ai | DNS no propagado o domain no añadido en Dokploy | §1 + §3                                                  |
 
 ---
 
@@ -483,4 +483,4 @@ Tras 24h sin problemas, puedes borrar el snapshot ZIP cifrado de tu local.
 
 ---
 
-**Final del doc**. Tras §9 todos verdes, Supabase + dev.dash operativos en `dev.automatizaformacion.com`.
+**Final del doc**. Tras §9 todos verdes, Supabase + dev.dash operativos en `dev.linkstation.ai`.

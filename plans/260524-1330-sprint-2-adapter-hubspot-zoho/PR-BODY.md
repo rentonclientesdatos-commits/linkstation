@@ -1,4 +1,4 @@
-## Resumen
+﻿## Resumen
 
 Sprint 2 — MVP de la capa de integraciones CRM multi-tenant: HubSpot Public App + Zoho multi-DC, ambos con OAuth 2.0, WriteGuard append-only por defecto, y UI admin completa para gestionar conexiones.
 
@@ -77,7 +77,7 @@ NINGUNO. Los callers Sprint 1 de `CRMFactory.getProvider(tenantId, config)` sigu
 
 - `OAUTH_STATE_SECRET` (32+ chars random base64url) — HMAC del state OAuth.
 - `HUBSPOT_CLIENT_ID` / `HUBSPOT_CLIENT_SECRET` — Public App de developers.hubspot.com.
-- `HUBSPOT_REDIRECT_URI` — `https://dev.automatizaformacion.com/api/integrations/hubspot/auth/callback`.
+- `HUBSPOT_REDIRECT_URI` — `https://dev.linkstation.ai/api/integrations/hubspot/auth/callback`.
 - `ZOHO_CLIENT_ID` / `ZOHO_CLIENT_SECRET` — App Zoho de api-console.zoho.com.
 - `ZOHO_REDIRECT_URI` — análogo Zoho.
 - `NEXT_PUBLIC_APP_URL` — base pública para construir redirect URIs.

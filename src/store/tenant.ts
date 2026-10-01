@@ -36,7 +36,7 @@ export const useTenantStore = create<TenantState>()(
       clearTenant: () => set({ ...DEFAULT_STATE, isConfigured: false }),
     }),
     {
-      name: "automatiza-tenant",
+      name: "linkstation-tenant",
       storage: createJSONStorage(() => sessionStorage),
     }
   )

@@ -1,4 +1,4 @@
-# Git Métricas Históricas — dashboard-af
+﻿# Git Métricas Históricas — linkstation
 
 **Generado:** 2026-05-27  
 **Ventana:** 2026-03-02 (primer commit) → 2026-05-27 (hoy)  
@@ -365,7 +365,7 @@ consistente con la política de ramas protegidas).
 
 ## Snapshot final
 
-A 2026-05-27, el proyecto **dashboard-af** acumula **602 commits** en git (todos los
+A 2026-05-27, el proyecto **linkstation** acumula **602 commits** en git (todos los
 refs) sobre **44 días productivos** de 87 días calendario (50.6% de ratio).
 El equipo comprende 3 identidades: `osdopllamadas` (434 commits, codebase original
 pre-auditoría), `Renzo` (152 commits post-auditoría) y `Ai2You` (16 merge commits);

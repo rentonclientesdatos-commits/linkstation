@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "af-agents",
   "version": "0.0.0",
-  "description": "Project-local plugin for dashboard-af — AI CRM + Workflow Orchestrator multi-tenant. Includes orchestrator + 19 specialized subagents, 28 skills, 18 hooks (ClaudeKit Engineer + AF-specific), and 5 development rules.",
+  "description": "Project-local plugin for linkstation — AI CRM + Workflow Orchestrator multi-tenant. Includes orchestrator + 19 specialized subagents, 28 skills, 18 hooks (ClaudeKit Engineer + AF-specific), and 5 development rules.",
   "author": {
     "name": "Javier HP (Auditor)",
     "email": "admin@2you.ai"

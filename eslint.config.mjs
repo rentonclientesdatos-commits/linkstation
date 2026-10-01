@@ -1,11 +1,11 @@
-import { defineConfig, globalIgnores } from "eslint/config";
+﻿import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // dashboard-af: honrar la convención `_varName` para variables intencionalmente
+  // linkstation: honrar la convención `_varName` para variables intencionalmente
   // sin usar. Estándar de TypeScript/Node — alinea el linter con la intención.
   {
     rules: {
@@ -27,7 +27,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // dashboard-af: zonas que NO son código de producción.
+    // linkstation: zonas que NO son código de producción.
     // Si quieres lintearlas, mueve a src/lib/ o crea un override específico.
     "src/scratch/**",          // código de debug, también excluido de tsconfig
     "src/scripts/**",          // utilidades manuales (one-off migrations, etc.)

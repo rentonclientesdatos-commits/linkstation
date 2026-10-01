@@ -1,4 +1,4 @@
-# Runbook de despliegue VPS — Sprint 4 (Google Sheets pull/writeback)
+﻿# Runbook de despliegue VPS — Sprint 4 (Google Sheets pull/writeback)
 
 > **Generado 03-06-2026.** Pasos EXACTOS para promover Sprint 4 al VPS sin perder
 > datos ni romper leads históricos. **Probar TODO en local primero** (sección 0).
@@ -30,7 +30,7 @@ npm run build                # exit 0
 
 # 0.2 Simular BD "vieja" (sin las columnas nuevas) y aplicar migración
 #     para verificar que el backfill no rompe nada:
-docker exec supabase_db_automatiza-formacion-dashboard psql -U postgres -d postgres \
+docker exec supabase_db_linkstation-dashboard psql -U postgres -d postgres \
   -c "SELECT current_stage, status, COUNT(*) FROM public.lead GROUP BY 1,2;"
 #     → confirmar que el backfill mapeó status→current_stage correctamente.
 ```
@@ -52,7 +52,7 @@ La migración es **idempotente** (`IF NOT EXISTS`) y trae **backfill** desde `st
 
 ```bash
 # Archivo: supabase/migrations/20260603100000_lead_add_current_stage_and_advisor_fields.sql
-# Aplicar su contenido vía POST a https://dev.automatizaformacion.com/supabase/pg/query
+# Aplicar su contenido vía POST a https://dev.linkstation.ai/supabase/pg/query
 # con el service_role JWT (NUNCA imprimir el valor en logs/transcript).
 ```
 

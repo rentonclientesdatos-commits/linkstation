@@ -1,4 +1,4 @@
-# Release Notes — v0.5.1
+﻿# Release Notes — v0.5.1
 
 **Fecha**: 10 de junio de 2026  
 **Estado**: Producción (VPS Dokploy desplegado ✅)
@@ -90,7 +90,7 @@ supabase/migrations/20260607_002_rls_residual_cross_tenant.sql
 supabase/migrations/20260608_003_rls_tenants_tabla.sql
 ```
 
-Aplicadas en VPS dev.automatizaformacion.com ✅. Pendientes: staging, prod.
+Aplicadas en VPS dev.linkstation.ai ✅. Pendientes: staging, prod.
 
 ## Variables de entorno nuevas
 
@@ -135,12 +135,12 @@ Aplicadas en VPS dev.automatizaformacion.com ✅. Pendientes: staging, prod.
 cea9860 chore(release): bump v0.5.0 -> v0.5.1 (Sprint 5 Zoho + fixes RLS + Costes-LLM + simulador)
 da03e4d Merge branch 'feature/integ-renzo-costes-llm-simulator' into developer
 27a8853 Merge branch 'feature/sprint-05-zoho-entrada-leads' into developer
-6455317 Merge pull request #30 from AutomatizaFormacion/fix/sec-rls-002-tenants
+6455317 Merge pull request #30 from LinkStation/fix/sec-rls-002-tenants
 a6a1268 fix(security): cerrar RLS leak en tenants + corregir raiz base_schema (BUG-SEC RLS-002)
-2b27f01 Merge pull request #29 from AutomatizaFormacion/fix/sec-rls-001-residual
+2b27f01 Merge pull request #29 from LinkStation/fix/sec-rls-001-residual
 a8f2a20 fix(security): cerrar RLS residual cross-tenant en campanas/availability_slots/lead_events
 22d88e1 fix(seed): agentes demo a gpt-5.4-mini (modelos claude-sonnet-4-7 / gpt-4.1-mini obsoletos)
-b23a3b7 Merge pull request #27 from AutomatizaFormacion/fix/sec-rls-001-tenant-isolation
+b23a3b7 Merge pull request #27 from LinkStation/fix/sec-rls-001-tenant-isolation
 80eb159 fix(security): RLS multi-tenant isolation en lectura authenticated (BUG-SEC RLS-001)
 ```
 

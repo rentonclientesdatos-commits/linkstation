@@ -62,7 +62,7 @@ const ADMIN_SECTIONS: HelpSectionSeed[] = [
     route_in_app: "/dashboard",
     brief: "Bienvenida y mapa de la documentación técnica.",
     content_markdown:
-      "# Doc Admin\n\nDocumentación técnica para administradores de plataforma del dashboard de Automatiza Formación.\n\nAquí encontrarás cómo gestionar tenants, deploys, RLS multi-tenant, troubleshooting y mantenimiento general.",
+      "# Doc Admin\n\nDocumentación técnica para administradores de plataforma del dashboard de LinkStation.\n\nAquí encontrarás cómo gestionar tenants, deploys, RLS multi-tenant, troubleshooting y mantenimiento general.",
   },
   {
     scope: "admin",

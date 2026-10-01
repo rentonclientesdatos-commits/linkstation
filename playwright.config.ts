@@ -1,7 +1,7 @@
-import { defineConfig, devices } from "@playwright/test";
+﻿import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Playwright config — dashboard-af
+ * Playwright config — linkstation
  *
  * Convención local:
  *   - El dev server se lanza con `npm run dev` (puerto 8500).

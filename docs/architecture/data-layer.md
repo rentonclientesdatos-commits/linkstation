@@ -1,7 +1,7 @@
-# Data Layer Architecture
+﻿# Data Layer Architecture
 
 **Versión:** 1.0.0 — 2026-05-18 (Audit-Data, análisis estático)
-**Proyecto:** dashboard-af (Next.js 16 + Supabase + BullMQ)
+**Proyecto:** linkstation (Next.js 16 + Supabase + BullMQ)
 
 ---
 

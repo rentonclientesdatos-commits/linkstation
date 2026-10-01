@@ -1,4 +1,4 @@
-# Fase 02 — Validación Sprint 1 (Capa de datos)
+﻿# Fase 02 — Validación Sprint 1 (Capa de datos)
 
 ## Context Links
 
@@ -138,7 +138,7 @@ SELECT * FROM integrations WHERE tenant_id = '<tenant-A-id>';
 SELECT * FROM lead_opportunities WHERE tenant_id = '<tenant-A-id>';
 ```
 
-Comando E2E VPS: `BASE_URL=https://dev.automatizaformacion.com npm run test:e2e -- tests/e2e/sprint-1/*.spec.ts` (cuando existan).
+Comando E2E VPS: `BASE_URL=https://dev.linkstation.ai npm run test:e2e -- tests/e2e/sprint-1/*.spec.ts` (cuando existan).
 
 ## 4. Test manual del tester (humano)
 

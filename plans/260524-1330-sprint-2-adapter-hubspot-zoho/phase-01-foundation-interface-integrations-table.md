@@ -1,4 +1,4 @@
-# Phase 01 — Foundation: interface, migración integrations, TokenManager
+﻿# Phase 01 — Foundation: interface, migración integrations, TokenManager
 
 ## Context Links
 
@@ -86,19 +86,19 @@ Flujo de un request al CRM:
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/interface.ts` (ampliar)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/factory.ts` (refactor cache + TokenManager)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/providers/zoho.ts` (constructor recibe tokens del TokenManager, ya no maneja refresh propio — fase 02 termina la integración)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/interface.ts` (ampliar)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/factory.ts` (refactor cache + TokenManager)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/providers/zoho.ts` (constructor recibe tokens del TokenManager, ya no maneja refresh propio — fase 02 termina la integración)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/token-manager.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/crm-error.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/oauth/oauth-state.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/supabase/migrations/20260524100000_integrations_oauth_and_audit.sql`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/token-manager.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/oauth-state.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/crm-error.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/token-manager.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/crm-error.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/oauth/oauth-state.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/supabase/migrations/20260524100000_integrations_oauth_and_audit.sql`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/token-manager.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/oauth-state.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/crm-error.test.ts`
 
 ### Borrar
 

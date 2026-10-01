@@ -1,4 +1,4 @@
-# INFORME-FINAL — E2E Total Run dashboard-af
+﻿# INFORME-FINAL — E2E Total Run linkstation
 
 > **Modo**: barrido único de detección (NO fix in-session, por instrucción del usuario).
 > **Destino**: bloque/página 7 del informe que genera otro chat.
@@ -19,7 +19,7 @@
 
 ## Resumen ejecutivo (1 párrafo para bloque 7)
 
-> Se ejecutó barrido E2E completo del dashboard-af local (28 rutas dashboard + 10 endpoints API + flujos de webhooks, OAuth y widget público) con sesión admin real. **Auth, RBAC y aislamiento de endpoints admin-only funcionan correctamente**. Se detectaron **9 bugs únicos**: **3 CRIT** que afectan funcionalidades core (CSP bloquea Supabase local → datos no cargan client-side; React hooks error rompe `/dashboard/orchestrator`; webhook WhatsApp leak info de infra interna), **4 HIGH** (endpoints que no responden — leads/ingest, google/auth, widget público —, widget embed.js retorna 400 con content-type incorrecto), y **2 MED** (cron-reminders 503 unauth, `/api/version` campos commit/branch/deployedAt sin poblar). El bug más crítico es **E2E-260527-003** (CSP) porque oculta el comportamiento real de gran parte de la UI en dev local y casi seguro afecta también al VPS.
+> Se ejecutó barrido E2E completo del linkstation local (28 rutas dashboard + 10 endpoints API + flujos de webhooks, OAuth y widget público) con sesión admin real. **Auth, RBAC y aislamiento de endpoints admin-only funcionan correctamente**. Se detectaron **9 bugs únicos**: **3 CRIT** que afectan funcionalidades core (CSP bloquea Supabase local → datos no cargan client-side; React hooks error rompe `/dashboard/orchestrator`; webhook WhatsApp leak info de infra interna), **4 HIGH** (endpoints que no responden — leads/ingest, google/auth, widget público —, widget embed.js retorna 400 con content-type incorrecto), y **2 MED** (cron-reminders 503 unauth, `/api/version` campos commit/branch/deployedAt sin poblar). El bug más crítico es **E2E-260527-003** (CSP) porque oculta el comportamiento real de gran parte de la UI en dev local y casi seguro afecta también al VPS.
 
 ## Resultados por fase
 
@@ -41,7 +41,7 @@
 
 | ID                 | Título                                                   | Ubicación                                 | Impacto                                                                                                                                                   |
 | ------------------ | -------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **E2E-260527-003** | CSP `connect-src` bloquea Supabase local                 | middleware/Sentry CSP config              | Dev local roto, queries client-side a `127.0.0.1:8100` fallan en TODAS las páginas. Casi seguro afecta VPS (CSP no incluye `dev.automatizaformacion.com`) |
+| **E2E-260527-003** | CSP `connect-src` bloquea Supabase local                 | middleware/Sentry CSP config              | Dev local roto, queries client-side a `127.0.0.1:8100` fallan en TODAS las páginas. Casi seguro afecta VPS (CSP no incluye `dev.linkstation.ai`) |
 | **E2E-260527-004** | React "Rendered more hooks" en `/dashboard/orchestrator` | `src/app/dashboard/orchestrator/page.tsx` | Workflow builder inaccesible. Ruta documentada como existente está rota                                                                                   |
 | **E2E-260527-007** | `/api/webhooks/whatsapp` retorna 503 con firma bogus     | `src/app/api/webhooks/whatsapp/route.ts`  | Info leak (revela infra interna a anon) + Meta puede desactivar el webhook por 503 sostenidos                                                             |
 

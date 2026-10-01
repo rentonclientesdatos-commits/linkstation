@@ -1,4 +1,4 @@
----
+﻿---
 title: "Sprint Validación Pre-MVP (SP-4B) — Equipo Renzo"
 sprint_id: SP-4B
 version_target: v0.3.0 (MVP GA — detonado por el cierre de este sprint, rebajado desde v0.4.0)
@@ -61,7 +61,7 @@ Cada fase de validación tiene 6 bloques fijos:
 
 1. **Test automático con instrucciones (código)** — `npm run typecheck`, `npm run lint`, `npm run build`, `npm test`. Cobertura objetivo + thresholds.
 2. **Test E2C local (Playwright contra `localhost:8500`)** — flujos golden path + edge cases. Comando: `npm run test:e2e`. Reportes y screenshots a `playwright-report/`.
-3. **Test E2E VPS (Playwright contra URL VPS de Renzo)** — mismos flujos pero contra entorno desplegado. Variable `BASE_URL=https://<vps>.automatizaformacion.com`. Detecta problemas de despliegue, env vars, DNS, TLS.
+3. **Test E2E VPS (Playwright contra URL VPS de Renzo)** — mismos flujos pero contra entorno desplegado. Variable `BASE_URL=https://<vps>.linkstation.ai`. Detecta problemas de despliegue, env vars, DNS, TLS.
 4. **Test manual con instrucciones para el tester (humano)** — checklist con: qué probar, cómo, qué esperar, criterios de aceptación. Sin asumir conocimiento del código.
 5. **Hotfixes encontrados** — tabla dinámica de bugs detectados durante esta fase. Cada hotfix con su propio `BUG-XXX` ID, severidad, fix aplicado, commit ref.
 6. **Subida a GH** — commits incrementales sobre `feature/sprint-03b-validacion-pre-mvp` agrupados por fase. La fase queda 🔵 cuando todos sus hotfixes están a 🔵 y los 4 bloques de test pasan.

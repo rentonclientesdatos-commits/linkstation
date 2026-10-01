@@ -1,4 +1,4 @@
-# Phase D — Proactive agent + screenshots + WCAG audit
+﻿# Phase D — Proactive agent + screenshots + WCAG audit
 
 **Tiempo:** 2-3h
 **Bloquea:** Cierre del plan completo.
@@ -121,7 +121,7 @@ Coordinación: usar credenciales del vault. URL Supabase = path-prefix VPS o LOC
 Tiempo límite: 90 min total. Si una sección bloquea: SKIP y documentar.
 Reportar al final con tabla: section | status (DONE|SKIPPED|BLOCKED) | screenshot_path | wcag_violations_fixed.
 
-Work context: e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard
+Work context: e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard
 Reports: plans/260524-1020-doc-agent-empty-states-full/reports/
 """)
 ```
@@ -155,7 +155,7 @@ Para cada una en LOCAL y VPS:
 
 Si quedan violaciones AA no fixeables: documentar en plans/260524-1020-.../reports/wcag-final-audit.md con explicación + propuesta.
 
-Work context: e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard
+Work context: e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard
 """)
 ```
 

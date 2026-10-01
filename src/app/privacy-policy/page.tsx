@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Politica de Privacidad | Re_ FORMA",
+  title: "Politica de Privacidad | LinkStation",
   description:
-    "Conoce como Re_ FORMA recopila, usa y protege tu informacion personal. Tu privacidad es nuestra prioridad.",
+    "Conoce como LinkStation recopila, usa y protege tu informacion personal. Tu privacidad es nuestra prioridad.",
 };
 
 const sections = [
@@ -50,7 +50,7 @@ const sections = [
     content: [
       {
         subtitle: "Prestacion del servicio",
-        text: "Usamos tus datos para operar, mantener y mejorar la plataforma Re_ FORMA, incluyendo el procesamiento de llamadas de IA, el agendamiento automatizado y la generacion de metricas de contactabilidad.",
+        text: "Usamos tus datos para operar, mantener y mejorar la plataforma LinkStation, incluyendo el procesamiento de llamadas de IA, el agendamiento automatizado y la generacion de metricas de contactabilidad.",
       },
       {
         subtitle: "Comunicaciones",
@@ -85,7 +85,7 @@ const sections = [
       },
       {
         subtitle: "No vendemos tus datos",
-        text: "Re_ FORMA nunca vende, arrienda ni comercializa tu informacion personal a terceros con fines publicitarios o de marketing.",
+        text: "LinkStation nunca vende, arrienda ni comercializa tu informacion personal a terceros con fines publicitarios o de marketing.",
       },
     ],
   },
@@ -127,7 +127,7 @@ const sections = [
       },
       {
         subtitle: "Oposicion y restriccion",
-        text: "Puedes oponerte al procesamiento de tus datos para fines de marketing. Para ejercer estos derechos, contactanos en privacidad@reforma.ai",
+        text: "Puedes oponerte al procesamiento de tus datos para fines de marketing. Para ejercer estos derechos, contactanos en privacidad@linkstation.ai",
       },
     ],
   },
@@ -158,7 +158,7 @@ export default function PrivacyPolicyPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <NextImage
             src="/logo-login.png"
-            alt="Re_ FORMA"
+            alt="LinkStation"
             width={140}
             height={40}
             className="h-9 w-auto object-contain"
@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
           </h1>
           <p className="mx-auto max-w-2xl text-lg font-medium text-slate-400">
             Tu privacidad es fundamental para nosotros. Este documento explica como recopilamos,
-            usamos y protegemos tu informacion personal en Re_ FORMA.
+            usamos y protegemos tu informacion personal en LinkStation.
           </p>
           <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-400">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
@@ -267,7 +267,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <a
-                href="mailto:privacidad@reforma.ai"
+                href="mailto:privacidad@linkstation.ai"
                 id="contact-privacy-email"
                 className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-slate-300 transition-all hover:border-amber-400/30 hover:bg-amber-400/10 hover:text-amber-400"
               >
@@ -276,11 +276,11 @@ export default function PrivacyPolicyPage() {
                   <p className="text-xs font-bold tracking-wider text-slate-500 uppercase">
                     Email de privacidad
                   </p>
-                  <p className="font-bold">privacidad@reforma.ai</p>
+                  <p className="font-bold">privacidad@linkstation.ai</p>
                 </div>
               </a>
               <a
-                href="mailto:soporte@reforma.ai"
+                href="mailto:soporte@linkstation.ai"
                 id="contact-support-email"
                 className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-slate-300 transition-all hover:border-amber-400/30 hover:bg-amber-400/10 hover:text-amber-400"
               >
@@ -289,7 +289,7 @@ export default function PrivacyPolicyPage() {
                   <p className="text-xs font-bold tracking-wider text-slate-500 uppercase">
                     Soporte general
                   </p>
-                  <p className="font-bold">soporte@reforma.ai</p>
+                  <p className="font-bold">soporte@linkstation.ai</p>
                 </div>
               </a>
             </div>
@@ -299,7 +299,7 @@ export default function PrivacyPolicyPage() {
         {/* Footer */}
         <div className="mt-16 border-t border-white/10 pt-10 text-center">
           <p className="mb-4 text-sm text-slate-500">
-            Al utilizar Re_ FORMA, aceptas los terminos descritos en esta Politica de Privacidad.
+            Al utilizar LinkStation, aceptas los terminos descritos en esta Politica de Privacidad.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link
@@ -311,8 +311,7 @@ export default function PrivacyPolicyPage() {
             </Link>
             <span className="text-slate-600">|</span>
             <p className="text-sm font-bold tracking-widest text-slate-500 uppercase">
-              {"Una aplicación de Renton Connective "}
-              {new Date().getFullYear()}
+              LinkStation {new Date().getFullYear()}
             </p>
           </div>
         </div>

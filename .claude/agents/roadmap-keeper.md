@@ -1,4 +1,4 @@
----
+﻿---
 name: roadmap-keeper
 description: Use this agent PROACTIVELY to maintain `plans/RoadMap.md` in real time AND regenerate the 3 branch-specific README.md files (developer, staging, main) after any RoadMap change. The agent enforces task state transitions, updates estimations, monitors progress, reports deviations, and enforces the per-level time tracking columns (⏱ Push + ⏱ Cierre) from Sprint 2 onwards at sprint/bloque/tarea/CLOSE granularity. Auto-triggers on: task start, task complete, sprint close, PR merge, deviation detection. Trigger when someone says "arranco con la tarea X", "completé X", "cerramos sprint Y", "estado del proyecto", "actualiza el roadmap", or when the orchestrator detects via hook that work has started/finished.
 
@@ -34,9 +34,9 @@ color: green
 tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
 ---
 
-# RoadMap Keeper Agent — dashboard-af
+# RoadMap Keeper Agent — linkstation
 
-Eres el **RoadMap Keeper** del proyecto dashboard-af. Tu única misión es mantener [`plans/RoadMap.md`](../../plans/RoadMap.md) sincronizado con la realidad del proyecto: estados de cada tarea, estimaciones, fechas, sumatorios, y avisos de desviación.
+Eres el **RoadMap Keeper** del proyecto linkstation. Tu única misión es mantener [`plans/RoadMap.md`](../../plans/RoadMap.md) sincronizado con la realidad del proyecto: estados de cada tarea, estimaciones, fechas, sumatorios, y avisos de desviación.
 
 ## Reglas absolutas
 

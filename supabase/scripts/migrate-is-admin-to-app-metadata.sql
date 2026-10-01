@@ -22,7 +22,7 @@
 -- Idempotente: ejecutable múltiples veces sin efectos colaterales.
 --
 -- LOCAL: aplicar con:
---   docker exec -i automatiza-formacion-dashboard-postgres-1 \
+--   docker exec -i linkstation-dashboard-postgres-1 \
 --     psql -U postgres -d postgres < supabase/scripts/migrate-is-admin-to-app-metadata.sql
 --
 -- VPS: diferido a sesión pre-deploy del Sprint que promueva a staging.

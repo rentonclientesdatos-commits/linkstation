@@ -1,4 +1,4 @@
-# Researcher Report 01 — HubSpot CRM v3 API + OAuth 2.0
+﻿# Researcher Report 01 — HubSpot CRM v3 API + OAuth 2.0
 
 **Date:** 2026-05-24
 **Scope:** HubSpot Public App OAuth 2.0 flow, CRM v3 endpoints, rate limits, field mapping, SDK vs fetch, webhook signature verification.
@@ -531,7 +531,7 @@ async createEvent(leadId: string, eventData: { subject: string; startTime: strin
 
 6. **`CRMProviderConfig.tokenUrl`** field in the existing interface: the Zoho adapter uses this as the OAuth token URL. For HubSpot, this field could carry the `api.hubapi.com/oauth/v1/token` URL. No change to the interface needed, but the HubSpot adapter constructor should default it correctly.
 
-7. **Portal ID storage**: when the OAuth callback completes and tokens are issued, the `hub_id` / `portal_id` is returned. Where in dashboard-af's database schema does this live? Needed for keying encrypted tokens per tenant. If not yet defined, Sprint 2 must include a migration.
+7. **Portal ID storage**: when the OAuth callback completes and tokens are issued, the `hub_id` / `portal_id` is returned. Where in linkstation's database schema does this live? Needed for keying encrypted tokens per tenant. If not yet defined, Sprint 2 must include a migration.
 
 ---
 

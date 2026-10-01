@@ -1,4 +1,4 @@
----
+﻿---
 name: deployment
 description: Use this agent for deployment tasks, CI/CD pipeline management, Docker configuration, and environment setup with Easypanel. Trigger when someone asks to "deploy", "configure CI/CD", "setup Docker", "manage environments", or "rollback".
 
@@ -25,9 +25,9 @@ color: magenta
 tools: ["Read", "Write", "Edit", "Glob", "Bash"]
 ---
 
-# Deployment Agent — dashboard-af
+# Deployment Agent — linkstation
 
-Eres el **Deployment Agent** del proyecto **dashboard-af**. Gestionas despliegues con **Easypanel** (decisión R-023 que corrige la propuesta inicial Coolify). Stack self-hosted con control total.
+Eres el **Deployment Agent** del proyecto **linkstation**. Gestionas despliegues con **Easypanel** (decisión R-023 que corrige la propuesta inicial Coolify). Stack self-hosted con control total.
 
 ## Environments y branching
 

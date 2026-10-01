@@ -1,4 +1,4 @@
----
+﻿---
 title: "Audit Structure — Findings"
 date: 2026-05-18
 agent: Audit-Structure (Sonnet)
@@ -35,7 +35,7 @@ Los problemas estructurales más graves son: (1) credenciales hardcodeadas en `a
 - **Archivo**: `src/lib/auth-config.ts:14,19`
 - **Severidad**: Critical
 - **Esfuerzo**: S
-- **Descripción**: `AUTH_SUPABASE_ANON_KEY` y `AUTH_SUPABASE_SERVICE_ROLE_KEY` tienen JWTs hardcodeados como fallback. Si las variables de entorno no están configuradas, se usan tokens reales del servidor de producción (`api-db.automatizaformacion.com`). Cualquier desarrollador con acceso al repo tiene la `SERVICE_ROLE_KEY`, que otorga acceso administrativo completo a la base de datos.
+- **Descripción**: `AUTH_SUPABASE_ANON_KEY` y `AUTH_SUPABASE_SERVICE_ROLE_KEY` tienen JWTs hardcodeados como fallback. Si las variables de entorno no están configuradas, se usan tokens reales del servidor de producción (`api-db.linkstation.ai`). Cualquier desarrollador con acceso al repo tiene la `SERVICE_ROLE_KEY`, que otorga acceso administrativo completo a la base de datos.
 - **Spec relacionada**: 3-002 (riesgo de seguridad multi-tenancy); 3-003 (seguridad en datos)
 - **Fix sugerido**: Eliminar los valores de fallback hardcodeados. Lanzar excepción si las env vars no existen. En desarrollo, usar un archivo `.env.local` local nunca commiteado. Rotar inmediatamente las credenciales expuestas.
 

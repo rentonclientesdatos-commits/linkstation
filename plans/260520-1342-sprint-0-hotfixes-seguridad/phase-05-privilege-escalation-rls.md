@@ -1,4 +1,4 @@
-# Phase 05 — Privilege escalation y RLS
+﻿# Phase 05 — Privilege escalation y RLS
 
 ## Context Links
 - [plan.md](plan.md) — overview Sprint 0
@@ -29,7 +29,7 @@ Esta es la fase más voluminosa del Sprint 0. Combina:
 - **DA-2-010**: Tabla `tenants` tiene política `USING(true)` para `authenticated` — cualquier usuario logueado ve y modifica TODOS los tenants. **SOLAPE**: este hallazgo ya está cubierto en el plan RLS `phase-01-hotfix-vulnerabilidades.md` Paso 1. Ver referencia.
 - **F-04-004**: `migrations/20260424_knowledge_and_billing.sql:28` — la política RLS de `knowledge_base` usa `app.current_tenant` como variable de sesión, pero esa variable nunca se setea en ningún punto del código. La política es una "dead letter" — nunca se evalúa correctamente, la RLS de `knowledge_base` es inefectiva.
 - **F-04-001**: `src/lib/actions/calls.ts:56-371` — 4 funciones de `fetchCalls` hacen queries a la tabla `calls` sin filtro `tenant_id`. Devuelven llamadas de todos los tenants mezcladas.
-- **F-04-001b** (verificado en browser 2026-05-21 con seed demo dual-tenant): `/dashboard/historial` devuelve los leads de TODOS los tenants en lugar de filtrar por el tenant activo. Con seed `seed-demo.ts` (15 organizaciones B2B en tenant "Automatiza Formación" + 40 personas B2C en tenant "Demo - Academia AF") el historial muestra los 55 mezclados. El bug está en el query del historial que hace JOIN `lead` + `llamadas` sin pasar `.eq("tenant_id", activeTenantId)`. Las **métricas del Panel General SÍ filtran correctamente** (mostraron 11 llamadas = solo AF, no las ~70 totales) — el bug es específico de la ruta del historial. Adicional al fix de 1-20 (que cubre `calls.ts`), revisar las queries de `src/app/dashboard/historial/page.tsx` o donde resida el `fetchHistorial`/`fetchLeads` que alimente esa vista.
+- **F-04-001b** (verificado en browser 2026-05-21 con seed demo dual-tenant): `/dashboard/historial` devuelve los leads de TODOS los tenants en lugar de filtrar por el tenant activo. Con seed `seed-demo.ts` (15 organizaciones B2B en tenant "LinkStation" + 40 personas B2C en tenant "Demo - Academia AF") el historial muestra los 55 mezclados. El bug está en el query del historial que hace JOIN `lead` + `llamadas` sin pasar `.eq("tenant_id", activeTenantId)`. Las **métricas del Panel General SÍ filtran correctamente** (mostraron 11 llamadas = solo AF, no las ~70 totales) — el bug es específico de la ruta del historial. Adicional al fix de 1-20 (que cubre `calls.ts`), revisar las queries de `src/app/dashboard/historial/page.tsx` o donde resida el `fetchHistorial`/`fetchLeads` que alimente esa vista.
 - **DA-2 inbox sweep**: `inbox.ts:448-501` — 9 funciones aceptan UUIDs arbitrarios en parámetros sin verificar que el tenant del usuario tenga ownership sobre ese recurso. Es el IDOR más extenso del sistema.
 
 ## Requirements

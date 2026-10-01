@@ -1,4 +1,4 @@
-# Fase 01 — Auth + RBAC matrix VPS
+﻿# Fase 01 — Auth + RBAC matrix VPS
 
 **Inicio:** 2026-05-27 19:55 UTC
 **Cierre:** 2026-05-27 20:13 UTC
@@ -22,11 +22,11 @@ Test: 6 logins consecutivos con email `ratelimit-probe-260527@example.com` + pas
 
 **Conclusión:** VPS NO sirve el commit `41d429c` todavía. Sigue corriendo `v0.3.0-rc.1` original sin rate-limit en `loginAction`. El push de Dokploy autodeploy parece NO haberse disparado o aún está construyendo. Coherente con que `/api/version` devuelve `commit:""` (sin Build Args inyectados).
 
-**Acción usuario:** verificar panel Dokploy (`panel.automatizaformacion.com`) si autodeploy se disparó. Si no, lanzar build manual del servicio `dev.dash`.
+**Acción usuario:** verificar panel Dokploy (`panel.linkstation.ai`) si autodeploy se disparó. Si no, lanzar build manual del servicio `dev.dash`.
 
 ### 01.B — Login admin válido + RBAC admin paths
 
-Credenciales: `automatizaformacion@gmail.com` / `BeaOli#AF*2026!` (vault local, NO commiteables).
+Credenciales: `LinkStation@gmail.com` / `BeaOli#AF*2026!` (vault local, NO commiteables).
 
 | Acción                                 | Resultado                                                          |
 | -------------------------------------- | ------------------------------------------------------------------ |
@@ -34,12 +34,12 @@ Credenciales: `automatizaformacion@gmail.com` / `BeaOli#AF*2026!` (vault local, 
 | GET `/dashboard`                       | 🟢 Renderiza overview (KPIs cross-canal, 3 leads, 6 llamadas)      |
 | GET `/dashboard/admin` (admin-only)    | 🟢 Renderiza tabla gestión clientes — 2 tenants visibles           |
 | GET `/dashboard/settings` (admin-only) | 🟢 Renderiza settings tenant                                       |
-| Header user                            | 🟢 "Automatiza Formación — CRM" + botón Cerrar sesión presente     |
+| Header user                            | 🟢 "LinkStation — CRM" + botón Cerrar sesión presente     |
 | Console errors                         | 🟢 0 errors, 24 warnings (Tailwind v4 + Next dev tools — normales) |
 
 **Tenants detectados (para Fase 02 RLS):**
 
-1. `Automatiza Formación` — `automatizaformacion@gmail.com` — Cliente
+1. `LinkStation` — `LinkStation@gmail.com` — Cliente
 2. `Demo - Academia AF` — `demo@af.local` — Cliente
 
 ### 01.C — Logout + acceso anon a rutas protegidas
@@ -69,7 +69,7 @@ Credenciales: `automatizaformacion@gmail.com` / `BeaOli#AF*2026!` (vault local, 
 - **Surface:** Infra Dokploy / Auth
 - **Descripción:** Tras push de `41d429c` con rate-limit en `loginAction`+`resetPasswordAction`, el VPS sigue sirviendo código sin rate-limit. Verificado funcionalmente: 6º login wrong-pass devuelve "Invalid login credentials" en vez del esperado "Demasiados intentos. Inténtalo en Xs.".
 - **Evidencia:** snapshot `01-B-dashboard-admin-as-admin.png` + tabla 01.A.
-- **Recomendación:** acción usuario en panel Dokploy `panel.automatizaformacion.com` — login con `hola@automatizaformacion.com` + verificar autodeploy. Lanzar build manual si no se disparó. Re-correr Fase 01.A tras deploy confirmado.
+- **Recomendación:** acción usuario en panel Dokploy `panel.linkstation.ai` — login con `hola@linkstation.ai` + verificar autodeploy. Lanzar build manual si no se disparó. Re-correr Fase 01.A tras deploy confirmado.
 - **NO bloquea** el resto del run (RBAC matrix actual funciona — el bug es ausencia de mejora, no regresión).
 
 ## Screenshots capturadas

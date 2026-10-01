@@ -1,4 +1,4 @@
----
+﻿---
 title: "Arquitectura Global - Vista de Pajaro"
 date: 2026-05-18
 status: final
@@ -14,7 +14,7 @@ sources:
 
 ## Stack Tecnologico
 
-Dashboard-af es un AI CRM + Workflow Orchestrator para Automatiza Formación. Implementado
+linkstation es un AI CRM + Workflow Orchestrator para LinkStation. Implementado
 como aplicacion Next.js 16 (App Router) con React 19 y TypeScript 5. La base de datos es
 Supabase (PostgreSQL + pgvector). La cola de trabajos usa BullMQ sobre Redis. Los agentes
 conversacionales de texto usan OpenAI GPT-4o via SDK directo; el stack multi-provider

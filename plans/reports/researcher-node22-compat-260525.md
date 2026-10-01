@@ -1,6 +1,6 @@
-# Node 20 → 22 Migration Compatibility Audit
+﻿# Node 20 → 22 Migration Compatibility Audit
 
-**dashboard-af** | 25-05-2026 | Researcher
+**linkstation** | 25-05-2026 | Researcher
 
 ---
 

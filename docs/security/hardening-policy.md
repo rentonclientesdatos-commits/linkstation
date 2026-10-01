@@ -1,5 +1,5 @@
----
-title: Política de Hardening de Seguridad — dashboard-af
+﻿---
+title: Política de Hardening de Seguridad — linkstation
 status: ACTIVE
 version: 1.0
 created: 2026-05-27
@@ -10,7 +10,7 @@ applies_to: rama developer · staging · main · entornos local + VPS Dokploy
 related_adr: ADR-014..023 · R-013..R-025 (DECISIONES-AUDITOR)
 ---
 
-# Política de Hardening de Seguridad — `dashboard-af`
+# Política de Hardening de Seguridad — `linkstation`
 
 > 📌 **Documento autoritario**. Las medidas listadas aquí son **obligatorias** para cualquier release que pase a `staging` o `main`. Si una medida está marcada 🟢 ACTIVA, **no se permite regresión**. Si está 🟡 PARCIAL, hay tarea abierta para cerrarla. Si está 🔘 PENDIENTE, está planificada.
 
@@ -178,7 +178,7 @@ grep -rE "USING \(true\)" supabase/migrations/  # RLS taut
 grep -rE "TODO.*security|FIXME.*security" src/  # TODOs security
 
 # 6. Sentry tracking activo
-curl -fsSL https://dev.automatizaformacion.com/api/version
+curl -fsSL https://dev.linkstation.ai/api/version
 # Esperado: campos commit, branch, deployedAt con valores reales (no "unknown")
 
 # 7. RLS hardening verificado
@@ -236,7 +236,7 @@ Cuando se detecte un incidente de seguridad (alerta Sentry, reporte usuario, fin
 - **Datos personales tratados**: nombre, email, teléfono, profesión, años experiencia, mensajes WhatsApp/voz, grabaciones llamadas.
 - **Base legal**: consentimiento + interés legítimo (lead contactado por academia).
 - **Periodo de retención**: TBD — pendiente decisión clienta. Auditor propone 24 meses tras última interacción.
-- **Encargado de tratamiento**: Automatiza Formación SL. Subencargados: Supabase (Dokploy auto-hosted), Anthropic/OpenAI (LLM), Retell/Ultravox (voz), Meta (WhatsApp), HubSpot/Zoho (CRM destino del tenant).
+- **Encargado de tratamiento**: LinkStation SL. Subencargados: Supabase (Dokploy auto-hosted), Anthropic/OpenAI (LLM), Retell/Ultravox (voz), Meta (WhatsApp), HubSpot/Zoho (CRM destino del tenant).
 - **Derechos ARCO+ del lead**: endpoint `/api/gdpr/export` y `/api/gdpr/delete` pendientes — abrir tarea Sprint Costes-LLM o Sprint 4.
 
 ## 9 · Documentos relacionados

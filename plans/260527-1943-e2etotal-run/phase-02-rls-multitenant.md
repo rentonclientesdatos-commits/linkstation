@@ -1,4 +1,4 @@
-# Fase 02 — RLS multi-tenant VPS
+﻿# Fase 02 — RLS multi-tenant VPS
 
 **Inicio:** 2026-05-27 20:13 UTC
 **Cierre:** 2026-05-27 20:18 UTC
@@ -55,7 +55,7 @@ WHERE p.policyname IS NULL;
 Para verificar enforcement RLS via UI (no solo estructural), se requiere:
 
 - Login con usuario del tenant `Demo - Academia AF` (`demo@af.local`).
-- Intentar acceder a leads/agents/etc del tenant `Automatiza Formación` vía URL manipulation o API directa.
+- Intentar acceder a leads/agents/etc del tenant `LinkStation` vía URL manipulation o API directa.
 
 **Estado:** diferido — el vault local no tiene password del usuario `demo@af.local`. Cubrir en SP-4B Renzo con sus credenciales propias del tenant Demo.
 

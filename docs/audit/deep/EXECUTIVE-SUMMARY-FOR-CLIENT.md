@@ -1,7 +1,7 @@
----
+﻿---
 title: "Informe Ejecutivo — Auditoría de Seguridad y Calidad"
 date: 2026-05-19
-project: dashboard-af / Automatiza Formación
+project: linkstation / LinkStation
 audience: Cliente (no técnico)
 confidentiality: Confidencial — solo para el equipo responsable del proyecto
 ---

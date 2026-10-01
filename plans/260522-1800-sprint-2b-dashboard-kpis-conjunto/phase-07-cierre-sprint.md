@@ -1,4 +1,4 @@
----
+﻿---
 title: "Sprint 2B — Phase 07 — Cierre SP-3B-CLOSE-1..5"
 status: pending
 priority: P1
@@ -144,7 +144,7 @@ last_updated: 24-05-2026
    - Tag SemVer `v0.2.8` en commit merge.
    - GitHub release con notas completas siguiendo plantilla CLAUDE.md "GitHub Releases".
    - Verificar Dokploy autodeploy (clean cache si necesario).
-   - Smoke E2E VPS contra `dev.automatizaformacion.com`.
+   - Smoke E2E VPS contra `dev.linkstation.ai`.
 
 7. **Hand-off SP-4B phase-03b**:
    - Crear/rellenar `plans/260522-1700-sprint-validacion-pre-mvp/phase-03b-validacion-sprint-2b.md` con:

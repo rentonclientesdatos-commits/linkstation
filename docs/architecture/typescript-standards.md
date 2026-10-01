@@ -1,4 +1,4 @@
-# TypeScript Standards — dashboard-af
+﻿# TypeScript Standards — linkstation
 
 > Regla absoluta del proyecto: **el código del repo no admite `any`**. ESLint lo bloquea (`@typescript-eslint/no-explicit-any: error`) y husky impide commitear cualquier fichero con `any` explícito.
 

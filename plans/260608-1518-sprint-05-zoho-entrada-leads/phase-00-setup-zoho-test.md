@@ -1,4 +1,4 @@
-# Fase 00 — Setup del Zoho de test (acciones del usuario)
+﻿# Fase 00 — Setup del Zoho de test (acciones del usuario)
 
 **Contexto:** [plan.md](plan.md). Prerequisitos manuales que Javi HP debe hacer en su cuenta Zoho de test para poder validar el sprint E2E. Decisión 08-06-2026: **probar las dos vías** (Workflow Webhook primero, OAuth + Notifications API después).
 
@@ -46,7 +46,7 @@
 
 1. Ir a **https://api-console.zoho.com** (con la cuenta del DC correcto) → **Add Client → Server-based Applications**.
 2. Rellenar:
-   - **Client Name:** p.ej. `dashboard-af`
+   - **Client Name:** p.ej. `linkstation`
    - **Homepage URL:** la de nuestro dashboard
    - **Authorized Redirect URIs:** `http://localhost:8500/api/integrations/zoho/callback` (local) — y la del VPS cuando se despliegue.
 3. Tras crear → copiar **Client ID** + **Client Secret** y pasármelos **por canal seguro** (vault / `.env.local`, NUNCA por chat ni commit).

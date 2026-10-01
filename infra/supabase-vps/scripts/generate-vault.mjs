@@ -113,9 +113,9 @@ ANON_KEY=${ANON_KEY}
 SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
 
 # URLs (placeholders — los subdominios se activan más adelante)
-SITE_URL=https://dev.automatizaformacion.com
-API_EXTERNAL_URL=https://supabase.automatizaformacion.com
-STUDIO_URL=https://studio.automatizaformacion.com
+SITE_URL=https://dev.linkstation.ai
+API_EXTERNAL_URL=https://supabase.linkstation.ai
+STUDIO_URL=https://studio.linkstation.ai
 
 # Studio admin (acceso vía SSH tunnel hasta que se exponga subdominio)
 DASHBOARD_USERNAME=admin

@@ -1,4 +1,4 @@
-# dashboard-af · Staging
+﻿# linkstation · Staging
 
 > **Versión:** {{PROJECT_VERSION}} &nbsp;·&nbsp; **Actualizado:** {{LAST_UPDATED}}
 
@@ -25,8 +25,8 @@ AI CRM + Workflow Orchestrator multi-tenant para academias formativas. Esta rama
 
 ```bash
 # 1. Clonar y cambiar a staging
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 git checkout staging
 
 # 2. Variables de entorno (staging)
@@ -45,7 +45,7 @@ npm run dev
 ## Estructura del proyecto (resumida)
 
 ```
-dashboard-af/
+linkstation/
 ├── src/                    # Código fuente (Next.js App Router)
 │   ├── app/                # Rutas y API routes
 │   ├── lib/                # Lógica de negocio, repositories, schemas Zod

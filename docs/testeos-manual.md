@@ -1,4 +1,4 @@
-# Testeos manuales — dashboard-af
+﻿# Testeos manuales — linkstation
 
 Checklist de pruebas manuales que el equipo de desarrollo debe ejecutar antes del cierre de cada sprint. Complementa a los tests automatizados (`npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:e2e`).
 

@@ -1,14 +1,14 @@
----
-title: "Deploy v0.2.0 a VPS Dokploy (dev.automatizaformacion.com)"
+﻿---
+title: "Deploy v0.2.0 a VPS Dokploy (dev.linkstation.ai)"
 audience: Javi HP + Renzo (ejecución)
 status: handoff document — sigue el orden, paso por paso
 date: 2026-05-23
 target_version: v0.2.0 (commit 94c035a en developer, tag v0.2.0)
-target_env: dev.automatizaformacion.com
+target_env: dev.linkstation.ai
 last_updated: 2026-05-23
 ---
 
-# Deploy v0.2.0 → `dev.automatizaformacion.com`
+# Deploy v0.2.0 → `dev.linkstation.ai`
 
 > ⚠️ **Documento de referencia para ejecución manual** del usuario. No contiene credenciales reales — usa placeholders. Las credenciales reales viajan por canal seguro (1Password / Bitwarden / Vault).
 >
@@ -29,12 +29,12 @@ vps:
   ssh_pass: <VPS_ROOT_PASSWORD> # → vault.vps.hetzner_root_pass
 
 dokploy:
-  panel_url: https://panel.automatizaformacion.com
+  panel_url: https://panel.linkstation.ai
   user: <DOKPLOY_USER> # → vault.dokploy.admin_email
   pass: <DOKPLOY_PASS> # → vault.dokploy.admin_pass
 
 app_target:
-  dominio: dev.automatizaformacion.com
+  dominio: dev.linkstation.ai
   rama: developer
   commit: 94c035a (tag v0.2.0)
 ```
@@ -82,7 +82,7 @@ ls -la /etc/dokploy 2>/dev/null
 ls -la /var/lib/dokploy 2>/dev/null
 
 # Domain actualmente respondiendo
-curl -s -I https://dev.automatizaformacion.com -m 5 | head -3
+curl -s -I https://dev.linkstation.ai -m 5 | head -3
 ```
 
 ### 1.3. Esperado y qué anotar
@@ -94,7 +94,7 @@ curl -s -I https://dev.automatizaformacion.com -m 5 | head -3
   - `$REDIS_CONTAINER` = container de Redis
   - `$KONG_CONTAINER` = container Kong (si Supabase completo)
 - Anota la versión actual desplegada (commit en logs del Next.js, o pregunta a Dokploy panel)
-- Anota si el dominio `dev.automatizaformacion.com` responde 200 / 307 / 502 / 404 / SSL error
+- Anota si el dominio `dev.linkstation.ai` responde 200 / 307 / 502 / 404 / SSL error
 
 ### 1.4. Si algún container falta
 
@@ -210,7 +210,7 @@ PY
 
 ```bash
 # En tu máquina local (donde está el repo), no en el VPS
-cd e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard
+cd e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard
 ls supabase/migrations/*.sql
 ```
 
@@ -285,10 +285,10 @@ docker exec $PG_CONTAINER psql -U postgres -c \
 
 ### 6.2. Cambiar env var del container Postgres en Dokploy
 
-En el panel Dokploy (`https://panel.automatizaformacion.com`):
+En el panel Dokploy (`https://panel.linkstation.ai`):
 
 1. Login con `<DOKPLOY_USER>` / `<DOKPLOY_PASS>`
-2. Project `dashboard-af` (o como se llame)
+2. Project `linkstation` (o como se llame)
 3. **Database (Postgres) service** → tab **Environment**
 4. Buscar `POSTGRES_PASSWORD` → reemplazar con el nuevo valor
 5. **NO redeploy aún** — esperar a tener TODOS los servicios actualizados
@@ -323,7 +323,7 @@ DATABASE_URL=postgresql://postgres:<NEW_POSTGRES_PASS>@<PG_CONTAINER>:5432/postg
 # Nuevos Sprint 1 + Sprint 0 (si no existían ya):
 ENCRYPTION_KEY=<ENCRYPTION_KEY nuevo del §3>
 CRON_SECRET=<CRON_SECRET nuevo del §3>
-NEXT_PUBLIC_APP_URL=https://dev.automatizaformacion.com
+NEXT_PUBLIC_APP_URL=https://dev.linkstation.ai
 NODE_ENV=production
 
 # Webhooks (solo si están activos — si no, dejar vacíos o eliminar):
@@ -389,7 +389,7 @@ Mismo proceso para el Worker.
 
 ```bash
 # Desde tu máquina local
-curl -I https://dev.automatizaformacion.com
+curl -I https://dev.linkstation.ai
 # Esperado: HTTP/2 200  o  HTTP/2 307 (redirect a /login)
 
 # Si 502/503: container Next.js no arriba todavía. Espera 30s.
@@ -399,7 +399,7 @@ curl -I https://dev.automatizaformacion.com
 
 ### 9.2. Browser check
 
-Abre `https://dev.automatizaformacion.com` en navegador:
+Abre `https://dev.linkstation.ai` en navegador:
 
 - Login screen carga (¿`/login` sin errors en console?)
 - Login con credencial demo (si tienes una creada en VPS):
@@ -439,7 +439,7 @@ Solo si Retell/WhatsApp/CRM activos:
 
 ```bash
 # Endpoint Retell webhook sin signature → debe devolver 401
-curl -X POST https://dev.automatizaformacion.com/api/webhooks/retell \
+curl -X POST https://dev.linkstation.ai/api/webhooks/retell \
   -H "Content-Type: application/json" -d '{"test":true}' -i
 
 # Esperado: HTTP/2 401 Unauthorized
@@ -463,7 +463,7 @@ passwd root
 En tu máquina local:
 
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/af-vps -C "javi@automatizaformacion"
+ssh-keygen -t ed25519 -f ~/.ssh/af-vps -C "javi@LinkStation"
 ssh-copy-id -i ~/.ssh/af-vps.pub root@<VPS_IP>
 ssh -i ~/.ssh/af-vps root@<VPS_IP>   # verificar que funciona
 ```
@@ -507,7 +507,7 @@ Editar `plans/RoadMap.md`:
 - Tarea **1-03** "Rotar JWTs comprometidos en Supabase": 🟡 DIFERIDA → 🟢 Completada
   ```
   ⏱ Real (final): ~20min · ✅ JWT_SECRET + ANON_KEY + SERVICE_ROLE_KEY rotados en VPS Dokploy
-  (panel.automatizaformacion.com) · Aplicado 2026-05-23 en deploy v0.2.0 a dev.automatizaformacion.com
+  (panel.linkstation.ai) · Aplicado 2026-05-23 en deploy v0.2.0 a dev.linkstation.ai
   ```
 - Tarea **1-05** "Cambio password Postgres default": 🟡 DIFERIDA → 🟢 Completada
   ```
@@ -521,7 +521,7 @@ Commit:
 git add plans/RoadMap.md
 git commit -m "docs(roadmap): cerrar 1-03 + 1-05 Sprint 0 tras deploy VPS v0.2.0
 
-Deploy v0.2.0 a dev.automatizaformacion.com aplicado el 2026-05-23.
+Deploy v0.2.0 a dev.linkstation.ai aplicado el 2026-05-23.
 Rotación JWTs Supabase (1-03) y password Postgres (1-05) ejecutadas
 contra el VPS Dokploy. Ambas tareas pasan de DIFERIDA pre-deploy a Completada.
 
@@ -571,7 +571,7 @@ En Dokploy panel → Application → Deployments → seleccionar deployment ante
 
 Marcar todas:
 
-- [ ] HTTP 200/307 en `https://dev.automatizaformacion.com`
+- [ ] HTTP 200/307 en `https://dev.linkstation.ai`
 - [ ] Login admin funciona y carga dashboard con datos
 - [ ] Logout redirige a `/login` (BUG-001 fix)
 - [ ] RLS activo en `tenants`, `knowledge_base`, `web_widgets` (verificado con SQL)
@@ -590,7 +590,7 @@ Marcar todas:
 
 - **Promoción a `staging`**: ¿cuándo? Depende de Bea (cliente) validación de Sprint 0+1 en `dev`.
 - **Promoción a `main`** (producción cliente): tras feedback Bea + completar Sprint 2 (HubSpot + Zoho).
-- **DNS**: si quieres `staging.automatizaformacion.com` aparte de `dev`, configurar registro DNS adicional cuando sea momento.
+- **DNS**: si quieres `staging.linkstation.ai` aparte de `dev`, configurar registro DNS adicional cuando sea momento.
 - **Backup periódico**: configurar cron en VPS que haga `pg_dump` cada 24h a un blob storage externo (no en el mismo VPS).
 - **Monitoring**: Uptime Kuma, Better Stack, o similar — actualmente sin alertas.
 

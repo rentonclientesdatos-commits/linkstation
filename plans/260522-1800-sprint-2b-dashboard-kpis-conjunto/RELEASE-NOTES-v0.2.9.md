@@ -1,4 +1,4 @@
-## Resumen
+﻿## Resumen
 
 Post-fix de Sprint 2B (v0.2.8) tras 2 bugs visuales detectados por el usuario en VPS + ejecución completa del E2E manual Bloques B-G. Mejoras visuales significativas en el Overview del dashboard validadas en producción.
 
@@ -6,7 +6,7 @@ Post-fix de Sprint 2B (v0.2.8) tras 2 bugs visuales detectados por el usuario en
 
 - **Alturas reales de las 4 cards del Overview ahora alineadas** a 389px (antes 382/362/362/382). Tres capas de fix: `auto-rows-fr` en grid, `h-full` en wrapper `role="img"` de `ChartManager`, card replicada del `ChartCard` para `OverviewCanalDistribution` con la nota "Web tracking en desarrollo" dentro de la card.
 - **Viewport del contenido ocupa 100% del ancho disponible** en pantallas grandes (>1920px, 2K, 4K). Antes `max-w-[1600px]` generaba franja blanca lateral de hasta 704px en pantallas 2560.
-- **E2E manual Bloques B-G ejecutado** (~2h 30min) sobre VPS `dev.automatizaformacion.com`: 32/43 tests PASS, 0 FAIL críticos, 5 N/A justificados (multi-tenant requiere segundo tenant), 2 diferidos a SP-4B (login destructivo).
+- **E2E manual Bloques B-G ejecutado** (~2h 30min) sobre VPS `dev.linkstation.ai`: 32/43 tests PASS, 0 FAIL críticos, 5 N/A justificados (multi-tenant requiere segundo tenant), 2 diferidos a SP-4B (login destructivo).
 - **Suite Playwright `sprint-2b-close` 18/18 verde** en local + VPS tras los fixes (smoke + deep checks).
 - **4 bugs detectados**: 1 HIGH **FIXED y desplegado** (BUG-2B-11 viewport), 3 WCAG menores diferidos al Sprint 3 Hardening (BUG-2B-08 aria-label, BUG-2B-09 heading hierarchy, BUG-2B-10 skip-link).
 

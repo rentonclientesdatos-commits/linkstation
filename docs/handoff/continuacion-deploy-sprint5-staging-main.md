@@ -1,4 +1,4 @@
-# Runbook continuación — Deploy Sprint 5 → VPS dev → staging → main
+﻿# Runbook continuación — Deploy Sprint 5 → VPS dev → staging → main
 
 > Estado a 09-06-2026 PM. El Bloque A (cierre Sprint 5 + merge a `developer`) está
 > COMPLETO. Este runbook cubre lo que falta: desplegar en VPS, e2etotal, y promover
@@ -10,7 +10,7 @@
 - `developer` local y remoto al día.
 - VPS recuperado de crash: `supabase-db` estaba `Exited (255)` → relevantado con
   `docker start supabase-db`. DB/auth/kong/rest/meta/studio/imgproxy → **healthy**.
-- Endpoints dev OK: `https://dev.automatizaformacion.com/login` 200, `/api/health` 200.
+- Endpoints dev OK: `https://dev.linkstation.ai/login` 200, `/api/health` 200.
 - Limpieza BD local: script idempotente listo en
   `plans/260608-1518-sprint-05-zoho-entrada-leads/cleanup-bd-local-artefactos-prueba.sql`
   (no aplicado: `.env.local` protegido en sandbox).
@@ -32,15 +32,15 @@
    `$env:NEW_ADMIN_PASSWORD` antes de lanzar Claude, o leerla del vault VPS
    `infra/supabase-vps/.vault/dokploy-env-vps.env` por SSH.
 3. **SSH al VPS**: usar la recovery key `~/.ssh/af_vps_recovery` (la del vault
-   `dashboard-af-vps-key` sigue rechazada). Host `root@46.62.193.169`.
+   `linkstation-vps-key` sigue rechazada). Host `root@46.62.193.169`.
 
 ## 📋 Pasos pendientes (en orden)
 
 ### 1. Redeploy dev.dash con Sprint 5
 
-- Panel Dokploy `https://panel.automatizaformacion.com:3000` (user `hola@automatizaformacion.com`,
+- Panel Dokploy `https://panel.linkstation.ai:3000` (user `hola@linkstation.ai`,
   pass en vault `dokploy-panel.env`).
-- Projects → **dev automatiza formacion** → tarjeta **dev.dash** → **Redeploy** (Clean Cache ON).
+- Projects → **dev LinkStation** → tarjeta **dev.dash** → **Redeploy** (Clean Cache ON).
 - Esperar build OK + contenedor Up. Verificar `curl /api/version` → debe mostrar `0.5.0`.
 - Alternativa sin navegador: API de Dokploy (crear token en panel → `POST /api/application.deploy`).
 
@@ -52,15 +52,15 @@
 ### 3. Promoción developer → staging
 
 - `/staging` (skill del proyecto: promote.ps1 limpia docs/plans/.claude antes del merge).
-- Dokploy: proyecto **test automatiza formacion**
+- Dokploy: proyecto **test LinkStation**
   (`panel.../project/gQap0W-Q9xABVSXQajiBg/environment/s0Bm7BS62I9U_ySTrkVc5`).
-- Contenedor **test-dash** autodeploy rama `staging`, dominio `https://test.automatizaformacion.com`.
+- Contenedor **test-dash** autodeploy rama `staging`, dominio `https://test.linkstation.ai`.
 - Supabase + Redis + Minio para staging con clon de datos de developer (decisión usuario: clon completo).
 
 ### 4. Promoción staging → main
 
 - `/staging-main` (promote.ps1 + tag SemVer).
-- Dokploy: contenedor prod, dominio `https://app.automatizaformacion.com`.
+- Dokploy: contenedor prod, dominio `https://app.linkstation.ai`.
 - Supabase + Redis + Minio prod con clon completo (decisión usuario; ⚠️ incluye datos
   de prueba + tokens OAuth test — riesgo aceptado por el usuario).
 

@@ -1,4 +1,4 @@
-# Informe de Seguridad y Hardening — VPS Hetzner (46.62.193.169)
+﻿# Informe de Seguridad y Hardening — VPS Hetzner (46.62.193.169)
 
 **Fecha**: 10-06-2026 | **Alcance**: ayer (09-06) + hoy (10-06, 2 sesiones) | **Autor**: equipo AF
 **Servidor**: Ubuntu 24.04.4 LTS, kernel 6.8.0-124, Dokploy + Docker Swarm 29.5.2
@@ -35,7 +35,7 @@ Tras dos caídas consecutivas del VPS (09-06 y 10-06), el servidor queda **recup
 | ID  | Severidad  | Finding                                                                                                            | Fix aplicado                                                                                                                            | Persistencia                              |
 | --- | ---------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
 | F1  | 🔴 Crítica | Holds Docker perdidos por restore (riesgo recaída Traefik)                                                         | Re-`apt-mark hold` 6 paquetes + re-blacklist unattended-upgrades                                                                        | apt (disco) ✅                            |
-| F2  | 🔴 Crítica | Panel Dokploy `:3000` (sin TLS) y puertos Swarm 2377/7946/4789 **expuestos a internet** (Docker/Swarm bypassa UFW) | Bloqueo en `iptables -t raw PREROUTING` desde eth0 + acceso panel SOLO vía `panel.automatizaformacion.com` (HTTPS/Traefik)              | systemd `af-docker-user-rules.service` ✅ |
+| F2  | 🔴 Crítica | Panel Dokploy `:3000` (sin TLS) y puertos Swarm 2377/7946/4789 **expuestos a internet** (Docker/Swarm bypassa UFW) | Bloqueo en `iptables -t raw PREROUTING` desde eth0 + acceso panel SOLO vía `panel.linkstation.ai` (HTTPS/Traefik)              | systemd `af-docker-user-rules.service` ✅ |
 | F3  | 🟠 Alta    | SSH con password auth + ataque activo (95 intentos fallidos, 14 baneos)                                            | `PermitRootLogin prohibit-password`, `MaxAuthTries 3`, X11 off, ClientAlive. Password auth se mantiene como fallback (decisión usuario) | drop-in sshd_config.d ✅                  |
 | F4  | 🟡 Media   | Docker daemon sin hardening                                                                                        | `daemon.json`: `no-new-privileges: true` + log rotation 10m×3                                                                           | fichero ✅                                |
 | F5  | 🟡 Media   | sshd laxa (maxauthtries 6, X11 on)                                                                                 | incluido en F3                                                                                                                          | ✅                                        |
@@ -133,7 +133,7 @@ Verificación en tiempo real contra el servidor, corrección por corrección:
 Como parte del cierre, los fixes del fichero `infra/supabase-vps/docker-compose.yml` se han llevado también al repositorio para que queden consolidados en la rama `developer`:
 
 - ✅ Commit `67346e8` creado en rama `fix/supabase-compose-healthchecks-vector`
-- ✅ PR **#28** abierto y listo: <https://github.com/AutomatizaFormacion/Automatiza-Formacion-DashBoard/pull/28>
+- ✅ PR **#28** abierto y listo: <https://github.com/LinkStation/linkstation-dashboard/pull/28>
 - 🔘 Merge del PR — paso administrativo final, reservado a aprobación humana por política del proyecto (las ramas se mergean solo con confirmación manual). Los fixes **ya están funcionando en el VPS**; el merge únicamente consolida que cualquier redeploy futuro despliegue el fichero ya corregido.
 
 ---

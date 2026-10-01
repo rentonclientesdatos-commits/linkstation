@@ -1,4 +1,4 @@
-# Release Notes — v0.2.7 (Sprint 2 — Hotfix post-deploy)
+﻿# Release Notes — v0.2.7 (Sprint 2 — Hotfix post-deploy)
 
 ## Resumen
 
@@ -16,7 +16,7 @@ Hotfix release tras detectar 1 bug crítico (BUG-2-01) durante el E2E VPS de v0.
 
 ### Bug fix crítico (BUG-2-01)
 
-- **Síntoma**: 500 Internal Server Error en todas las rutas tras desplegar v0.2.5 en `dev.automatizaformacion.com`.
+- **Síntoma**: 500 Internal Server Error en todas las rutas tras desplegar v0.2.5 en `dev.linkstation.ai`.
 - **Root cause**: `Error: You cannot use different slug names for the same dynamic path ('id' !== 'provider')` — Next.js App Router prohíbe dos slugs dinámicos hermanos en el mismo nivel del filesystem.
 - **Detectado por**: logs runtime Dokploy tras E2E VPS smoke. NO detectado por `npm run build`, `npx tsc --noEmit`, ni `vitest` (es error de runtime puro).
 - **Fix**: mover 4 routes `/api/integrations/[id]/*` → `/api/integrations/manage/[id]/*`.
@@ -34,7 +34,7 @@ Hotfix release tras detectar 1 bug crítico (BUG-2-01) durante el E2E VPS de v0.
 
 ### Validación
 
-- **E2E VPS smoke 5/5 verdes** contra `https://dev.automatizaformacion.com`:
+- **E2E VPS smoke 5/5 verdes** contra `https://dev.linkstation.ai`:
   - VPS-01: redirect raíz → /login ✅
   - VPS-02: login admin → /dashboard ✅
   - VPS-03: /dashboard/settings carga ✅

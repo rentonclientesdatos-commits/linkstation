@@ -1,4 +1,4 @@
-# Auditoría de Dependencias — dashboard-af — 20-05-2026
+﻿# Auditoría de Dependencias — linkstation — 20-05-2026
 
 **Agente:** `af-agents:adr`
 **Fecha:** 20-05-2026

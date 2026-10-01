@@ -1,4 +1,4 @@
----
+﻿---
 title: "Registro de decisiones — Auditor Javier HP"
 date: 2026-05-19
 audience: cliente y equipo
@@ -737,7 +737,7 @@ La instancia de Supabase **no es la versión Cloud comercial**, sino una instanc
 
 #### <a id="r-023c"></a>R-023.c — Versiones de Supabase / Postgres / GoTrue ✅ RESPONDIDA (investigación del Auditor)
 
-**Investigación realizada por el Auditor sobre `api-db.automatizaformacion.com`** (HEAD requests sin autenticación):
+**Investigación realizada por el Auditor sobre `api-db.linkstation.ai`** (HEAD requests sin autenticación):
 
 | Componente | Versión detectada | Fuente |
 |---|---|---|

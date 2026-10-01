@@ -1,4 +1,4 @@
-# Fase 01 — App de Meta dedicada + ADR-025 + acompañamiento a clienta
+﻿# Fase 01 — App de Meta dedicada + ADR-025 + acompañamiento a clienta
 
 ## Context Links
 
@@ -23,7 +23,7 @@
 **Funcionales**
 
 - App de Meta creada en el business portfolio de la clienta, con producto WhatsApp añadido.
-- Nombre público profesional ("Automatiza Formación").
+- Nombre público profesional ("LinkStation").
 
 **No funcionales**
 

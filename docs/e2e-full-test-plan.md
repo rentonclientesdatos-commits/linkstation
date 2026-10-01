@@ -1,4 +1,4 @@
-# dashboard-af — Plan E2E Full Reutilizable
+﻿# linkstation — Plan E2E Full Reutilizable
 
 > Plan maestro de testing E2E exhaustivo y reusable. Diseñado para vivir indefinidamente — versionar en cabecera, no clonar.
 
@@ -15,12 +15,12 @@
   | Env       | Comando recomendado                   | URL                                   | Notas                                                                                   |
   | --------- | ------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------- |
   | `local`   | `/e2ctotal`                           | `http://localhost:8500`               | Requiere `npm run dev` + Supabase local (`npm run db:up`) + Redis (`npm run redis:up`). |
-  | `vps`     | `/e2etotal`                           | `https://dev.automatizaformacion.com` | Requiere deploy Dokploy verde + variables Sentry/Sepay/etc. en panel.                   |
+  | `vps`     | `/e2etotal`                           | `https://dev.linkstation.ai` | Requiere deploy Dokploy verde + variables Sentry/Sepay/etc. en panel.                   |
   | `staging` | `/e2etotal --env staging`             | TBD                                   | Solo cuando exista rama `staging` promovida.                                            |
   | `prod`    | `/e2etotal --env prod --vps-readonly` | TBD                                   | NO ejecutar destructivos. Read-only + smoke obligatorio (`--vps-readonly`).             |
 
 - **Cuentas test**:
-  - **Admin**: `automatizaformacion@gmail.com` — password en `.env.local` (`NEW_ADMIN_PASSWORD`). VPS creds en `infra/supabase-vps/.vault/` (gitignored).
+  - **Admin**: `LinkStation@gmail.com` — password en `.env.local` (`NEW_ADMIN_PASSWORD`). VPS creds en `infra/supabase-vps/.vault/` (gitignored).
   - **Tenant user (non-admin)**: derivar con `scripts/create-demo-user.ts` o usar `DEMO_USER_EMAIL` / `DEMO_USER_PASSWORD` de `.env.local`.
   - Para refresh creds: `npx tsx scripts/show-demo-credentials.ts`.
 - **Stack browser**: Playwright (ya instalado, `playwright.config.ts`, chromium only en MVP; firefox/webkit en Sprint 3+).
@@ -51,7 +51,7 @@ Claude Code corre en sandbox que **bloquea por defecto la lectura de `.env.local
 
 ## Propósito + Objetivo final
 
-Test de regresión completo, mantenible y reusable que verifica con profundidad TODAS las funcionalidades de dashboard-af (auth, RBAC, CRUD multi-tenant, integraciones CRM, webhooks, RLS) en un único pase orquestado. Aprende cada run (histórico) y permite detectar regresiones recurrentes.
+Test de regresión completo, mantenible y reusable que verifica con profundidad TODAS las funcionalidades de linkstation (auth, RBAC, CRUD multi-tenant, integraciones CRM, webhooks, RLS) en un único pase orquestado. Aprende cada run (histórico) y permite detectar regresiones recurrentes.
 
 No reemplaza specs Playwright por sprint (cierre formal). Complementa con barrido transversal periódico (semanal manual o mensual CI).
 

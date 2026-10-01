@@ -1,4 +1,4 @@
----
+﻿---
 title: "Deep Improvement Backlog — Backlog ampliado con findings de Deep Audit"
 date: 2026-05-19
 status: final
@@ -13,7 +13,7 @@ sources:
   - docs/audit/deep/DA-5-accessibility.md
 ---
 
-# Deep Improvement Backlog — dashboard-af
+# Deep Improvement Backlog — linkstation
 
 Backlog ampliado incorporando los ~67 findings nuevos del deep audit (DA-1 a DA-5).
 El backlog original tenía 75 items (B-001 a B-075). Este documento añade los items DB-XXX

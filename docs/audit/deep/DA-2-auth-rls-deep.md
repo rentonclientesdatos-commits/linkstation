@@ -1,4 +1,4 @@
----
+﻿---
 title: "Deep Audit DA-2 — Auth & RLS"
 date: 2026-05-18
 agent: DA-2 (Sonnet)
@@ -404,7 +404,7 @@ El middleware de Next.js protege `/dashboard/*` pero no valida sesión en `/api/
 
 **Reproducción de ataque (ejemplo):**
 ```bash
-curl -X POST https://app.automatizaformacion.com/api/orchestration/deploy \
+curl -X POST https://app.linkstation.ai/api/orchestration/deploy \
   -H "Content-Type: application/json" \
   -d '{"tenantId":"<uuid-conocido>","workflowId":"<uuid-conocido>","status":"INACTIVE"}'
 # Respuesta: {"success":true} — workflow desactivado sin autenticación

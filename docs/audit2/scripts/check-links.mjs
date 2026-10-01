@@ -60,7 +60,7 @@ for (const f of htmlFiles) {
 
 // Dominios/URLs de repositorios privados conocidos → 404 público es esperado
 const KNOWN_PRIVATE_PATTERNS = [
-  /^https:\/\/github\.com\/AutomatizaFormacion\//i,
+  /^https:\/\/github\.com\/LinkStation\//i,
 ];
 
 function isKnownPrivate(url) {

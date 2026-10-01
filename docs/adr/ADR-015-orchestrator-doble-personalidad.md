@@ -1,4 +1,4 @@
-# ADR-015 — Orquestador: "doble personalidad" (legacy + multi-workflow) — decisión sobre consolidación
+﻿# ADR-015 — Orquestador: "doble personalidad" (legacy + multi-workflow) — decisión sobre consolidación
 
 | Campo  | Valor                                                                    |
 | ------ | ------------------------------------------------------------------------ |
@@ -102,7 +102,7 @@ Tocar `handleNewLead` durante el MVP es alto riesgo: es la entry point de toda l
 
 ## Referencias
 
-- Renzo V1: `docs/Informes de programacion/documentacion sistema  automatiza formacion V1.pdf` §"Módulo del Orquestador"
+- Renzo V1: `docs/Informes de programacion/documentacion sistema  LinkStation V1.pdf` §"Módulo del Orquestador"
 - Bug fix paso 2: commit `837e12f`
 - Phase plan original: `plans/260520-1342-sprint-1-capa-datos/phase-09-fix-bugs-renzo-y-reqs-bea.md` §NEW-01
 - Tabla legacy: `supabase/migrations-historical/20260404040000_orchestrator_v3.sql` (`tenant_orchestrator_config`)

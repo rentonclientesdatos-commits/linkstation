@@ -404,7 +404,7 @@ export function Sidebar({
               ) : (
                 <NextImage
                   src="/logo-login.png"
-                  alt="Re_ FORMA Social Media Partner"
+                  alt="LinkStation"
                   width={260}
                   height={130}
                   className="h-10 w-auto object-contain sm:h-12"
@@ -424,7 +424,7 @@ export function Sidebar({
               ) : (
                 <NextImage
                   src="/favicon-renton.png"
-                  alt="Re_"
+                  alt="LinkStation"
                   width={40}
                   height={40}
                   className="mx-auto h-9 w-9 object-contain"

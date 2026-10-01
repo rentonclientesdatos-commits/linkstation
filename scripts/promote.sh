@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ============================================================================
-# promote.sh — Promocion de ramas dashboard-af (Bash/WSL/Linux/macOS)
+# promote.sh — Promocion de ramas linkstation (Bash/WSL/Linux/macOS)
 # ============================================================================
 # Equivalente Bash de promote.ps1. Uso:
 #   ./scripts/promote.sh --from developer --to staging --version 0.1.0

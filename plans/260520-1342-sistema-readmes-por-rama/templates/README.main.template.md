@@ -1,4 +1,4 @@
-# dashboard-af
+﻿# linkstation
 
 > **Versión:** {{PROJECT_VERSION}} &nbsp;·&nbsp; **Actualizado:** {{LAST_UPDATED}}
 
@@ -24,8 +24,8 @@ AI CRM + Workflow Orchestrator multi-tenant para academias y centros de formaci�
 
 ```bash
 # 1. Clonar
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 
 # 2. Variables de entorno
 cp .env.example .env.local

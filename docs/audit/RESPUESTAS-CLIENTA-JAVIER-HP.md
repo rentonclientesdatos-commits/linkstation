@@ -1,4 +1,4 @@
----
+﻿---
 title: Respuestas a preguntas pendientes — Auditor Javier HP
 date: 2026-05-19
 status: LIVING_DOCUMENT
@@ -12,7 +12,7 @@ sources: PREGUNTAS-PARA-LA-CLIENTE.md + DECISIONES-AUDITOR-JAVIER-HP.md
 
 ## Propósito
 
-Este documento recoge, en formato **Pregunta → Respuesta**, las decisiones tomadas por **Javier HP (Auditor)** sobre las 25 preguntas pendientes identificadas durante la auditoría del proyecto `dashboard-af`.
+Este documento recoge, en formato **Pregunta → Respuesta**, las decisiones tomadas por **Javier HP (Auditor)** sobre las 25 preguntas pendientes identificadas durante la auditoría del proyecto `linkstation`.
 
 Su objetivo es que la **clienta (Esden)** pueda **contrastar y validar** cada decisión del auditor con su propia visión de negocio, antes de cerrar definitivamente las respuestas y bajarlas al backlog técnico (Sprint 0 → 3).
 
@@ -34,7 +34,7 @@ Su objetivo es que la **clienta (Esden)** pueda **contrastar y validar** cada de
 
 ### P-002 — ¿Quién tiene o ha tenido acceso al código fuente del proyecto? ✅ Respondida
 
-**Pregunta original:** Lista de personas con acceso al repo `renzo1111ia/dashboard-af`, terceros con ZIPs y personas que ya no deberían tener acceso.
+**Pregunta original:** Lista de personas con acceso al repo `LinkStation/linkstation-dashboard`, terceros con ZIPs y personas que ya no deberían tener acceso.
 
 **Respuesta del Auditor Javier HP:** **Solo personal interno** ha tenido acceso al código fuente. No ha habido entregas externas a terceros no autorizados.
 

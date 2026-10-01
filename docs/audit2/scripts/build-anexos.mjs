@@ -1,4 +1,4 @@
-// Convierte los .md de auditoría/decisiones/spec/seguridad a HTML "bonitos"
+﻿// Convierte los .md de auditoría/decisiones/spec/seguridad a HTML "bonitos"
 // y los deposita en docs/audit2/anexos/ con la misma estética que index.html.
 //
 // Estrategia robusta (marked v16):
@@ -382,7 +382,7 @@ function buildHtml(doc, mdRaw) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${escapeHtml(doc.title)} · Auditoría V2 · dashboard-af</title>
+  <title>${escapeHtml(doc.title)} · Auditoría V2 · linkstation</title>
   <meta name="description" content="${escapeAttr(doc.subtitle)}">
   <link rel="stylesheet" href="../assets/anexo.css">
 </head>
@@ -392,7 +392,7 @@ function buildHtml(doc, mdRaw) {
     <div class="anexo-brand">
       <span class="anexo-brand-logo" aria-hidden="true">📚</span>
       <div>
-        <div class="anexo-brand-title">Auditoría V2 · dashboard-af</div>
+        <div class="anexo-brand-title">Auditoría V2 · linkstation</div>
         <div class="anexo-brand-sub">AUTOMATIZA FORMACIÓN SL · Anexo documental</div>
       </div>
     </div>
@@ -434,7 +434,7 @@ ${body}
 </main>
 
 <footer class="anexo-foot">
-  <div>📚 Anexo de la Auditoría V2 · dashboard-af · AUTOMATIZA FORMACIÓN SL</div>
+  <div>📚 Anexo de la Auditoría V2 · linkstation · AUTOMATIZA FORMACIÓN SL</div>
   <div>
     <a href="${indexHref}">← Volver al informe principal</a> ·
     <a href="${escapeAttr(

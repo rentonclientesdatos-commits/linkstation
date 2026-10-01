@@ -4,7 +4,7 @@ import path from "node:path";
 
 const root = path.resolve(process.cwd());
 const htmlPath = path.join(root, "docs", "entregables", "informe-google-sheets-oauth-tech-provider.html");
-const pdfPath = path.join(root, "docs", "entregables", "Informe-Google-Sheets-OAuth-AppUnica-AutomatizaFormacion.pdf");
+const pdfPath = path.join(root, "docs", "entregables", "Informe-Google-Sheets-OAuth-AppUnica-LinkStation.pdf");
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
@@ -19,7 +19,7 @@ await page.pdf({
   headerTemplate: "<div></div>",
   footerTemplate:
     '<div style="width:100%; font-size:8pt; color:#999; padding:0 14mm; font-family:Segoe UI, sans-serif; display:flex; justify-content:space-between;">' +
-    '<span>dashboard-af · Google Sheets — App única OAuth</span>' +
+    '<span>linkstation · Google Sheets — App única OAuth</span>' +
     '<span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span>' +
     "</div>",
 });

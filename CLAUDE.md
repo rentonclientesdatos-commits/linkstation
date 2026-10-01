@@ -1,14 +1,14 @@
-# CLAUDE.md — dashboard-af
+﻿# CLAUDE.md — LinkStation
 
 Instrucciones específicas del proyecto. Se combinan con las globales de cada dev (`~/.claude/CLAUDE.md`). Cuando hay conflicto, **manda este fichero**.
 
 ## Identidad del proyecto
 
-**dashboard-af** — AI CRM + Workflow Orchestrator multi-tenant para academias formativas (sector formación, ES + Latam). Versión actual: **v0.0.0**.
+**LinkStation** — AI CRM + Workflow Orchestrator multi-tenant para empresas, academias y comercios. Versión actual: **v0.5.1**.
 
-- **Stack**: Next.js 16 + React 19 + Tailwind + PostgreSQL via **Supabase self-hosted (Easypanel)** + `@supabase/ssr` + **Zod** (validaciones) + Repository pattern + RLS multi-tenant + BullMQ + LangChain multi-LLM (Anthropic + OpenAI + Google Genai) + Retell + Ultravox. **SIN ORM nuevo** (decisión confirmada — ver memoria `project_stack_data_layer.md`). **AWS Bedrock descartado del stack** (26-05-2026, orden del usuario — no se trabajará con AWS).
-- **Cliente final**: academias y centros de formación (cada tenant elige su CRM).
-- **Audiencia interna del repo**: equipo de desarrollo Automatiza Formación.
+- **Stack**: Next.js 16 + React 19 + Tailwind + PostgreSQL via **Supabase self-hosted (Easypanel)** + `@supabase/ssr` + **Zod** (validaciones) + Repository pattern + RLS multi-tenant + BullMQ + LangChain multi-LLM (Anthropic + OpenAI + Google Genai) + Retell + Ultravox.
+- **Cliente final**: empresas y negocios multicanal (cada tenant elige su CRM).
+- **Audiencia interna del repo**: equipo de desarrollo LinkStation.
 
 ## Documentación autoritaria
 
@@ -162,7 +162,7 @@ Esto evita acumular trabajo bloqueado y permite probar el comportamiento de la a
 
 1. **Co-authorship**: NUNCA Claude/Anthropic/IA como co-autor de commits. Sí se permiten co-autores humanos.
 2. **Push protegido**: NUNCA push directo a `staging` o `main`. Merge sólo vía PR con autorización.
-3. **No `git remote add origin <url-cliente>`** — el repo local NO se conecta al GitHub del cliente (`renzo1111ia/dashboard-af`).
+3. **No `git remote add origin <url-cliente>`** — el repo local NO se conecta al GitHub del cliente (`LinkStation/linkstation-dashboard`).
 4. **No Prisma, no Drizzle, no ningún ORM nuevo, no Dokploy, no Airtable** — stack ya decidido en audit, no reintroducir. La capa de datos se hace con `@supabase/ssr` + Zod + Repository pattern, sin ORM heavyweight.
 5. **Dependency Guard**: TODA nueva dependencia de producción debe pasar por el subagente `af-agents:adr` antes de instalarse. El hook `af-deps-guard.cjs` lo bloquea automáticamente si se intenta saltar.
 6. **RLS obligatorio** en toda tabla multi-tenant. El audit detectó 4 vulnerabilidades activas — ver plan en `plans/20260519-1200-rls-multitenant-hardening/`.
@@ -199,7 +199,7 @@ Triggers de escalado **preventivo** (antes de empezar la tarea, sin esperar a fa
 | Sonnet tarea de research multi-fuente (3+ docs/webs/repos a sintetizar) o trade-offs arquitectónicos      | Subir a Opus desde el inicio                       |
 | Cualquier modelo: bucle de >2 reintentos sobre el mismo error/test                                        | Escalar al siguiente tier y reintentar UNA vez más |
 
-**Aplicación en `dashboard-af`:**
+**Aplicación en `linkstation`:**
 
 - Sprint 0 (hotfixes RLS, JWT, crypto, next bump): orquestación en **Sonnet**, escalada puntual a **Opus** para decisiones de RLS multi-tenant y firma de webhooks.
 - Sprint 1 (capa de datos, Zod, Repository): **Sonnet** por defecto. **Opus** sólo para diseño del Repository pattern multi-tenant y cifrado AES-256 de tokens OAuth (tarea 2-26).
@@ -348,3 +348,13 @@ Ver detalle completo de cada subagente en `.claude/agents/*.md`.
 ## Para el equipo de desarrollo
 
 Cuando clones este repo, lee primero [docs/dev-onboarding.md](docs/dev-onboarding.md). Cubre setup, ramas, .env, primer arranque y cómo trabajar con Claude Code en este proyecto.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

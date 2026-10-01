@@ -1,4 +1,4 @@
----
+﻿---
 title: "Preguntas pendientes para la cliente"
 date: 2026-05-19
 audience: cliente y equipo no técnico
@@ -57,7 +57,7 @@ Necesitamos hacer una lista de personas:
 **Por qué insisto:** rotar las contraseñas (lo haremos en Sprint 0) invalida las antiguas. Pero **si alguien las copió fuera del repositorio** mientras eran válidas, puede que haya hecho copias de datos sin que nos enteremos. Saber a quién hay que confiar (y a quién no) cambia la urgencia.
 
 **Necesitamos saber:**
-- Lista de personas con acceso al repositorio `renzo1111ia/dashboard-af` en GitHub.
+- Lista de personas con acceso al repositorio `LinkStation/linkstation-dashboard` en GitHub.
 - Lista de personas que han recibido el código por otro medio (ZIP, etc.).
 - Si alguna de esas personas ya no debería tener acceso.
 

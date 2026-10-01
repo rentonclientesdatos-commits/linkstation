@@ -22,14 +22,14 @@ export const REQUIRED_CUSTOM_PROPERTIES: CustomPropertyDef[] = [
     name: "af_origen",
     label: "AF Origen",
     fieldType: "text",
-    description: "Canal de adquisición original del lead (Automatiza Formación).",
+    description: "Canal de adquisición original del lead (LinkStation).",
     groupName: "contactinformation",
   },
   {
     name: "af_metadata_extra",
     label: "AF Metadata Extra",
     fieldType: "textarea",
-    description: "JSON con metadata adicional del lead (Automatiza Formación).",
+    description: "JSON con metadata adicional del lead (LinkStation).",
     groupName: "contactinformation",
   },
 ];

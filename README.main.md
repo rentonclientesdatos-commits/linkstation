@@ -1,8 +1,8 @@
-# dashboard-af
+# LinkStation
 
 > **Versión:** v0.8.0 &nbsp;·&nbsp; **Actualizado:** 2026-06-13 14:30 UTC
 
-AI CRM + Workflow Orchestrator multi-tenant para academias y centros de formación. Automatiza la captación, cualificación y conversión de leads mediante agentes de IA (voz + chat), integración con HubSpot y Zoho CRM, y paneles de gestión por tenant.
+AI CRM + Workflow Orchestrator SaaS multi-tenant. Plataforma integral de gestión de llamadas IA, agendamiento y contactabilidad para cualquier tipo de negocio.
 
 ---
 
@@ -24,8 +24,8 @@ AI CRM + Workflow Orchestrator multi-tenant para academias y centros de formaci�
 
 ```bash
 # 1. Clonar
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 
 # 2. Variables de entorno
 cp .env.example .env.local

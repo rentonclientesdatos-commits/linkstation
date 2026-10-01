@@ -1,11 +1,11 @@
----
-title: "Release Process — dashboard-af"
+﻿---
+title: "Release Process — linkstation"
 audience: equipo de desarrollo (lead + Auditor)
 date: 20-05-2026
 status: vigente
 ---
 
-# Release Process — dashboard-af
+# Release Process — linkstation
 
 ## 1. Modelo de ramas
 

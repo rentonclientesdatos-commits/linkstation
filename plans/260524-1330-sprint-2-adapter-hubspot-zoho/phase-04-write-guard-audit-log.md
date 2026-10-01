@@ -1,4 +1,4 @@
-# Phase 04 — WriteGuard + crm_write_audit integration
+﻿# Phase 04 — WriteGuard + crm_write_audit integration
 
 ## Context Links
 
@@ -83,10 +83,10 @@ WriteGuard:
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/write-guard.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/audit-query.ts` (helper SELECT para UI)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/write-guard.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/audit-query.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/write-guard.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/audit-query.ts` (helper SELECT para UI)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/write-guard.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/audit-query.test.ts`
 
 ## Implementation steps
 

@@ -1,4 +1,4 @@
-# Phase 00 — Setup, env vars y estructura de carpetas
+﻿# Phase 00 — Setup, env vars y estructura de carpetas
 
 ## Context Links
 
@@ -60,16 +60,16 @@ tests/
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/.env.example`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/package.json` (devDep `msw`)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/vitest.config.ts` (setupFiles)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/.env.example`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/package.json` (devDep `msw`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/vitest.config.ts` (setupFiles)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/oauth/.gitkeep`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/.gitkeep`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/mocks/.gitkeep`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/mocks/server.ts` (MSW setup)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/oauth/.gitkeep`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/.gitkeep`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/mocks/.gitkeep`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/mocks/server.ts` (MSW setup)
 
 ## Implementation steps
 

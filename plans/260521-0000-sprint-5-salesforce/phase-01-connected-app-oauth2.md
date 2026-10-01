@@ -1,4 +1,4 @@
----
+﻿---
 title: "5-01 — Connected App + ADR jsforce + OAuth2 flow"
 status: pending
 priority: P2
@@ -54,7 +54,7 @@ created: 2026-05-21
 Manual setup (documentado, no código):
   1. Salesforce > Setup > App Manager > New Connected App
   2. Configurar OAuth scopes: api, refresh_token, offline_access
-  3. Callback URL: https://dashboard-af.example.com/api/oauth/salesforce/callback
+  3. Callback URL: https://app.linkstation.ai/api/oauth/salesforce/callback
   4. Guardar consumer_key + consumer_secret en env
 
 Código:

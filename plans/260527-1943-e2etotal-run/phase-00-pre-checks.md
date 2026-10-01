@@ -1,4 +1,4 @@
-# Fase 00 — Pre-checks VPS
+﻿# Fase 00 — Pre-checks VPS
 
 **Inicio:** 2026-05-27 19:43 UTC
 **Cierre:** 2026-05-27 19:55 UTC
@@ -14,7 +14,7 @@
 | 3. git HEAD                     | 🟢 `41d429c`                                                   | Commit con auth rate-limit + agente security                                  |
 | 4. VPS `/api/health`            | 🟢 `200 {"status":"ok"}`                                       | VPS responde                                                                  |
 | 5. VPS `/api/version`           | 🟡 `v0.3.0-rc.1, commit:"", branch:"", nodeVersion:"v22.22.3"` | Build Args Dokploy no inyectan SHA — verificación deploy funcional Fase 01    |
-| 6. Creds VPS admin              | 🟢 `infra/supabase-vps/.vault/` (gitignored)                   | `automatizaformacion@gmail.com` con password vault                            |
+| 6. Creds VPS admin              | 🟢 `infra/supabase-vps/.vault/` (gitignored)                   | `LinkStation@gmail.com` con password vault                            |
 | 7. Playwright                   | 🟢 `v1.60.0`                                                   | Instalado                                                                     |
 | 8. Local dev server (no aplica) | n/a — run target = vps                                         | Hay dev local en 8500 (PID 70444) que se reutilizará en `/e2ctotal` posterior |
 
@@ -26,7 +26,7 @@
 - **OWASP:** A09 (Security Logging & Monitoring Failures — deploy verification roto)
 - **Surface:** Infra Dokploy
 - **Descripción:** `/api/version` en VPS devuelve `commit:""`, `branch:""`, `deployedAt:""`. El Dockerfile (líneas 47-52) declara `ARG GIT_COMMIT_SHA/GIT_BRANCH/BUILD_TIMESTAMP` pero Dokploy no los inyecta al `docker build`. Esto rompe verificación post-deploy.
-- **Evidencia:** `curl https://dev.automatizaformacion.com/api/version` → vacío.
+- **Evidencia:** `curl https://dev.linkstation.ai/api/version` → vacío.
 - **Estado:** **CONOCIDO** — documentado en `plans/RoadMap.md` nota `SP-4-NEW-13`: "Pendiente: Dokploy panel debe inyectar build args al docker build (acción manual usuario)".
 - **Recomendación:** acción manual usuario en panel Dokploy. NO bloquea este run. Workaround: verificar deploy funcional en Fase 01 (rate-limit auth NO existía en `v0.3.0-rc.1` original → si VPS lo tiene = deploy reciente).
 - **No abrir BUG nuevo** — ya tracked.

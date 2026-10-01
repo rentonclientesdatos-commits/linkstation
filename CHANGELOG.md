@@ -1,6 +1,6 @@
-# Changelog
+﻿# Changelog
 
-Todos los cambios notables de `dashboard-af` se documentan en este archivo.
+Todos los cambios notables de `linkstation` se documentan en este archivo.
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y este proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 

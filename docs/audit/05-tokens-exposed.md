@@ -1,9 +1,9 @@
----
+﻿---
 title: "Inventario de tokens, claves y secretos expuestos en el repositorio"
 date: 2026-05-18
 classification: SENSITIVE — uso interno del audit / cliente
 agent: Manual extraction (grep + decode) + Claude Code
-target: e:\ClaudeCode\automatiza-formacion-dashboard\automatiza-formacion-dashboard (repo cliente, renombrado desde `dashboard-af-main` el 2026-05-20)
+target: e:\ClaudeCode\linkstation-dashboard\linkstation-dashboard (repo cliente, renombrado desde `linkstation-main` el 2026-05-20)
 related_findings: [F-01-001, F-01-002, F-04-002, F-04-003, F-05-SEC-001, F-05-SEC-002, F-05-SEC-003, F-05-SEC-004]
 status: READY_FOR_ROTATION
 ---
@@ -25,7 +25,7 @@ status: READY_FOR_ROTATION
 | JWT Supabase `anon` | 1 | 2030-01-01 | 🟡 Rotar (low impact, pero conveniente) |
 | Password Postgres superuser | 1 (`postgres:postgres`) | Sin vencimiento | 🔴 Cambiar password DB |
 | Token verificación webhook WhatsApp | 1 (`automatiza_for_2025`) | Sin vencimiento | 🟠 Rotar y configurar en Meta |
-| Host interno + IP de la BD | `api-db.automatizaformacion.com`, `46.62.193.169`, `interno-supabase-a201be-46-62-193-169` | — | 🟡 Mantener pero no exponer en código |
+| Host interno + IP de la BD | `api-db.linkstation.ai`, `46.62.193.169`, `interno-supabase-a201be-46-62-193-169` | — | 🟡 Mantener pero no exponer en código |
 
 ---
 
@@ -201,7 +201,7 @@ No son secretos por sí mismos pero divulgan arquitectura interna:
 
 | Valor | Tipo | Apariciones |
 |---|---|---|
-| `https://api-db.automatizaformacion.com` | Subdominio HTTPS de Supabase | `auth-config.ts:9,10`, `supabase/server.ts:6`, `supabase/client.ts:15,20` |
+| `https://api-db.linkstation.ai` | Subdominio HTTPS de Supabase | `auth-config.ts:9,10`, `supabase/server.ts:6`, `supabase/client.ts:15,20` |
 | `46.62.193.169` | IP pública (Hetzner según rango) | `scripts/migrate-*.ts` (varias líneas) |
 | `interno-supabase-a201be-46-62-193-169` | Hostname interno Traefik | `scripts/run-migration.ts:31`, `scripts/purge-demo.ts:8` |
 | `http://interno-supabase-a201be-46-62-193-169.traefik.me` | URL Traefik resuelta vía DNS público | `scripts/purge-demo.ts:8` (⚠️ **HTTP plano**, no HTTPS) |
@@ -225,7 +225,7 @@ El uso de `traefik.me` es una técnica de "magic DNS" donde `*.traefik.me` resue
 - Vercel / Coolify / sistema de deploy → variables de entorno:
   - `SUPABASE_SERVICE_ROLE_KEY` = nueva service_role key
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = nueva anon key
-  - `NEXT_PUBLIC_SUPABASE_URL` = `https://api-db.automatizaformacion.com` (o el dominio que prefieras)
+  - `NEXT_PUBLIC_SUPABASE_URL` = `https://api-db.linkstation.ai` (o el dominio que prefieras)
   - `SUPABASE_URL` = idem
 - **Redesplegar** la app y el worker.
 
@@ -279,7 +279,7 @@ Mismo patrón en `src/lib/supabase/server.ts`, `src/lib/supabase/client.ts`, `sr
 - Revisar logs de Supabase de los últimos 30 días buscando IPs/User-Agents anómalos que hubieran usado las claves antiguas.
 
 ### Paso 8 — Higiene del repositorio
-- Las claves antiguas **siguen en el historial git** del repo `renzo1111ia/dashboard-af` (422 commits). Aunque ya estén invalidadas, considerar:
+- Las claves antiguas **siguen en el historial git** del repo `LinkStation/linkstation-dashboard` (422 commits). Aunque ya estén invalidadas, considerar:
   - Si el repo fue público en algún momento: las claves están públicas en cachés de GitHub, Shodan, etc. Tras la rotación están **inútiles** pero conviene saberlo.
   - Reescribir historia con `git filter-repo` para eliminar las strings concretas — solo necesario si por alguna razón las claves antiguas siguieran teniendo valor (no es el caso tras Paso 1).
 

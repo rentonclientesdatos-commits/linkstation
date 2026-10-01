@@ -1,4 +1,4 @@
----
+﻿---
 title: "Findings Summary - Consolidado de Auditoria"
 date: 2026-05-18
 status: final
@@ -15,7 +15,7 @@ sources:
   - docs/dependencies/outdated.md
 ---
 
-# Findings Summary - Auditoria dashboard-af
+# Findings Summary - Auditoria linkstation
 
 ## Resumen ejecutivo
 

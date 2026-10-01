@@ -5,12 +5,15 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Re_ FORMA",
+  title: "LinkStation",
   description: "Plataforma SaaS de gestión de llamadas IA, agendamiento y contactabilidad para cualquier tipo de negocio",
   icons: {
-    icon: "/favicon-renton.png",
-    shortcut: "/favicon-renton.png",
-    apple: "/favicon-renton.png",
+    icon: [
+      { url: "/favicon-ls.svg", type: "image/svg+xml" },
+      { url: "/favicon-ls.png", sizes: "32x32" },
+    ],
+    shortcut: "/favicon-ls.svg",
+    apple: "/favicon-ls.png",
   },
 };
 

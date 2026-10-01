@@ -1,4 +1,4 @@
-# E2E-260527-003-CRIT — CSP `connect-src` bloquea Supabase local (`http://127.0.0.1:8100`)
+﻿# E2E-260527-003-CRIT — CSP `connect-src` bloquea Supabase local (`http://127.0.0.1:8100`)
 
 **Severity**: CRIT
 **Fase**: 03 sweep dashboard
@@ -28,12 +28,12 @@ https://*.zohoapis.eu https://graph.facebook.com https://api.sepay.vn".
 ## Impacto
 
 - **Dev local DEGRADADO**: cualquier feature que dependa de queries client-side a Supabase no funciona. Páginas cargan el shell pero las tablas/listas vienen vacías.
-- En producción VPS usa `dev.automatizaformacion.com/supabase` (path-prefix), sin el problema directo, pero la CSP probablemente tampoco incluye esa URL → verificar.
+- En producción VPS usa `dev.linkstation.ai/supabase` (path-prefix), sin el problema directo, pero la CSP probablemente tampoco incluye esa URL → verificar.
 - Bug oculta otros bugs (no podemos verificar lógica de UI sin datos).
 
 ## Fix sugerido (no ejecutado)
 
-En `next.config.ts` o middleware Sentry/CSP: añadir `http://localhost:8100 http://127.0.0.1:8100` a `connect-src` cuando `NODE_ENV=development`. Y `https://dev.automatizaformacion.com` para VPS.
+En `next.config.ts` o middleware Sentry/CSP: añadir `http://localhost:8100 http://127.0.0.1:8100` a `connect-src` cuando `NODE_ENV=development`. Y `https://dev.linkstation.ai` para VPS.
 
 Buscar: `connect-src` en `src/middleware.ts`, `src/lib/security/csp.ts`, `next.config.*`, `sentry.*.config.ts`.
 

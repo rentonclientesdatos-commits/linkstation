@@ -1,9 +1,9 @@
----
+﻿---
 title: "Sprints históricos reconstruidos desde git log"
 date: 2026-05-18
 agent: Timeline (Haiku)
 phase: 7
-source_repo: renzo1111ia/dashboard-af (clonado local en dashboard-af-git)
+source_repo: LinkStation/linkstation-dashboard (clonado local en linkstation-git)
 total_commits: 421
 commit_range: "2026-03-02 a 2026-05-18"
 ---
@@ -141,7 +141,7 @@ Los sprints han sido inferidos a partir del análisis del git log completo (421 
 - `2f6e18b` 2026-04-23 — feat: implement autonomous fact extraction and CRM tracking for AI agents
 - `6d61f21` 2026-04-23 — feat: finalize AI variable injection and Meta template mapping service
 - `8a6d57b` 2026-04-24 — feat: Unified Flow Orchestrator V5.0 - Onboarding merged with Orchestrator
-- `2f13f79` 2026-04-24 — feat: finalize Automatiza Formacion v8.0 - Native Scheduling, Human Escalation, KB RAG & Circuit Breaker
+- `2f13f79` 2026-04-24 — feat: finalize LinkStation v8.0 - Native Scheduling, Human Escalation, KB RAG & Circuit Breaker
 - `361c222` 2026-04-24 — feat: AI Agents management - added delete/update agents logic
 
 **Features entregadas**:

@@ -1,4 +1,4 @@
-# 🔴 Instrucciones Zoho — TUS tareas manuales (Sprint 5)
+﻿# 🔴 Instrucciones Zoho — TUS tareas manuales (Sprint 5)
 
 > **Para ti, Javi HP.** Mientras Claude implementa el código del Sprint 5, ve haciendo esto en tu cuenta Zoho de test. Marca cada `[ ]` como `[x]` cuando lo termines.
 > Lo que está en 🔴 **PENDIENTE** es lo que falta. Lo ✅ ya está confirmado.
@@ -44,7 +44,7 @@
 
 - [ ] 🔴 **B1.** Entra en **<https://api-console.zoho.com>** (con la cuenta del DC `.eu`) → **Add Client → Server-based Applications**.
 - [ ] 🔴 **B2.** Rellena:
-  - **Client Name:** `dashboard-af`
+  - **Client Name:** `linkstation`
   - **Homepage URL:** la de nuestro dashboard
   - **Authorized Redirect URIs:** `http://localhost:8500/api/integrations/zoho/callback` (local).
     Añade también la del VPS cuando se despliegue.

@@ -1,12 +1,9 @@
 /**
- * Seed demo — dashboard-af
+ * Seed demo — LinkStation
  *
  * Crea DOS tenants:
- *  1. "Automatiza Formación"  → cliente final (B2B: organizaciones formativas)
- *  2. "Demo - Academia AF"    → sandbox de pruebas (B2C: personas / leads tipicos)
- *
- * Orden alfabetico: "Automatiza..." va antes que "Demo..." -> el primero
- * aparece preseleccionado en el dropdown del dashboard.
+ *  1. "LinkStation"          → cliente principal (B2B)
+ *  2. "Demo - Sandbox"       → sandbox de pruebas (B2C)
  *
  * Uso:
  *   npx tsx scripts/seed-demo.ts
@@ -25,7 +22,7 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const DEMO_EMAIL = process.env.DEMO_USER_EMAIL ?? "demo@af.local";
+const DEMO_EMAIL = process.env.DEMO_USER_EMAIL ?? "demo@linkstation.local";
 const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
@@ -262,16 +259,16 @@ async function ensureAuthUser(
 }
 
 // ============================================================
-// TENANT 1: AUTOMATIZA FORMACION (B2B — organizaciones)
+// TENANT 1: LINKSTATION (B2B — organizaciones)
 // ============================================================
-async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: number }> {
-  console.log("\n========== TENANT 1: Automatiza Formación (B2B) ==========");
+async function seedLinkStation(): Promise<{ id: string; leadsCount: number }> {
+  console.log("\n========== TENANT 1: LinkStation (B2B) ==========");
 
   const tenantId = await upsertTenant(
-    "af",
-    "Automatiza Formación",
-    "beatriz@automatizaformacion.com",
-    "Automatiza Formación — CRM Comercial"
+    "linkstation",
+    "LinkStation",
+    "admin@linkstation.ai",
+    "LinkStation — CRM Comercial"
   );
   console.log(`tenant_id: ${tenantId}`);
 
@@ -283,14 +280,14 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
   });
   if (beatrizId) await admin.from("tenants").update({ auth_user_id: beatrizId }).eq("id", tenantId);
 
-  // Advisors (equipo comercial interno de AF)
+  // Advisors (equipo comercial interno de LinkStation)
   const { data: advisors } = await admin
     .from("advisors")
     .insert([
       {
         tenant_id: tenantId,
         name: "Beatriz CEO",
-        email: "beatriz@automatizaformacion.com",
+        email: "beatriz@linkstation.ai",
         phone: phone("Spain"),
         is_active: true,
         origins: ["evento_formativo"],
@@ -301,7 +298,7 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
       {
         tenant_id: tenantId,
         name: "Sergio Ventas",
-        email: "sergio@automatizaformacion.com",
+        email: "sergio@linkstation.ai",
         phone: phone("Spain"),
         is_active: true,
         origins: ["linkedin_outreach"],
@@ -312,7 +309,7 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
       {
         tenant_id: tenantId,
         name: "Lucia Comercial Latam",
-        email: "lucia@automatizaformacion.com",
+        email: "lucia@linkstation.ai",
         phone: phone("Mexico"),
         is_active: true,
         origins: ["referido_partner"],
@@ -432,7 +429,7 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
     const numAlumnos = rand(150, 3500);
     return {
       tenant_id: tenantId,
-      id_lead_externo: `AF-ORG-${100 + i}`,
+      id_lead_externo: `LS-ORG-${100 + i}`,
       nombre: orgName, // nombre de la organizacion
       apellido: `${contactoNombre} ${contactoApellido}`, // contacto principal (campo aprovechado para B2B)
       telefono: phone(pais),
@@ -504,7 +501,7 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
         Array.from({ length: rand(1, 3) }, () => ({
           tenant_id: tenantId,
           id_lead: l.id,
-          id_llamada_retell: `af_call_${i}_${Math.random().toString(36).slice(2, 8)}`,
+          id_llamada_retell: `ls_call_${i}_${Math.random().toString(36).slice(2, 8)}`,
           tipo_agente: pick(["humano", "ia"]),
           nombre_agente: pick([
             "Beatriz CEO",
@@ -567,7 +564,7 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
           "Nuevo lead cualificado",
           "Propuesta lista para revision",
         ]),
-        mensaje: "Notificacion demo del CRM de Automatiza Formacion",
+        mensaje: "Notificacion demo del CRM de LinkStation",
         leida: Math.random() > 0.4,
       }))
     );
@@ -577,26 +574,16 @@ async function seedAutomatizaFormacion(): Promise<{ id: string; leadsCount: numb
 }
 
 // ============================================================
-// TENANT 2: DEMO - ACADEMIA AF (B2C — leads tipicos para sandbox)
+// TENANT 2: DEMO - SANDBOX (B2C — leads tipicos para sandbox)
 // ============================================================
 async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
-  console.log("\n========== TENANT 2: Demo - Academia AF (B2C sandbox) ==========");
-
-  // Si existia "Academia AF Demo" lo renombramos
-  const { data: oldDemo } = await admin
-    .from("tenants")
-    .select("id")
-    .eq("name", "Academia AF Demo")
-    .maybeSingle();
-  if (oldDemo) {
-    await admin.from("tenants").update({ name: "Demo - Academia AF" }).eq("id", oldDemo.id);
-  }
+  console.log("\n========== TENANT 2: Demo - Sandbox (B2C sandbox) ==========");
 
   const tenantId = await upsertTenant(
     "demo",
-    "Demo - Academia AF",
-    "demo@af.local",
-    "Demo - Academia AF (sandbox)"
+    "Demo - Sandbox",
+    "demo@linkstation.local",
+    "Demo - Sandbox"
   );
   console.log(`tenant_id: ${tenantId}`);
 
@@ -606,7 +593,7 @@ async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
       {
         tenant_id: tenantId,
         name: "Patricia Asesor",
-        email: "patricia@af.local",
+        email: "patricia@linkstation.local",
         phone: phone("Spain"),
         is_active: true,
         origins: ["facebook_ads"],
@@ -617,7 +604,7 @@ async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
       {
         tenant_id: tenantId,
         name: "Carlos Asesor",
-        email: "carlos@af.local",
+        email: "carlos@linkstation.local",
         phone: phone("Spain"),
         is_active: true,
         origins: ["google_ads"],
@@ -628,7 +615,7 @@ async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
       {
         tenant_id: tenantId,
         name: "Maria Asesor",
-        email: "maria@af.local",
+        email: "maria@linkstation.local",
         phone: phone("Mexico"),
         is_active: true,
         origins: ["instagram_ads"],
@@ -639,7 +626,7 @@ async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
       {
         tenant_id: tenantId,
         name: "Javier Asesor",
-        email: "javier@af.local",
+        email: "javier@linkstation.local",
         phone: phone("Argentina"),
         is_active: true,
         origins: ["referido"],
@@ -777,7 +764,7 @@ async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
       nombre,
       apellido,
       telefono: phone(pais),
-      email: `${nombre.toLowerCase()}.${apellido.toLowerCase()}.${i}@demo.af.local`,
+      email: `${nombre.toLowerCase()}.${apellido.toLowerCase()}.${i}@demo.linkstation.local`,
       pais,
       tipo_lead: pick(TIPOS_LEAD_B2C),
       origen: pick(ORIGENES),
@@ -933,18 +920,18 @@ async function seedDemoAcademia(): Promise<{ id: string; leadsCount: number }> {
 async function main() {
   console.log(`[seed-demo] Supabase: ${SUPABASE_URL}`);
 
-  const af = await seedAutomatizaFormacion();
+  const ls = await seedLinkStation();
   const demo = await seedDemoAcademia();
 
   console.log("\n=====================================================");
   console.log("SEED COMPLETADO — 2 tenants");
   console.log("=====================================================");
-  console.log(`[1] Automatiza Formación  (B2B) ${af.leadsCount} organizaciones   id=${af.id}`);
-  console.log(`[2] Demo - Academia AF    (B2C) ${demo.leadsCount} personas       id=${demo.id}`);
+  console.log(`[1] LinkStation           (B2B) ${ls.leadsCount} organizaciones   id=${ls.id}`);
+  console.log(`[2] Demo - Academia       (B2C) ${demo.leadsCount} personas       id=${demo.id}`);
   console.log("");
   console.log(`Login admin: ${DEMO_EMAIL}  (password en .env.local DEMO_USER_PASSWORD)`);
-  console.log(`  full_name: Beatriz   tenant default: Automatiza Formación`);
-  console.log("App URL:     http://localhost:8050");
+  console.log(`  full_name: Beatriz   tenant default: LinkStation`);
+  console.log("App URL:     http://localhost:8500");
   console.log("Studio URL:  http://localhost:8300");
   console.log("=====================================================\n");
 }

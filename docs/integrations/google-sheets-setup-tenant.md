@@ -1,14 +1,14 @@
-# Google Sheets como CRM — guía de configuración (tenant)
+﻿# Google Sheets como CRM — guía de configuración (tenant)
 
 > Sprint 4 (post-MVP). Esta guía está dirigida al **tenant final** (academia / centro de formación) que quiera usar Google Sheets como su sistema CRM en lugar de HubSpot/Zoho/etc.
 
 ## Por qué cada tenant trae su propia app
 
-Al contrario que HubSpot o Zoho (que comparten una app OAuth centralizada de Automatiza Formación), Google Sheets exige que **cada tenant registre su propia aplicación** en Google Cloud Console. Esto es una decisión arquitectónica deliberada (27-05-2026):
+Al contrario que HubSpot o Zoho (que comparten una app OAuth centralizada de LinkStation), Google Sheets exige que **cada tenant registre su propia aplicación** en Google Cloud Console. Esto es una decisión arquitectónica deliberada (27-05-2026):
 
 - **Cuota Sheets API por proyecto Cloud**: 300 read/min, 60 write/min. Si todos los tenants compartieran nuestra app, una academia con 10k filas/día bloquearía al resto. Con app propia, cada tenant gestiona su propia cuota.
 - **OAuth Verification**: una app Google con >100 usuarios externos necesita pasar la verificación oficial de Google (semanas, política privacidad, dominio verificado, etc). Apps de tenant individual NO requieren verification (≤100 usuarios) → cero fricción.
-- **Privacidad**: el consent screen dice "Tu Academia quiere acceder a tus Sheets", no "Automatiza Formación quiere acceder a tus Sheets". Mejor confianza.
+- **Privacidad**: el consent screen dice "Tu Academia quiere acceder a tus Sheets", no "LinkStation quiere acceder a tus Sheets". Mejor confianza.
 - **Soberanía de datos**: la relación con Google la tiene la academia, no Automatiza. Si la academia cancela, sus tokens mueren con su proyecto Cloud.
 
 ## Pasos
@@ -54,32 +54,32 @@ Tiempo total: **5–10 minutos**. Solo se hace **una vez** por tenant.
 
 1. **APIs & Services** → **Credentials** → **+ CREATE CREDENTIALS** → **OAuth client ID**.
 2. **Application type**: `Web application`.
-3. **Name**: `Automatiza Formacion Connector` (o el que prefieras).
+3. **Name**: `LinkStation Connector` (o el que prefieras).
 4. **Authorized JavaScript origins** — pulsar **+ ADD URI** y añadir:
    - `http://localhost:8500` (solo si tu equipo desarrolla en local).
-   - `https://dev.automatizaformacion.com` (entorno dev del proyecto).
-   - `https://app.automatizaformacion.com` (producción — opcional hasta que esté desplegado).
+   - `https://dev.linkstation.ai` (entorno dev del proyecto).
+   - `https://app.linkstation.ai` (producción — opcional hasta que esté desplegado).
 5. **Authorized redirect URIs** — pulsar **+ ADD URI** y añadir:
    - `http://localhost:8500/api/integrations/google/callback`
-   - `https://dev.automatizaformacion.com/api/integrations/google/callback`
-   - `https://app.automatizaformacion.com/api/integrations/google/callback` (cuando esté en prod)
+   - `https://dev.linkstation.ai/api/integrations/google/callback`
+   - `https://app.linkstation.ai/api/integrations/google/callback` (cuando esté en prod)
 6. Pulsa **CREATE**.
 7. Aparece una ventana con `Client ID` y `Client Secret`. **COPIA AMBOS** (los necesitas en el paso siguiente). El secret no se vuelve a mostrar entero después.
 
 ### 5. Pegar las credenciales en el dashboard
 
-1. Vuelve a tu dashboard de Automatiza Formación.
-2. Navega a **Settings** → **Integraciones** → **Google Sheets** (o directamente <https://dev.automatizaformacion.com/dashboard/settings/integrations/google-sheets>).
+1. Vuelve a tu dashboard de LinkStation.
+2. Navega a **Settings** → **Integraciones** → **Google Sheets** (o directamente <https://dev.linkstation.ai/dashboard/settings/integrations/google-sheets>).
 3. En el **Paso 1 — Tu propia app de Google Cloud**, pega:
    - **Client ID**: el que copiaste de Google Cloud.
    - **Client Secret**: idem.
-4. Pulsa **Guardar y seguir**. Las credenciales se cifran con AES-256-GCM antes de guardarlas en nuestra base de datos. Nadie de Automatiza Formación las puede ver en claro.
+4. Pulsa **Guardar y seguir**. Las credenciales se cifran con AES-256-GCM antes de guardarlas en nuestra base de datos. Nadie de LinkStation las puede ver en claro.
 
 ### 6. Conectar tu cuenta Google
 
 1. En el **Paso 2 — Conectar tu cuenta Google**, pulsa **Conectar con Google**.
 2. Eliges la cuenta Google que usarás (debe ser una con acceso a las hojas que quieres conectar).
-3. Verás un consent screen con el nombre de **tu app** (no de Automatiza Formación) pidiendo acceso solo al scope `drive.file`. Acepta.
+3. Verás un consent screen con el nombre de **tu app** (no de LinkStation) pidiendo acceso solo al scope `drive.file`. Acepta.
 4. Vuelves al dashboard con el mensaje **✅ Cuenta Google conectada correctamente**.
 
 > **Scope `drive.file`**: este scope es el más restrictivo posible. Significa que la app SOLO accede a las hojas que tú elijas explícitamente vía el Google Picker. NO podemos ver el resto de tu Drive, ni hojas ajenas, ni archivos personales. Cada hoja se autoriza individualmente.
@@ -194,7 +194,7 @@ NO. Esta integración es específica de Google Sheets. Para Excel Online sería 
 
 ## Soporte
 
-Si tienes problemas durante el setup, contacta a `soporte@automatizaformacion.com` con:
+Si tienes problemas durante el setup, contacta a `soporte@linkstation.ai` con:
 
 - Captura del error (si lo hay).
 - ID de tu tenant (visible en Settings).

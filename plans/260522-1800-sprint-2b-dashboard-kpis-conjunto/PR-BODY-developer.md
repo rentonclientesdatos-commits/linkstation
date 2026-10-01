@@ -1,4 +1,4 @@
-# Sprint 2B — Dashboard KPIs Overview (vista de conjunto)
+﻿# Sprint 2B — Dashboard KPIs Overview (vista de conjunto)
 
 ## Resumen
 
@@ -77,7 +77,7 @@ Detalle granular en `plans/RoadMap.md` columnas ⏱ Push + ⏱ Cierre.
 
 ## Tareas diferidas
 
-- E2E contra VPS (`dev.automatizaformacion.com`) — se ejecuta tras merge + autodeploy.
+- E2E contra VPS (`dev.linkstation.ai`) — se ejecuta tras merge + autodeploy.
 - Bump SemVer a `v0.2.8` + tag + release notes — se hace en CLOSE-5 tras E2E VPS verde.
 - Hand-off a `SP-4B phase-03b` — se rellena en CLOSE-5.
 
@@ -118,7 +118,7 @@ c145491 fix(sprint-2b): remove unused KpiOverviewOutputSchema import in analytic
 
 ## Próximos pasos tras merge
 
-1. Autodeploy VPS Hetzner (`dev.automatizaformacion.com`) ~2-3min.
-2. Ejecutar specs Playwright Sprint 2B contra `PLAYWRIGHT_BASE_URL=https://dev.automatizaformacion.com`.
+1. Autodeploy VPS Hetzner (`dev.linkstation.ai`) ~2-3min.
+2. Ejecutar specs Playwright Sprint 2B contra `PLAYWRIGHT_BASE_URL=https://dev.linkstation.ai`.
 3. Si E2E VPS verde: cerrar Sprint 2B con bump `v0.2.8` + tag + release notes + hand-off a `SP-4B phase-03b`.
 4. Arrancar Sprint 3 (Hardening — tests E2E, observabilidad, dashboards de costes infra) según RoadMap.

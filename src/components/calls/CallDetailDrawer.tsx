@@ -20,6 +20,7 @@ import {
   ExternalLink,
   Copy,
   Check,
+  MessageCircle,
 } from "lucide-react";
 import {
   UltravoxCallItem,
@@ -68,7 +69,12 @@ export function CallDetailDrawer({ call, onClose }: CallDetailDrawerProps) {
     return `${mins}:${remaining.toString().padStart(2, "0")}`;
   };
 
-  const variableEntries = Object.entries(call.variables || {});
+  const variableEntries = Object.entries(call.toolData || call.variables || {});
+
+  const cleanPhone = (phone?: string) => {
+    if (!phone) return "";
+    return phone.replace(/[^\d+]/g, "");
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -84,22 +90,37 @@ export function CallDetailDrawer({ call, onClose }: CallDetailDrawerProps) {
               <Phone className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-bold text-foreground">
-                  Llamada: {call.agentName}
+                  {call.toolName || call.agentName}
                 </h2>
+                {call.toolCategory === "arriendo_gruas" && (
+                  <Badge className="border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs">
+                    Arriendo de Grúas
+                  </Badge>
+                )}
+                {call.toolCategory === "servicio_tecnico" && (
+                  <Badge className="border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs">
+                    Servicio Técnico
+                  </Badge>
+                )}
+                {call.toolCategory === "cotizacion" && (
+                  <Badge className="border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300 text-xs">
+                    Cotización
+                  </Badge>
+                )}
                 <Badge
                   variant="outline"
                   className={
                     call.status === "completed" || call.ended
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs"
+                      : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs"
                   }
                 >
                   {call.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">ID: {call.callId}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">ID: {call.callId}</p>
             </div>
           </div>
 
@@ -132,9 +153,21 @@ export function CallDetailDrawer({ call, onClose }: CallDetailDrawerProps) {
             <User className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-muted-foreground">Contacto</p>
-              <p className="font-semibold text-foreground truncate">
-                {call.callerId || "Desconocido"}
-              </p>
+              {cleanPhone(call.callerId) ? (
+                <a
+                  href={`https://wa.me/${cleanPhone(call.callerId)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 truncate flex items-center gap-1 hover:underline"
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  {call.callerId}
+                </a>
+              ) : (
+                <p className="font-semibold text-foreground truncate">
+                  {call.callerId || "Desconocido"}
+                </p>
+              )}
             </div>
           </div>
         </div>

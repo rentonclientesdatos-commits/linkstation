@@ -14,7 +14,7 @@ import path from "path";
 // Load .env.local
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
-console.log("[WORKER] 🚀 Automatiza Formación Lead Sequence Worker starting...");
+console.log("[WORKER] 🚀 LinkStation Lead Sequence Worker starting...");
 console.log(`[WORKER] Redis: ${process.env.REDIS_URL || "redis://localhost:6379"}`);
 
 const worker = createLeadWorker(async (job) => {

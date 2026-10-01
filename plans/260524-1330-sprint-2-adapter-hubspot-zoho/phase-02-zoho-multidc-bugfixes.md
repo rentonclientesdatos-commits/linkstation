@@ -1,4 +1,4 @@
-# Phase 02 — Zoho multi-DC bugfixes (B-01..B-07) + tests
+﻿# Phase 02 — Zoho multi-DC bugfixes (B-01..B-07) + tests
 
 ## Context Links
 
@@ -79,15 +79,15 @@ ZohoCRMProvider
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/providers/zoho.ts` (refactor completo)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/token-manager.ts` (registrar `callRefreshEndpoint` para `crm_type === 'zoho'`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/providers/zoho.ts` (refactor completo)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/token-manager.ts` (registrar `callRefreshEndpoint` para `crm_type === 'zoho'`)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/providers/zoho-dc-detector.ts` (helpers + LOCATION_TO_ACCOUNTS table + `extractDCFromCallback`)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/providers/zoho.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/providers/zoho-dc-detector.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/mocks/zoho-handlers.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/providers/zoho-dc-detector.ts` (helpers + LOCATION_TO_ACCOUNTS table + `extractDCFromCallback`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/providers/zoho.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/providers/zoho-dc-detector.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/mocks/zoho-handlers.ts`
 
 ## Implementation steps
 

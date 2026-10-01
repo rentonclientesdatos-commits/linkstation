@@ -1,6 +1,6 @@
-# Fase 01 — Auth + RBAC matrix
+﻿# Fase 01 — Auth + RBAC matrix
 
-- **Env**: vps (`https://dev.automatizaformacion.com`)
+- **Env**: vps (`https://dev.linkstation.ai`)
 - **Método**: Playwright CLI (browser MCP ocupado por chat paralelo) + curl probes
 - **Estado**: 🟢 PASS
 
@@ -11,7 +11,7 @@
 | smoke @core · login page renders                 | 🟢        | `/login` renderiza                                                 |
 | smoke @core · unauthenticated /dashboard no leak | 🟢        | sin sesión no expone contenido                                     |
 | VPS-01 · GET / sin sesión → /login               | 🟢        | redirect correcto                                                  |
-| VPS-02 · Login admin VPS → /dashboard            | 🟢        | `automatizaformacion@gmail.com` autentica OK                       |
+| VPS-02 · Login admin VPS → /dashboard            | 🟢        | `LinkStation@gmail.com` autentica OK                       |
 | VPS-03 · /dashboard/settings carga               | 🟢        | admin accede a settings                                            |
 | VPS-04 · settings → CRMSection HubSpot+Zoho      | 🟢        | CRM=true HubSpot=true Zoho=true Integraciones=true, 2 edit buttons |
 | VPS-05 · GET /api/integrations (auth)            | 🟢        | 401 sin sesión (auth-gated)                                        |

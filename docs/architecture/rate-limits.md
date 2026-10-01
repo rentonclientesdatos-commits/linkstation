@@ -1,4 +1,4 @@
-# Rate limits — dashboard-af
+﻿# Rate limits — linkstation
 
 > Sprint 3 phase-05 Hardening (4-06 + 4-08). Documenta los rate limits aplicados por capa y cómo añadir nuevos.
 

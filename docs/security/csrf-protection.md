@@ -1,4 +1,4 @@
-# CSRF protection — dashboard-af
+﻿# CSRF protection — linkstation
 
 > Sprint 3 phase-05 Hardening (4-06). Documenta cómo el proyecto se protege de Cross-Site Request Forgery.
 

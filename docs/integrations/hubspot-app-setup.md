@@ -7,16 +7,16 @@
 1. Acceder a https://developers.hubspot.com/ con una cuenta HubSpot Developer (no la cuenta del cliente; crear una si no existe).
 2. Ir a **Manage Apps** → **Create app**.
 3. Rellenar:
-   - **App name:** `Automatiza Formación CRM Connector`.
-   - **Description:** `Conecta Automatiza Formación con HubSpot para sincronizar leads, tasks y meetings.`
+   - **App name:** `LinkStation CRM Connector`.
+   - **Description:** `Conecta LinkStation con HubSpot para sincronizar leads, tasks y meetings.`
    - **Public visibility:** ON.
 
 ## 2. Configurar Auth tab
 
 - **Redirect URLs:**
   - `http://localhost:8500/api/integrations/hubspot/auth/callback` (desarrollo local).
-  - `https://dev.automatizaformacion.com/api/integrations/hubspot/auth/callback` (VPS, añadir cuando se despliegue).
-  - (Futuro) `https://app.automatizaformacion.com/api/integrations/hubspot/auth/callback`.
+  - `https://dev.linkstation.ai/api/integrations/hubspot/auth/callback` (VPS, añadir cuando se despliegue).
+  - (Futuro) `https://app.linkstation.ai/api/integrations/hubspot/auth/callback`.
 - **Scopes mínimos:**
   ```
   crm.objects.contacts.read
@@ -40,7 +40,7 @@ HUBSPOT_CLIENT_SECRET=<copy>
 HUBSPOT_REDIRECT_URI=http://localhost:8500/api/integrations/hubspot/auth/callback
 ```
 
-En Easypanel (VPS), añadir las mismas con `HUBSPOT_REDIRECT_URI=https://dev.automatizaformacion.com/api/integrations/hubspot/auth/callback`.
+En Easypanel (VPS), añadir las mismas con `HUBSPOT_REDIRECT_URI=https://dev.linkstation.ai/api/integrations/hubspot/auth/callback`.
 
 ## 4. Generar OAUTH_STATE_SECRET
 

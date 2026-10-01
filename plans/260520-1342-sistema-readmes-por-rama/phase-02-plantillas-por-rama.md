@@ -1,4 +1,4 @@
-# Phase 02 — Plantillas por rama (3 templates)
+﻿# Phase 02 — Plantillas por rama (3 templates)
 
 **Contexto:** [plan.md](plan.md) · [phase-01](phase-01-script-generador.md) · [CLAUDE.md](../../CLAUDE.md)
 
@@ -115,7 +115,7 @@
 ### developer (README.developer.template.md)
 
 ```
-# dashboard-af
+# linkstation
 
 {{PROJECT_VERSION}} · {{LAST_UPDATED}}
 
@@ -153,7 +153,7 @@ MIT
 ### staging (README.staging.template.md)
 
 ```
-# dashboard-af · Staging
+# linkstation · Staging
 
 {{PROJECT_VERSION}} · {{LAST_UPDATED}}
 
@@ -187,7 +187,7 @@ MIT
 ### main (README.main.template.md)
 
 ```
-# dashboard-af
+# linkstation
 
 {{PROJECT_VERSION}} · {{LAST_UPDATED}}
 

@@ -53,8 +53,8 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-[440px] px-6 py-12">
         <div className="mb-10 flex items-center justify-start">
           <NextImage
-            src="/logo-reforma-light.png"
-            alt="Re_ FORMA Social Media Partner"
+            src="/logo.png"
+            alt="LinkStation"
             width={240}
             height={64}
             className="h-16 w-auto object-contain"
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
         )}
 
         <p className="mt-12 text-center text-xs font-bold tracking-widest text-slate-400 uppercase">
-          Una aplicación de Renton Connective {new Date().getFullYear()}
+          LinkStation {new Date().getFullYear()}
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
----
+﻿---
 phase: 01
 title: "Auth + RBAC matrix"
 status: PASS
@@ -31,7 +31,7 @@ En lugar de pilotar el navegador via Playwright MCP (riesgo de interferir con el
 | SF-05    | Logout admin → sesión invalidada                                                                         | ✅        |
 | SF-06    | Login viewer @af.local manejado (creds demo viewer sin sincronizar — finding informativo, no bloqueante) | ✅        |
 | VPS-01   | GET / sin sesión → /login (re-verificado en local)                                                       | ✅        |
-| VPS-02   | Login admin `automatizaformacion@gmail.com` → /dashboard                                                 | ✅        |
+| VPS-02   | Login admin `LinkStation@gmail.com` → /dashboard                                                 | ✅        |
 | VPS-03   | /dashboard/settings carga tras login                                                                     | ✅        |
 | VPS-04   | Edit cliente → CRMSection con HubSpot+Zoho+Integraciones=true                                            | ✅        |
 | 2B-01    | GET /dashboard sin sesión → /login                                                                       | ✅        |

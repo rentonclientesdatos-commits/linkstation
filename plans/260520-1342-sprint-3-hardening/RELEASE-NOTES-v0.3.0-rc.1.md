@@ -1,4 +1,4 @@
-# Release Notes — v0.3.0-rc.1 (Sprint 3 — Hardening)
+﻿# Release Notes — v0.3.0-rc.1 (Sprint 3 — Hardening)
 
 ## Resumen
 
@@ -74,7 +74,7 @@ Release candidate del MVP. Cierra Sprint 3 Hardening: observabilidad estructurad
 
 ### Testing profundo 26-05-2026 — 13 BUGs Sprint 3 (SP-4-BUG-3-01..13)
 
-- **BUG-3-01**: tests sprint-0 con `demo@af.local` hardcoded → env var `VPS_ADMIN_EMAIL ?? "automatizaformacion@gmail.com"` + `npm run db:seed-demo`.
+- **BUG-3-01**: tests sprint-0 con `demo@af.local` hardcoded → env var `VPS_ADMIN_EMAIL ?? "LinkStation@gmail.com"` + `npm run db:seed-demo`.
 - **BUG-3-02**: CSP `bedrock.*.amazonaws.com` (sintaxis inválida) + warning `eval()` React dev → línea CSP eliminada + filtros eval/CSP en test 2B-08.
 - **BUG-3-03/04**: `attemptLogin` race "missing email or phone" sprint-0 + cascada SF-05 logout → `waitFor visible` de inputs + retry interno + guard `isRaceFill`.
 - **BUG-3-05**: saturación Supabase Auth con 8 workers Playwright → `playwright.config.ts` `workers: IS_CI ? 1 : 2`.
@@ -186,7 +186,7 @@ dev:
 ## Pendientes operativos (acción manual, no bloquean RC)
 
 1. Crear proyecto Sentry en sentry.io + pegar `SENTRY_DSN` en `.env.local` y panel Dokploy.
-2. Configurar Dokploy build args (`GIT_COMMIT_SHA`, `GIT_BRANCH`, `BUILD_TIMESTAMP`) en `panel.automatizaformacion.com`.
+2. Configurar Dokploy build args (`GIT_COMMIT_SHA`, `GIT_BRANCH`, `BUILD_TIMESTAMP`) en `panel.linkstation.ai`.
 3. Habilitar Renovate bot en GitHub repo settings.
 4. Aplicar migración `20260526100000_campaigns_and_holidays.sql` al VPS via pg-meta REST.
 5. **Rotación PAT GitHub en Dokploy** (incidente 27-05-2026): revocar PAT viejo en GitHub Settings + actualizar Provider URL en panel Dokploy del servicio `dev.dash` con PAT nuevo. Recomendado: migrar a Provider "GitHub OAuth" para eliminar PATs del panel para siempre.

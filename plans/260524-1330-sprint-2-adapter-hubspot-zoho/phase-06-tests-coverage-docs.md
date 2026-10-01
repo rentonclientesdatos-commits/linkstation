@@ -1,4 +1,4 @@
-# Phase 06 — Tests cobertura final + docs + ADRs 020/021/022
+﻿# Phase 06 — Tests cobertura final + docs + ADRs 020/021/022
 
 ## Context Links
 
@@ -66,19 +66,19 @@ supabase/migrations/
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/audit/DECISIONES-AUDITOR-JAVIER-HP.md` (append ADR-020/021/022)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/vitest.config.ts` (asegurar coverage thresholds activos para `src/lib/integrations/crm/**`)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/development-roadmap.md` (marcar tareas Sprint 2 ya cerradas en este punto)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/project-changelog.md` (entry v0.2.0-rc Sprint 2 highlights)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/audit/DECISIONES-AUDITOR-JAVIER-HP.md` (append ADR-020/021/022)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/vitest.config.ts` (asegurar coverage thresholds activos para `src/lib/integrations/crm/**`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/development-roadmap.md` (marcar tareas Sprint 2 ya cerradas en este punto)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/project-changelog.md` (entry v0.2.0-rc Sprint 2 highlights)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/integration/factory-zoho-end-to-end.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/integration/factory-hubspot-end-to-end.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/integration/write-guard-zoho-append-only.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/integration/write-guard-hubspot-overwrite-audit.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/architecture/crm-adapters.md`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/supabase/migrations/20260524110000_help_sections_integrations.sql`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/integration/factory-zoho-end-to-end.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/integration/factory-hubspot-end-to-end.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/integration/write-guard-zoho-append-only.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/integration/write-guard-hubspot-overwrite-audit.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/architecture/crm-adapters.md`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/supabase/migrations/20260524110000_help_sections_integrations.sql`
 
 ## Implementation steps
 

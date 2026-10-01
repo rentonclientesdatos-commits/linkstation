@@ -1,13 +1,13 @@
----
+﻿---
 date: 2026-05-18 14:30
 type: brainstorm
-project: automatiza-formacion-dashboard  # (renombrado desde `dashboard-af-main` el 2026-05-20)
+project: linkstation-dashboard  # (renombrado desde `linkstation-main` el 2026-05-20)
 tags: [audit, architecture, documentation, orchestration, multi-agent, supabase, llm]
 severity: -
 status: approved
 ---
 
-# Brainstorm: Audit & Documentation Strategy — dashboard-af v5.0
+# Brainstorm: Audit & Documentation Strategy — linkstation v5.0
 
 ## Contexto
 
@@ -26,7 +26,7 @@ Sesión de brainstorm pura (sin código) para diseñar estrategia de auditoría 
 - Git init rama `auditoria` desde zip snapshot (commit fe38b0b).
 - `.gitignore` ampliado: excluye `.claude/`, `docs/`, `plans/` del remoto cliente.
 - Sin remoto configurado aún.
-- Usuario: collaborator en `renzo1111ia/dashboard-af`, cuenta `AutomatizaFormacion`, instrucciones PAT pasadas en reporte.
+- Usuario: collaborator en `LinkStation/linkstation-dashboard`, cuenta `LinkStation`, instrucciones PAT pasadas en reporte.
 
 ## Trade-off Documentado
 

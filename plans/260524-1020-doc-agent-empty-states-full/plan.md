@@ -1,4 +1,4 @@
----
+﻿---
 title: "Plan autónomo — Doc Admin + Docs Clientes + empty-states + bug fixes"
 date: 2026-05-24
 audience: Claude Code (auto-ejecutar tras /clear sin intervención del usuario)
@@ -29,16 +29,16 @@ status: PENDIENTE EJECUCIÓN
 
 ### Estado VPS (verificado 2026-05-24 10:20)
 
-- `https://dev.automatizaformacion.com/login` → 200 ✅
-- `https://dev.automatizaformacion.com/supabase/auth/v1/health` → 401 (sin apikey, comportamiento correcto Kong)
+- `https://dev.linkstation.ai/login` → 200 ✅
+- `https://dev.linkstation.ai/supabase/auth/v1/health` → 401 (sin apikey, comportamiento correcto Kong)
 - Path-prefix `/supabase/*` via traefik funcionando.
 - BD VPS poblada por `seed-demo.ts`: 2 tenants + 55 leads + 20 convos + 86 llamadas + datos relacionados.
-- Admin user: `automatizaformacion@gmail.com / BeaOli#AF*2026!` (mismo local + VPS, `app_metadata.is_admin=true`).
+- Admin user: `LinkStation@gmail.com / BeaOli#AF*2026!` (mismo local + VPS, `app_metadata.is_admin=true`).
 - Viewer user VPS: `viewer@af.local / uI0FTbgdVVwMDg9vBxQ-Aa1!` (distinto del de local — generado en última sesión).
 
 ### Credenciales operativas (NO commitear, leer del vault)
 
-- VPS Supabase URL: `https://dev.automatizaformacion.com/supabase`
+- VPS Supabase URL: `https://dev.linkstation.ai/supabase`
 - VPS Service Role Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3Nzk0OTQ1OTEsImV4cCI6MjA5NDg1NDU5MX0.kNk8hf6ptK-9GRnbftZW1mF84X_MJj_-KQ40i-xcp0A`
 - VPS Anon Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc5NDk0NTkxLCJleHAiOjIwOTQ4NTQ1OTF9.HjoQBXmBzIZD9yiP0d7IbY9auI-o-HAUPRRdGU5TDpI`
 - Vault file completo: `infra/supabase-vps/.vault/dev-dash-envs.env` (gitignored).

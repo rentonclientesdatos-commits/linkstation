@@ -1,7 +1,7 @@
-# Fase 00 — Pre-checks
+﻿# Fase 00 — Pre-checks
 
 - **Run**: 2026-06-03 22:10 — operator: Claude (Opus 4.8) — env: **vps** — mode: AUTONOMOUS
-- **Target URL**: `https://dev.automatizaformacion.com`
+- **Target URL**: `https://dev.linkstation.ai`
 - **Plan dir**: `plans/260603-2210-e2etotal-run/`
 
 ## Resultados
@@ -13,7 +13,7 @@
 | 3   | HEAD SHA                   | ℹ️                  | `73f1610`                                                                                                                                                                                                     |
 | 4   | `GET /api/health`          | 🟢 200              | `{"status":"ok","timestamp":"2026-06-02T22:08:07Z"}`                                                                                                                                                          |
 | 5   | `GET /api/version`         | 🟢 200              | `0.3.0-rc.1`, Node `v22.22.3`. commit/branch/deployedAt vacíos (bug conocido `E2E-260527-001` / `SP-4-NEW-13`, Dokploy Build Args).                                                                           |
-| 6   | Creds admin                | 🟡 fallback memoria | env shell `missing`; Read `.env.local` **denegado por sandbox**; vault sin claves admin. Usadas creds VPS verificadas E2E en memoria `project-supabase-vps-deploy-state.md`: `automatizaformacion@gmail.com`. |
+| 6   | Creds admin                | 🟡 fallback memoria | env shell `missing`; Read `.env.local` **denegado por sandbox**; vault sin claves admin. Usadas creds VPS verificadas E2E en memoria `project-supabase-vps-deploy-state.md`: `LinkStation@gmail.com`. |
 | 7   | `npx playwright --version` | 🟢                  | `1.60.0`                                                                                                                                                                                                      |
 | 8   | Inventario runtime         | 🟢                  | 30 páginas (plan 28, +7%), 33 endpoints (plan 30, +10%). Dentro umbral, sin bump de plan.                                                                                                                     |
 

@@ -1,4 +1,4 @@
-# Phase 02 — Endpoints `/api/health` + `/api/version` (SP-4-NEW-13)
+﻿# Phase 02 — Endpoints `/api/health` + `/api/version` (SP-4-NEW-13)
 
 > Sub-plan de phase-02 Observabilidad (Sprint 3 Hardening). Tarea SP-4-NEW-13. Estim: 30min – 1h.
 
@@ -89,7 +89,7 @@ GET /api/version retorna esas vars
 ### A modificar
 
 - `Dockerfile` — añadir build args `GIT_COMMIT_SHA`, `GIT_BRANCH`, `BUILD_TIMESTAMP` y propagarlos a ENV.
-- Panel Dokploy (`panel.automatizaformacion.com`) → servicio `dev-dash` → sección "Build Args" — pasar build args al Docker build.
+- Panel Dokploy (`panel.linkstation.ai`) → servicio `dev-dash` → sección "Build Args" — pasar build args al Docker build.
 - `tests/integration/api/health.test.ts` (NEW)
 - `tests/integration/api/version.test.ts` (NEW)
 
@@ -249,10 +249,10 @@ Sección "Verificación post-deploy" que diga:
 
 ```bash
 # Comprobar que VPS está vivo
-curl https://dev.automatizaformacion.com/api/health
+curl https://dev.linkstation.ai/api/health
 
 # Comprobar qué commit/version sirve
-curl https://dev.automatizaformacion.com/api/version | jq
+curl https://dev.linkstation.ai/api/version | jq
 ```
 
 ## Todo List
@@ -270,8 +270,8 @@ curl https://dev.automatizaformacion.com/api/version | jq
 
 ## Success Criteria
 
-- `curl https://dev.automatizaformacion.com/api/health` → 200 + JSON `{status, timestamp}`.
-- `curl https://dev.automatizaformacion.com/api/version` → 200 + JSON con `version`, `commit` (7+ chars), `branch`, `deployedAt`.
+- `curl https://dev.linkstation.ai/api/health` → 200 + JSON `{status, timestamp}`.
+- `curl https://dev.linkstation.ai/api/version` → 200 + JSON con `version`, `commit` (7+ chars), `branch`, `deployedAt`.
 - Latencia p99 medida con `ab -n 100 -c 10` <100ms ambos endpoints.
 - Test integración Vitest verde local.
 - En el siguiente cierre de sprint, `expectVpsServingCommit` falla si autodeploy no aplicado → señal clara, no más debug a ciegas.

@@ -1,4 +1,4 @@
----
+﻿---
 title: "7-04 — Webhook pull + idempotency"
 status: pending
 priority: P2
@@ -54,7 +54,7 @@ Setup (al activar integración):
   ACWebhookRegistrar.register(tenantId, accountUrl, apiKey)
     → generar token único per-tenant (HMAC server-secret + tenantId)
     → POST /webhooks
-      url: https://dashboard-af.example.com/api/webhooks/activecampaign?token=<token>
+      url: https://app.linkstation.ai/api/webhooks/activecampaign?token=<token>
       events: ['contact_update', 'deal_update']
     → persist ac_webhook_id en crm_connections
 

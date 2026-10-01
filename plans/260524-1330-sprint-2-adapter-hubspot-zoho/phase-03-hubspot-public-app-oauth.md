@@ -1,4 +1,4 @@
-# Phase 03 — HubSpot Public App OAuth 2.0 + ICRMProvider impl + tests
+﻿# Phase 03 — HubSpot Public App OAuth 2.0 + ICRMProvider impl + tests
 
 ## Context Links
 
@@ -98,18 +98,18 @@ HubSpotCRMProvider
 
 ### Modificar
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/token-manager.ts` (registrar `callRefreshEndpoint` para `crm_type === 'hubspot'`)
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/factory.ts` (registrar HubSpot provider)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/token-manager.ts` (registrar `callRefreshEndpoint` para `crm_type === 'hubspot'`)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/factory.ts` (registrar HubSpot provider)
 
 ### Crear
 
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/providers/hubspot.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/providers/hubspot-mappers.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/src/lib/integrations/crm/providers/hubspot-properties.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/providers/hubspot.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/integrations/crm/providers/hubspot-mappers.test.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/tests/mocks/hubspot-handlers.ts`
-- `e:/ClaudeCode/automatiza-formacion-dashboard/automatiza-formacion-dashboard/docs/integrations/hubspot-app-setup.md` (instrucciones manuales para registrar la app en HubSpot Developer Portal — para el usuario)
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/providers/hubspot.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/providers/hubspot-mappers.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/src/lib/integrations/crm/providers/hubspot-properties.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/providers/hubspot.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/integrations/crm/providers/hubspot-mappers.test.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/tests/mocks/hubspot-handlers.ts`
+- `e:/ClaudeCode/linkstation-dashboard/linkstation-dashboard/docs/integrations/hubspot-app-setup.md` (instrucciones manuales para registrar la app en HubSpot Developer Portal — para el usuario)
 
 ## Implementation steps
 

@@ -1,4 +1,4 @@
-# ADR-014 — Política unificada de handoff humano
+﻿# ADR-014 — Política unificada de handoff humano
 
 | Campo      | Valor                                                                                                                                                    |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -122,7 +122,7 @@ Añadir validación documentada de `tenant.config.max_contact_attempts` (default
 
 ## Referencias
 
-- Bea correcciones V1: `docs/Docs-entrega-clienta/Correcciones_aclaraciones Bea documentacion sistema  automatiza formacion V1.pdf` §"Escalado a Humanos"
-- Renzo V1: `docs/Informes de programacion/documentacion sistema  automatiza formacion V1.pdf` §"5. Escalado a Humanos (Handoff)"
+- Bea correcciones V1: `docs/Docs-entrega-clienta/Correcciones_aclaraciones Bea documentacion sistema  LinkStation V1.pdf` §"Escalado a Humanos"
+- Renzo V1: `docs/Informes de programacion/documentacion sistema  LinkStation V1.pdf` §"5. Escalado a Humanos (Handoff)"
 - Phase plan: `plans/260520-1342-sprint-1-capa-datos/phase-09-fix-bugs-renzo-y-reqs-bea.md` §NEW-13
 - Migración SQL: `supabase/migrations/20260522200000_lead_unreachable_handoff_policy.sql`

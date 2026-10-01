@@ -1,4 +1,4 @@
-# Phase A — Verify VPS rebuild
+﻿# Phase A — Verify VPS rebuild
 
 **Tiempo:** 5-15 min
 **Bloquea:** TODO lo demás (necesitamos saber que el commit `259b7e4` quedó verde en VPS antes de seguir).
@@ -14,11 +14,11 @@
 ### A.1 — Smoke HTTP
 
 ```bash
-curl -sS -m 10 -o /dev/null -w "HTTP %{http_code}\n" "https://dev.automatizaformacion.com/login"
+curl -sS -m 10 -o /dev/null -w "HTTP %{http_code}\n" "https://dev.linkstation.ai/login"
 # Esperado: HTTP 200
 
 curl -sS -m 10 -H "apikey: <ANON_KEY>" -o /dev/null -w "HTTP %{http_code}\n" \
-  "https://dev.automatizaformacion.com/supabase/auth/v1/health"
+  "https://dev.linkstation.ai/supabase/auth/v1/health"
 # Esperado: HTTP 200
 ```
 
@@ -30,7 +30,7 @@ Login + navegar a páginas problemáticas. Verificar 0 errors en consola.
 
 ```javascript
 mcp__plugin_playwright_playwright__browser_navigate({
-  url: "https://dev.automatizaformacion.com/login",
+  url: "https://dev.linkstation.ai/login",
 });
 mcp__plugin_playwright_playwright__browser_fill_form({
   fields: [
@@ -38,7 +38,7 @@ mcp__plugin_playwright_playwright__browser_fill_form({
       target: "<email_ref>",
       name: "Email",
       type: "textbox",
-      value: "automatizaformacion@gmail.com",
+      value: "LinkStation@gmail.com",
     },
     { target: "<pwd_ref>", name: "Contraseña", type: "textbox", value: "BeaOli#AF*2026!" },
   ],
@@ -51,7 +51,7 @@ mcp__plugin_playwright_playwright__browser_click({
 
 // Navegar a /dashboard/conversaciones
 mcp__plugin_playwright_playwright__browser_navigate({
-  url: "https://dev.automatizaformacion.com/dashboard/conversaciones",
+  url: "https://dev.linkstation.ai/dashboard/conversaciones",
 });
 mcp__plugin_playwright_playwright__browser_console_messages({ level: "error" });
 // Esperado: 0 errors (antes del fix: throw "Missing NEXT_PUBLIC_SUPABASE_URL")

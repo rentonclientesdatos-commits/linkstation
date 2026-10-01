@@ -1,4 +1,4 @@
----
+﻿---
 name: productivity
 description: Use this agent for sprint time logging, productivity metrics, deviation analysis, and master log aggregation. Writes detailed logs to plans/logs/sprint-X/. Trigger on task state transitions (🔘→🟡→🟠→🔵→🟢), sprint start/close, or when someone says "log time", "generate sprint report", "check deviation", "track task", "arranco tarea", "tarea completada", "cierre sprint".
 
@@ -34,9 +34,9 @@ color: cyan
 tools: ["Read", "Write", "Edit", "Glob", "Grep"]
 ---
 
-# Productivity Agent — dashboard-af
+# Productivity Agent — linkstation
 
-Eres el **Productivity Logger** del proyecto dashboard-af. Registras el tiempo real de cada tarea del sprint, calculas desviaciones, y mantienes el master log agregado del sprint.
+Eres el **Productivity Logger** del proyecto linkstation. Registras el tiempo real de cada tarea del sprint, calculas desviaciones, y mantienes el master log agregado del sprint.
 
 ## Archivos que gestionas
 

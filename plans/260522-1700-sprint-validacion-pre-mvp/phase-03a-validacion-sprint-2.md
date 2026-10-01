@@ -1,4 +1,4 @@
-# Fase 03a — Validación Sprint 2 (Adapter HubSpot + Zoho v0.2.7)
+﻿# Fase 03a — Validación Sprint 2 (Adapter HubSpot + Zoho v0.2.7)
 
 > Renombrada 24-05-2026: antes `phase-03`, ahora `phase-03a` para separar Sprint 2 de Sprint 2B (research R3 recomendación). Sprint 2B tiene su propia `phase-03b`.
 
@@ -16,7 +16,7 @@
 
 - **Sprint validado**: Sprint 2 — Adapter HubSpot + Zoho (SP-3, **v0.2.7**, no v0.2.0-rc como decía la versión anterior de esta phase).
 - **Branch origen**: `feature/sprint-02-adapter-hubspot-zoho` (PR #12 mergeado 24-05-2026 en `a826fd6`).
-- **Estado**: 🟡 **Pendiente de validación VPS Renzo** (auto-test + E2C local + 5/5 E2E VPS smoke ya verdes contra `dev.automatizaformacion.com`).
+- **Estado**: 🟡 **Pendiente de validación VPS Renzo** (auto-test + E2C local + 5/5 E2E VPS smoke ya verdes contra `dev.linkstation.ai`).
 - **Tester**: Renzo.
 
 ## Resumen del Sprint 2 a validar
@@ -78,26 +78,26 @@ PLAYWRIGHT_BASE_URL=http://localhost:8500 npx playwright test tests/e2e/sprint-2
 
 ## 3. Specs listos para E2E VPS
 
-Mismos specs anteriores con `PLAYWRIGHT_BASE_URL=https://dev.automatizaformacion.com`. **Ya validado 24-05-2026: 5/5 verdes** contra v0.2.7 desplegado.
+Mismos specs anteriores con `PLAYWRIGHT_BASE_URL=https://dev.linkstation.ai`. **Ya validado 24-05-2026: 5/5 verdes** contra v0.2.7 desplegado.
 
 Requisitos VPS:
 
-- Env vars en Dokploy: `HUBSPOT_CLIENT_ID`, `HUBSPOT_CLIENT_SECRET`, `ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`, `OAUTH_STATE_SECRET`, `NEXT_PUBLIC_APP_URL=https://dev.automatizaformacion.com`.
+- Env vars en Dokploy: `HUBSPOT_CLIENT_ID`, `HUBSPOT_CLIENT_SECRET`, `ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`, `OAUTH_STATE_SECRET`, `NEXT_PUBLIC_APP_URL=https://dev.linkstation.ai`.
 - Migraciones aplicadas en VPS:
   - `20260524100000_integrations_oauth_and_audit.sql` (ya aplicada en autoexec Phase 01 via pg-meta REST).
   - `20260524110000_help_sections_integrations.sql` (NUEVA, aplicar al VPS si no se ha hecho).
-- HubSpot Developer Portal: redirect_uri `https://dev.automatizaformacion.com/api/integrations/hubspot/auth/callback` añadido a la Public App.
+- HubSpot Developer Portal: redirect_uri `https://dev.linkstation.ai/api/integrations/hubspot/auth/callback` añadido a la Public App.
 - Cuenta sandbox HubSpot disponible para Renzo aprobar la app durante test E2E.
 
 ## 4. Checklist manual derivado de `docs/testeos-manual.md`
 
 ### Bloque A — Smoke post-deploy (15 min)
 
-- [ ] **A.1** GET `https://dev.automatizaformacion.com/` → redirect `/login` (NO 500).
-- [ ] **A.2** Login con `automatizaformacion@gmail.com / BeaOli#AF*2026!` → `/dashboard`.
+- [ ] **A.1** GET `https://dev.linkstation.ai/` → redirect `/login` (NO 500).
+- [ ] **A.2** Login con `LinkStation@gmail.com / BeaOli#AF*2026!` → `/dashboard`.
 - [ ] **A.3** Navegar a `/dashboard/settings` → carga sin errores.
-- [ ] **A.4** **BUG-2-01 regression check**: GET `https://dev.automatizaformacion.com/api/integrations` autenticado → debe responder 200 con JSON (NO 500, NO 404). El bug consistía en 500 global por slug conflict. Si vuelve a aparecer 500, REPRODUCIDO bug crítico → escalar a Javi HP.
-- [ ] **A.5** GET `https://dev.automatizaformacion.com/api/integrations/manage/00000000-0000-0000-0000-000000000000/healthcheck` autenticado → debe responder 404 (id no existe) o 401, NO 500. Confirma routes `/manage/` registradas.
+- [ ] **A.4** **BUG-2-01 regression check**: GET `https://dev.linkstation.ai/api/integrations` autenticado → debe responder 200 con JSON (NO 500, NO 404). El bug consistía en 500 global por slug conflict. Si vuelve a aparecer 500, REPRODUCIDO bug crítico → escalar a Javi HP.
+- [ ] **A.5** GET `https://dev.linkstation.ai/api/integrations/manage/00000000-0000-0000-0000-000000000000/healthcheck` autenticado → debe responder 404 (id no existe) o 401, NO 500. Confirma routes `/manage/` registradas.
 
 ### Bloque B — Conectar HubSpot real (30 min)
 
@@ -163,10 +163,10 @@ Requisitos VPS:
 | `OAUTH_STATE_SECRET`    | HMAC del state OAuth (CSRF + replay protection)     | `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 | `HUBSPOT_CLIENT_ID`     | Public App HubSpot multi-tenant                     | developers.hubspot.com → Manage Apps → Auth tab                                  |
 | `HUBSPOT_CLIENT_SECRET` | idem                                                | idem                                                                             |
-| `HUBSPOT_REDIRECT_URI`  | Callback OAuth (debe coincidir en Developer Portal) | `https://dev.automatizaformacion.com/api/integrations/hubspot/auth/callback`     |
+| `HUBSPOT_REDIRECT_URI`  | Callback OAuth (debe coincidir en Developer Portal) | `https://dev.linkstation.ai/api/integrations/hubspot/auth/callback`     |
 | `ZOHO_CLIENT_ID`        | App Zoho (DC donde se creó la cuenta)               | api-console.zoho.com → Server-based app                                          |
 | `ZOHO_CLIENT_SECRET`    | idem                                                | idem                                                                             |
-| `ZOHO_REDIRECT_URI`     | Callback OAuth                                      | `https://dev.automatizaformacion.com/api/integrations/zoho/auth/callback`        |
+| `ZOHO_REDIRECT_URI`     | Callback OAuth                                      | `https://dev.linkstation.ai/api/integrations/zoho/auth/callback`        |
 | `NEXT_PUBLIC_APP_URL`   | Base pública usada para construir redirect_uri      | URL del VPS                                                                      |
 
 ## 7. Notas de despliegue
@@ -175,7 +175,7 @@ Requisitos VPS:
    - `20260524110000_help_sections_integrations.sql` (seed help_sections "integrations").
 2. **Aplicar via pg-meta REST** (probado en autoexec Phase 01):
    ```bash
-   curl -X POST https://dev.automatizaformacion.com/supabase/pg/query \
+   curl -X POST https://dev.linkstation.ai/supabase/pg/query \
      -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
      -H "Content-Type: application/json" \
      -d @supabase/migrations/20260524110000_help_sections_integrations.sql

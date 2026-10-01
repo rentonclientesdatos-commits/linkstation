@@ -1,4 +1,4 @@
-# ADR-025 — WhatsApp Tech Provider (Meta) + Embedded Signup multi-tenant
+﻿# ADR-025 — WhatsApp Tech Provider (Meta) + Embedded Signup multi-tenant
 
 - **Status:** Proposed
 - **Date:** 2026-06-03
@@ -11,7 +11,7 @@ El dashboard ya integra WhatsApp Cloud API de Meta (`WhatsAppBridge` en `src/lib
 
 El modelo actual es **"cliente directo replicado"**: cada tenant (academia) crea su propia app de Meta, genera su token y lo pega a mano en Ajustes → Integraciones, junto con `phoneNumberId` y `wabaId` (`IntegrationsManager.tsx:39-71`). Problemas: tokens que caducan y rompen la mensajería, onboarding manual frágil y propenso a error, y carga de soporte por academia.
 
-La clienta (Automatiza Formación) va a darse de alta como **Tech Provider** en Meta. Esto habilita el modelo gestionado: el tenant conecta WhatsApp con Embedded Signup (1 clic + login) y la plataforma opera con un token de sistema central.
+La clienta (LinkStation) va a darse de alta como **Tech Provider** en Meta. Esto habilita el modelo gestionado: el tenant conecta WhatsApp con Embedded Signup (1 clic + login) y la plataforma opera con un token de sistema central.
 
 ## Decisión
 
@@ -70,7 +70,7 @@ Es el mismo patrón conceptual que ya aplicamos a HubSpot en [ADR-021](ADR-021-h
 ## Referencias
 
 - Plan de sprint: `plans/260603-1900-sprint-10-whatsapp-tech-provider/plan.md`
-- Informe a clienta: `docs/entregables/Informe-Tech-Provider-Meta-AutomatizaFormacion.pdf`
+- Informe a clienta: `docs/entregables/Informe-Tech-Provider-Meta-LinkStation.pdf`
 - ADR análogo (Public App multi-tenant): `docs/adr/ADR-021-hubspot-public-app-multi-tenant.md`
 - ADR cifrado tokens OAuth: `docs/adr/ADR-017-cifrado-tokens-oauth-aes-256-gcm.md`
 - Meta — Become a Tech Provider: https://developers.facebook.com/documentation/business-messaging/whatsapp/solution-providers/get-started-for-tech-providers

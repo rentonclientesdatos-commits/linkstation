@@ -1,5 +1,5 @@
-{
-  "_doc": "Workspace settings for dashboard-af. Markdown experience tuned for plans/ and docs/ workflow.",
+﻿{
+  "_doc": "Workspace settings for linkstation. Markdown experience tuned for plans/ and docs/ workflow.",
 
   "markdown-preview-enhanced.automaticallyShowPreviewOfMarkdownBeingEdited": true,
   "markdown-preview-enhanced.previewTheme": "github-light.css",

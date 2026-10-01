@@ -1,4 +1,4 @@
-# Fase 03b — Validación Sprint 2B (Dashboard KPIs Overview v0.2.8)
+﻿# Fase 03b — Validación Sprint 2B (Dashboard KPIs Overview v0.2.8)
 
 > **Plantilla skeleton creada 24-05-2026** tras research R3. Se rellena en SP-3B-CLOSE-5 (auto-fill por el agente que cierre Sprint 2B). Hasta entonces tiene estructura genérica para guiar el llenado correcto.
 
@@ -22,8 +22,8 @@
 <!-- AUTOFILL-START: Resumen Sprint 2B (auto-fill 25-05-2026 SP-3B-CLOSE-5) -->
 
 **Versión release**: `v0.2.8` (tag publicado 25-05-2026).
-**PR mergeado**: [#13](https://github.com/AutomatizaFormacion/Automatiza-Formacion-DashBoard/pull/13) → merge commit `17b2902`.
-**Dokploy deploy**: `app-automatiza-formacion-devdash-zwr4mz:latest` con build args + ENV vars del Sprint 2 (zero-migration, zero-env-nuevas).
+**PR mergeado**: [#13](https://github.com/LinkStation/linkstation-dashboard/pull/13) → merge commit `17b2902`.
+**Dokploy deploy**: `app-linkstation-devdash-zwr4mz:latest` con build args + ENV vars del Sprint 2 (zero-migration, zero-env-nuevas).
 **E2E VPS pre-validación**: 15/15 specs Playwright verdes desde Claude orquestador (25-05-2026 06:09 UTC, 1m 30s).
 
 **Nuevas features:**
@@ -94,7 +94,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:8500 npx playwright test tests/e2e/sprint-2
 
 ## 3. Specs listos para E2E VPS
 
-Mismos specs con `PLAYWRIGHT_BASE_URL=https://dev.automatizaformacion.com`. Pre-requisitos:
+Mismos specs con `PLAYWRIGHT_BASE_URL=https://dev.linkstation.ai`. Pre-requisitos:
 
 - Sprint 2B mergeado a `developer`.
 - Dokploy redeploy con Clean Cache (lección Sprint 2).
@@ -182,7 +182,7 @@ Reutiliza 100% el set de vars del Sprint 2 (ya configuradas en Dokploy panel `de
 
 - 🟢 **Auto-tests verdes**: 193/193 Vitest local (4 skipped por env).
 - 🟢 **Build verde**: typecheck + build production local + build production Dokploy todos OK.
-- 🟢 **E2E VPS pre-validación**: **15/15 specs Playwright verdes** contra `https://dev.automatizaformacion.com` (Claude orquestador, 25-05-2026 06:09 UTC). Cubre: redirect login, OverviewSection visible, 4 KPI hero, BUG-2B-01 fix (2 labels), donut canal empty state, WCAG role=img, console errors, FilterBar, no regresión Summary/Funnel, BUG-2B-03 fix, edit mode DnD, navegación cross-page, API /api/integrations.
+- 🟢 **E2E VPS pre-validación**: **15/15 specs Playwright verdes** contra `https://dev.linkstation.ai` (Claude orquestador, 25-05-2026 06:09 UTC). Cubre: redirect login, OverviewSection visible, 4 KPI hero, BUG-2B-01 fix (2 labels), donut canal empty state, WCAG role=img, console errors, FilterBar, no regresión Summary/Funnel, BUG-2B-03 fix, edit mode DnD, navegación cross-page, API /api/integrations.
 - 🟢 **3 bugs cerrados** con regression checks documentados (BUG-2B-01/02/03).
 - 🟢 **Lighthouse a11y**: PENDIENTE de medición manual por Renzo (target ≥90).
 - ⏳ **Pendiente Renzo + equipo**: ejecutar Bloques A/B/C/D del checklist manual (40 min) cuando ventana SP-4B abra (Mar 16-06-2026).

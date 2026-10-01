@@ -36,7 +36,7 @@ describe("logger (2-37 → Pino phase-02)", () => {
     expect(parsed.msg).toBe("hello");
     expect(parsed.meta).toEqual({ foo: "bar" });
     expect(parsed.time).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(parsed.service).toBe("dashboard-af");
+    expect(parsed.service).toBe("linkstation");
   });
 
   it("emite error con level=error a stdout (Pino: todos los niveles a stdout)", () => {

@@ -14,7 +14,7 @@ import fs from "fs";
  * Credenciales VPS: variables de entorno VPS_ADMIN_EMAIL / VPS_ADMIN_PASS.
  */
 
-const ADMIN_EMAIL = process.env.VPS_ADMIN_EMAIL ?? "automatizaformacion@gmail.com";
+const ADMIN_EMAIL = process.env.VPS_ADMIN_EMAIL ?? "admin@linkstation.ai";
 const ADMIN_PASS = process.env.VPS_ADMIN_PASS ?? "BeaOli#AF*2026!";
 const SCREENSHOT_DIR = "docs/screenshots/sprint-2-close-vps";
 
@@ -109,8 +109,8 @@ test.describe("sprint-2-close smoke CRM VPS @smoke-vps", () => {
     if (editCount > 0) {
       await editButtons.first().click();
     } else {
-      // Fallback: cualquier botón en la fila del tenant Automatiza Formación
-      const row = page.locator('tr:has-text("Automatiza Formación")').first();
+      // Fallback: cualquier botón en la fila del tenant LinkStation
+      const row = page.locator('tr:has-text("LinkStation")').first();
       const rowButtons = row.locator("button");
       const rbc = await rowButtons.count();
       console.log(`[VPS-04] fallback row buttons: ${rbc}`);

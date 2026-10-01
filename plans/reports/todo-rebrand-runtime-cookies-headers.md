@@ -1,4 +1,4 @@
----
+﻿---
 type: todo
 status: pending
 priority: P2
@@ -58,7 +58,7 @@ Estos son labels Docker locales — renombrar es seguro PERO si hay scripts ops/
 
 1. **Sprint dedicado** o tarea de Sprint 3 (Hardening) para migracion controlada.
 2. Implementar **lectura dual** en codigo para cookies/headers durante 30-60 dias.
-3. Decidir politica de filenames con cliente (Automatiza Formacion).
+3. Decidir politica de filenames con cliente (LinkStation).
 4. Anadir tests E2E que verifiquen ambos nombres durante periodo de gracia.
 5. Documentar fecha de corte en `docs/release-process.md`.
 

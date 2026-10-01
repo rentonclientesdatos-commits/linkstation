@@ -1368,7 +1368,7 @@ export class Orchestrator {
         const provider = CRMFactory.getProvider(tenantId, config);
         await provider.executeAction(lead.id_lead_externo || "", "CREATE_TASK", {
           subject: `Derivación Humana: ${reason}`,
-          description: `El lead necesita atención humana inmediata. Razón: ${reason}. Ver en Dashboard: https://automatiza.es/dashboard/leads/${lead.id}`,
+          description: `El lead necesita atención humana inmediata. Razón: ${reason}. Ver en Dashboard: https://app.linkstation.ai/dashboard/historial/${lead.id}`,
           priority: "High",
         });
       } catch (e) {

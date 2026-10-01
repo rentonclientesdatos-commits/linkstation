@@ -55,7 +55,7 @@ const testStream = {
 const basePinoLogger: PinoLogger = pino(
   {
     level: LOG_LEVEL,
-    base: { service: "dashboard-af", env: process.env.NODE_ENV },
+    base: { service: "linkstation", env: process.env.NODE_ENV },
     formatters: {
       level: (label) => ({ level: label }),
     },

@@ -1,4 +1,4 @@
-# Runbook — Deploy del proxy LiteLLM al VPS Dokploy (Sprint 8)
+﻿# Runbook — Deploy del proxy LiteLLM al VPS Dokploy (Sprint 8)
 
 > Creado 13-06-2026. Guía pre-deploy del stack LiteLLM Proxy + Langfuse en el VPS
 > Hetzner (Dokploy). El stack se validó E2E en local (v1.85.5 + Postgres propio,
@@ -8,7 +8,7 @@
 
 - **Rama**: `feature/sprint-08-costes-llm` (PR #32 a `developer`, OPEN + MERGEABLE, sin merge).
 - **Stack**: `infra/litellm-proxy/docker-compose.dokploy.yml` (proxy `v1.85.5` + `litellm-db` Postgres propio AISLADO del cluster Supabase).
-- **Acceso VPS**: ver `docs/handoff/acceso-panel-dokploy-vps.md`. Panel `panel.automatizaformacion.com/` (SIN puerto :3000, bloqueado al exterior). SSH: `infra/supabase-vps/.vault/ssh-vps.env` + helper `infra/supabase-vps/scripts/ssh-vps.sh`. Memoria: SSH key ed25519 puede estar denegada → usar pg-meta REST o panel Dokploy directo.
+- **Acceso VPS**: ver `docs/handoff/acceso-panel-dokploy-vps.md`. Panel `panel.linkstation.ai/` (SIN puerto :3000, bloqueado al exterior). SSH: `infra/supabase-vps/.vault/ssh-vps.env` + helper `infra/supabase-vps/scripts/ssh-vps.sh`. Memoria: SSH key ed25519 puede estar denegada → usar pg-meta REST o panel Dokploy directo.
 
 ## Decisiones de diseño ya tomadas (red-team Sprint 8)
 

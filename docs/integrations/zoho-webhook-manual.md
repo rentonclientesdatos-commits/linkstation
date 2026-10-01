@@ -16,7 +16,7 @@ Esta guía te lleva paso a paso para conectar Zoho CRM con el dashboard mediante
 ## Paso 2 — Define cuándo se dispara
 
 1. **Módulo:** selecciona **Posibles clientes / Leads**.
-2. **Nombre de la regla:** por ejemplo `dashboard-af entrada leads`.
+2. **Nombre de la regla:** por ejemplo `linkstation entrada leads`.
 3. Pulsa **Siguiente**.
 4. En **¿Cuándo quieres ejecutar la regla?** elige **Al crear o editar un registro** (_On a record action → Create or Edit_).
    - Así entran tanto los leads nuevos como los modificados.
@@ -32,7 +32,7 @@ Esta guía te lleva paso a paso para conectar Zoho CRM con el dashboard mediante
 
 1. En **Acciones instantáneas**, pulsa **Webhook → Nuevo webhook**.
 2. Rellena:
-   - **Nombre:** `dashboard-af entrada leads`
+   - **Nombre:** `linkstation entrada leads`
    - **Método:** **PUBLICAR** (POST)
    - **URL para notificar:** pega aquí la **URL del webhook** que copiaste del dashboard.
      Tiene este formato:

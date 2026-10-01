@@ -1,4 +1,4 @@
-# Execution log
+﻿# Execution log
 
 > Mantener actualizado en CADA paso significativo. Es la única fuente de verdad para retomar tras interrupción/clear.
 
@@ -32,9 +32,9 @@
   - `src/components/ui/empty-state.tsx` (componente reutilizable role="status")
   - `<ToastProvider>` montado en `src/app/layout.tsx`
 - Migrations LOCAL: ✅ aplicadas (`npx supabase migration up` → "Local database is up to date.")
-- Migrations VPS: ✅ APLICADAS vía **pg-meta REST endpoint** (`POST https://dev.automatizaformacion.com/supabase/pg/query` con service_role) — alternativa al SSH bloqueado. Verificado:
+- Migrations VPS: ✅ APLICADAS vía **pg-meta REST endpoint** (`POST https://dev.linkstation.ai/supabase/pg/query` con service_role) — alternativa al SSH bloqueado. Verificado:
   - `web_widgets.updated_at` (timestamptz) presente
-  - Ambos tenants (`Automatiza Formación`, `Demo - Academia AF`) con `test_orchestrator_enabled=true`
+  - Ambos tenants (`LinkStation`, `Demo - Academia AF`) con `test_orchestrator_enabled=true`
   - Tabla `help_sections` creada con RLS scoped
 - Seed VPS: ✅ 11 secciones (5 admin + 6 clientes) insertadas vía `SEED_HELP_TARGET=vps npx tsx scripts/seed-help-sections.ts`.
 - Tests typecheck: ✅ `npx tsc --noEmit` → 0 errors

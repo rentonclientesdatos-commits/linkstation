@@ -1,4 +1,4 @@
----
+﻿---
 title: "4-02 — Template Sheets por tenant + DB migration"
 status: pending
 priority: P2
@@ -25,7 +25,7 @@ created: 2026-05-21
 
 ## Key Insights
 
-- Plantilla maestra única en Drive de Automatiza Formación, compartida en modo "anyone with link can copy"
+- Plantilla maestra única en Drive de LinkStation, compartida en modo "anyone with link can copy"
 - Cada tenant recibe su propia copia (no acceso a la maestra)
 - Columnas obligatorias de la plantilla: `lead_id`, `email`, `firstName`, `lastName`, `phone`, `leadStatus`, `_esden_updated_at`
 - `_esden_updated_at` es la marca de idempotencia — clave para evitar bucle push/pull

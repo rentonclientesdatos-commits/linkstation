@@ -1,4 +1,4 @@
----
+﻿---
 title: "Documentacion - Dashboard Esden (Auditoria 2026-05-18)"
 date: 2026-05-18
 status: final
@@ -7,12 +7,12 @@ status: final
 # Dashboard Esden - Indice de Documentacion
 
 Indice navegable de toda la documentacion generada durante la auditoria tecnica
-del proyecto dashboard-af (AI CRM + Workflow Orchestrator para Automatiza Formación).
+del proyecto linkstation (AI CRM + Workflow Orchestrator para LinkStation).
 
 **Proyecto**: Next.js 16 + React 19 + Supabase + BullMQ + LangChain
 **Fecha de auditoria**: 2026-05-18
 **Rama**: auditoria
-**Carpeta local**: `e:\ClaudeCode\automatiza-formacion-dashboard\automatiza-formacion-dashboard` (renombrada desde `e:\ClaudeCode\AutomatizaFormacion\dashboard-af-main` el 2026-05-20 — ver `docs/rename-guide.md`)
+**Carpeta local**: `e:\ClaudeCode\linkstation-dashboard\linkstation-dashboard` (renombrada desde `e:\ClaudeCode\LinkStation\linkstation-main` el 2026-05-20 — ver `docs/rename-guide.md`)
 
 ---
 
@@ -142,4 +142,4 @@ docs/
 ---
 
 **Status:** DONE
-**Summary:** Indice navegable completo de la documentacion de auditoria dashboard-af.
+**Summary:** Indice navegable completo de la documentacion de auditoria linkstation.

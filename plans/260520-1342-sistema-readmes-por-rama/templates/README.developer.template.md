@@ -1,4 +1,4 @@
-# dashboard-af
+﻿# linkstation
 
 > **Versión:** {{PROJECT_VERSION}} &nbsp;·&nbsp; **Actualizado:** {{LAST_UPDATED}}
 
@@ -25,8 +25,8 @@ AI CRM + Workflow Orchestrator multi-tenant para academias formativas. Sistema q
 
 ```bash
 # 1. Clonar y entrar al proyecto
-git clone <repo-url> dashboard-af
-cd dashboard-af
+git clone <repo-url> linkstation
+cd linkstation
 git checkout developer
 
 # 2. Variables de entorno
@@ -49,7 +49,7 @@ npm run dev
 ## Estructura del proyecto (resumida)
 
 ```
-dashboard-af/
+linkstation/
 ├── src/                    # Código fuente (Next.js App Router)
 │   ├── app/                # Rutas y API routes
 │   ├── lib/                # Lógica de negocio, repositories, schemas Zod
