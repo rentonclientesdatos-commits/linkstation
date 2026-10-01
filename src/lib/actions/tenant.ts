@@ -339,29 +339,28 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
 
     let targetAuthUserId = updates.auth_user_id;
 
-    // 0. Self-healing robusto: Verificar si el targetAuthUserId actual realmente existe en Auth
-    let userExistsInAuth = false;
-    if (targetAuthUserId) {
-      const { data: userCheck, error: checkError } = await serviceSupabase.auth.admin.getUserById(targetAuthUserId);
-      if (!checkError && userCheck?.user) {
-        userExistsInAuth = true;
-      } else {
-        // El ID no existe en Supabase Auth (era un UUID huérfano o de otro entorno)
-        targetAuthUserId = undefined;
+    // 0. Comprobar si ya existe un usuario con el email que se está guardando
+    let existingUserWithEmail: { id: string; email?: string } | null = null;
+    if (updates.client_email) {
+      const { data: userData } = await serviceSupabase.auth.admin.listUsers();
+      if (userData?.users) {
+        const found = userData.users.find(
+          (u) => u.email?.toLowerCase() === updates.client_email?.toLowerCase()
+        );
+        if (found) {
+          existingUserWithEmail = { id: found.id, email: found.email };
+        }
       }
     }
 
-    // Si no tenemos un usuario válido en Auth pero tenemos client_email, buscar si ya existe por email
-    if (!userExistsInAuth && updates.client_email) {
-      const { data: userData, error: findError } = await serviceSupabase.auth.admin.listUsers();
-      if (!findError && userData?.users) {
-        const existingUser = userData.users.find(
-          (u) => u.email?.toLowerCase() === updates.client_email?.toLowerCase()
-        );
-        if (existingUser) {
-          targetAuthUserId = existingUser.id;
-          userExistsInAuth = true;
-        }
+    // Si ya existe un usuario con ese email, el tenant debe vincularse a ese usuario existente
+    if (existingUserWithEmail) {
+      targetAuthUserId = existingUserWithEmail.id;
+    } else if (targetAuthUserId) {
+      // Verificar si el targetAuthUserId actual existe
+      const { data: userCheck } = await serviceSupabase.auth.admin.getUserById(targetAuthUserId);
+      if (!userCheck?.user) {
+        targetAuthUserId = undefined;
       }
     }
 
@@ -371,8 +370,8 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
       data: { user: currentUser },
     } = await supabaseForAuth.auth.getUser();
 
-    // 1. Si existe el usuario en Auth, actualizarlo (email, password, metadata)
-    if (userExistsInAuth && targetAuthUserId) {
+    // 1. Si tenemos un usuario en Auth vinculado (sea el existente por email o el previo)
+    if (targetAuthUserId) {
       if (updates.is_admin === false && targetAuthUserId === currentUser?.id) {
         return { error: "No puedes quitarte el acceso de administrador a ti mismo por seguridad." };
       }
@@ -395,7 +394,8 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
       if (updates.password) {
         authUpdatePayload.password = updates.password;
       }
-      if (updates.client_email) {
+      // Solo actualizamos el email si no era un usuario ya existente con ese email
+      if (updates.client_email && (!existingUserWithEmail || existingUserWithEmail.id !== targetAuthUserId)) {
         authUpdatePayload.email = updates.client_email;
         authUpdatePayload.email_confirm = true;
       }
@@ -411,8 +411,8 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
 
       updates.auth_user_id = targetAuthUserId;
     }
-    // 2. Si NO existe el usuario en Auth y se proveyó password, crearlo
-    else if (!userExistsInAuth && updates.password && updates.client_email) {
+    // 2. Si NO existe usuario en Auth y se envió password y email, crear nuevo usuario
+    else if (updates.password && updates.client_email) {
       const { data: authData, error: authError } = await serviceSupabase.auth.admin.createUser({
         email: updates.client_email,
         password: updates.password,
