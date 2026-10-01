@@ -339,18 +339,28 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
 
     let targetAuthUserId = updates.auth_user_id;
 
-    // 0. Self-healing: If auth_user_id is missing, try to find the user by email
-    if (!targetAuthUserId && updates.client_email) {
+    // 0. Self-healing robusto: Verificar si el targetAuthUserId actual realmente existe en Auth
+    let userExistsInAuth = false;
+    if (targetAuthUserId) {
+      const { data: userCheck, error: checkError } = await serviceSupabase.auth.admin.getUserById(targetAuthUserId);
+      if (!checkError && userCheck?.user) {
+        userExistsInAuth = true;
+      } else {
+        // El ID no existe en Supabase Auth (era un UUID huérfano o de otro entorno)
+        targetAuthUserId = undefined;
+      }
+    }
+
+    // Si no tenemos un usuario válido en Auth pero tenemos client_email, buscar si ya existe por email
+    if (!userExistsInAuth && updates.client_email) {
       const { data: userData, error: findError } = await serviceSupabase.auth.admin.listUsers();
-      if (!findError && userData.users) {
-        const existingUser = userData.users.find((u) => u.email === updates.client_email);
+      if (!findError && userData?.users) {
+        const existingUser = userData.users.find(
+          (u) => u.email?.toLowerCase() === updates.client_email?.toLowerCase()
+        );
         if (existingUser) {
           targetAuthUserId = existingUser.id;
-          // Update the tenant record immediately to link it for the future
-          await serviceSupabase
-            .from("tenants")
-            .update({ auth_user_id: targetAuthUserId })
-            .eq("id", id);
+          userExistsInAuth = true;
         }
       }
     }
@@ -361,32 +371,48 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
       data: { user: currentUser },
     } = await supabaseForAuth.auth.getUser();
 
-    // 1. If password is provided AND we have/found an auth_user_id, update it
-    if (updates.password && targetAuthUserId) {
+    // 1. Si existe el usuario en Auth, actualizarlo (email, password, metadata)
+    if (userExistsInAuth && targetAuthUserId) {
       if (updates.is_admin === false && targetAuthUserId === currentUser?.id) {
         return { error: "No puedes quitarte el acceso de administrador a ti mismo por seguridad." };
       }
-      // Sprint 0 tarea 1-16: is_admin va en app_metadata (server-controlled).
+
+      const authUpdatePayload: {
+        password?: string;
+        email?: string;
+        email_confirm?: boolean;
+        app_metadata?: Record<string, unknown>;
+        user_metadata?: Record<string, unknown>;
+      } = {
+        app_metadata: {
+          is_admin: !!updates.is_admin,
+        },
+        user_metadata: {
+          username: updates.username,
+        },
+      };
+
+      if (updates.password) {
+        authUpdatePayload.password = updates.password;
+      }
+      if (updates.client_email) {
+        authUpdatePayload.email = updates.client_email;
+        authUpdatePayload.email_confirm = true;
+      }
+
       const { error: authError } = await serviceSupabase.auth.admin.updateUserById(
         targetAuthUserId,
-        {
-          password: updates.password,
-          app_metadata: {
-            is_admin: !!updates.is_admin,
-          },
-          user_metadata: {
-            username: updates.username,
-          },
-        }
+        authUpdatePayload
       );
       if (authError) {
         console.error("AUTH USER UPDATE ERROR:", authError.message);
         return { error: `Error actualizando usuario en Auth: ${authError.message}` };
       }
+
+      updates.auth_user_id = targetAuthUserId;
     }
-    // 1b. If password is provided but NO user exists yet, CREATE it
-    else if (updates.password && !targetAuthUserId && updates.client_email) {
-      // Sprint 0 tarea 1-16: is_admin va en app_metadata (server-controlled).
+    // 2. Si NO existe el usuario en Auth y se proveyó password, crearlo
+    else if (!userExistsInAuth && updates.password && updates.client_email) {
       const { data: authData, error: authError } = await serviceSupabase.auth.admin.createUser({
         email: updates.client_email,
         password: updates.password,
@@ -404,32 +430,7 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
         return { error: `Error creando usuario en Auth: ${authError.message}` };
       }
       targetAuthUserId = authData.user?.id;
-      // We'll update the tenant record with the new auth_user_id below in the main update
       updates.auth_user_id = targetAuthUserId;
-    } else if (
-      (updates.is_admin !== undefined || updates.username !== undefined) &&
-      targetAuthUserId
-    ) {
-      if (updates.is_admin === false && targetAuthUserId === currentUser?.id) {
-        return { error: "No puedes quitarte el acceso de administrador a ti mismo por seguridad." };
-      }
-      // Update metadata even if password is not provided.
-      // Sprint 0 tarea 1-16: is_admin va en app_metadata (server-controlled).
-      const { error: authError } = await serviceSupabase.auth.admin.updateUserById(
-        targetAuthUserId,
-        {
-          app_metadata: {
-            is_admin: !!updates.is_admin,
-          },
-          user_metadata: {
-            username: updates.username,
-          },
-        }
-      );
-      if (authError) {
-        console.error("AUTH METADATA UPDATE ERROR:", authError.message);
-        return { error: `Error actualizando metadatos: ${authError.message}` };
-      }
     }
 
     // We move is_admin, username, api_type and business_type into config to avoid needing a new column in the table
