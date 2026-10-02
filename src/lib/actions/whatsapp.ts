@@ -149,6 +149,28 @@ export async function saveWABAConfig(params: {
 
   if (error) return { success: false, error: error.message };
 
+  // Sincronizar también en tenant.config.whatsapp
+  try {
+    const currentConfig = (tenant.config as Record<string, unknown>) || {};
+    const existingWhatsApp = (currentConfig.whatsapp as Record<string, unknown>) || {};
+    await supabase
+      .from("tenants")
+      .update({
+        config: {
+          ...currentConfig,
+          whatsapp: {
+            ...existingWhatsApp,
+            accessToken: finalAccessToken,
+            phoneNumberId: params.phoneNumberId,
+            wabaId: params.wabaId,
+          },
+        },
+      })
+      .eq("id", tenant.id);
+  } catch (syncErr) {
+    console.warn("[saveWABAConfig] Warning updating tenant.config:", syncErr);
+  }
+
   revalidatePath("/dashboard/settings/whatsapp");
   return { success: true };
 }
@@ -173,6 +195,49 @@ export async function syncWhatsAppTemplatesToDB(): Promise<{
   const result = await metaWhatsAppClient.syncTemplates(cfg.tenantId, cfg.wabaConfig);
 
   if (result.success) {
+    try {
+      const supabase = getServiceClient();
+      const { data: dbTemplates } = await supabase
+        .from("whatsapp_templates")
+        .select("*")
+        .eq("tenant_id", cfg.tenantId);
+
+      const { data: tenantRow } = await supabase
+        .from("tenants")
+        .select("config")
+        .eq("id", cfg.tenantId)
+        .maybeSingle();
+
+      const currentConfig = (tenantRow?.config as Record<string, unknown>) || {};
+      const existingWhatsApp = (currentConfig.whatsapp as Record<string, unknown>) || {};
+
+      await supabase
+        .from("tenants")
+        .update({
+          config: {
+            ...currentConfig,
+            whatsapp: {
+              ...existingWhatsApp,
+              accessToken: cfg.wabaConfig.accessToken,
+              phoneNumberId: cfg.wabaConfig.phoneNumberId,
+              wabaId: cfg.wabaConfig.wabaId,
+              templates: (dbTemplates || []).map((t) => ({
+                id: t.meta_id || t.id,
+                name: t.name,
+                language: t.language || "es",
+                status: t.status,
+                category: t.category,
+                components: t.components,
+              })),
+              lastSync: new Date().toISOString(),
+            },
+          },
+        })
+        .eq("id", cfg.tenantId);
+    } catch (syncErr) {
+      console.warn("[syncWhatsAppTemplatesToDB] Warning updating tenant.config:", syncErr);
+    }
+
     revalidatePath("/dashboard/settings/whatsapp");
   }
 

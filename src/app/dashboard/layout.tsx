@@ -1,17 +1,19 @@
 import { ReactNode, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getAdminStatus } from "@/lib/actions/auth";
+import { getAdminStatus, getSuperAdminStatus } from "@/lib/actions/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   let isAdmin = false;
+  let isSuperAdmin = false;
   try {
     isAdmin = await getAdminStatus();
+    isSuperAdmin = await getSuperAdminStatus();
   } catch (e) {
-    console.error("[DashboardLayout] getAdminStatus error:", e);
-    // fail-safe: si no podemos determinar el status, asumimos no-admin
+    console.error("[DashboardLayout] auth status error:", e);
     isAdmin = false;
+    isSuperAdmin = false;
   }
 
   return (
@@ -22,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         </div>
       }
     >
-      <DashboardShell isAdmin={isAdmin}>{children}</DashboardShell>
+      <DashboardShell isAdmin={isAdmin} isSuperAdmin={isSuperAdmin}>{children}</DashboardShell>
     </Suspense>
   );
 }

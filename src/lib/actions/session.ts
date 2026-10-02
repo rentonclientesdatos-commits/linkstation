@@ -39,13 +39,20 @@ export async function getSessionContext(): Promise<SessionContext | null> {
 
     if (error || !user) return null;
 
+    const SUPER_ADMIN_EMAILS = [
+      "renzo.calderon.thompson@gmail.com",
+      "renzz.cal.thompson@gmail.com",
+      "admin@test.com",
+      "renton.clientes.datos@gmail.com",
+    ];
+
     const isSuperAdmin =
       user.app_metadata?.is_super_admin === true ||
       user.app_metadata?.is_super_admin === "true" ||
-      user.app_metadata?.is_admin === true ||
-      user.app_metadata?.is_admin === "true" ||
-      user.app_metadata?.admin === true ||
-      user.app_metadata?.admin === "true";
+      (!!user.email && SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase())) ||
+      user.user_metadata?.username === "renton" ||
+      (typeof user.user_metadata?.name === "string" &&
+        user.user_metadata.name.toUpperCase().includes("RENTON"));
 
     let tenantId = cookieStore.get("esden-tenant-id")?.value || null;
     let tenantName = cookieStore.get("esden-tenant-name")?.value || null;

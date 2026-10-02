@@ -6,9 +6,11 @@ import { Topbar } from "@/components/layout/Topbar";
 
 export function DashboardShell({
   isAdmin,
+  isSuperAdmin,
   children,
 }: {
   isAdmin: boolean;
+  isSuperAdmin?: boolean;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -17,6 +19,7 @@ export function DashboardShell({
     <div className="bg-background text-foreground flex h-screen overflow-hidden transition-all duration-500">
       <Sidebar
         isAdmin={isAdmin}
+        isSuperAdmin={isSuperAdmin}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />

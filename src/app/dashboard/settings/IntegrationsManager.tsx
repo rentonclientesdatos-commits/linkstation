@@ -15,6 +15,9 @@ import {
   Database,
   FileSpreadsheet,
   Search,
+  FileDown,
+  ExternalLink,
+  TestTube,
 } from "lucide-react";
 import { syncUltravoxResources } from "@/lib/actions/ultravox-sync";
 import { syncWhatsAppTemplates } from "@/lib/actions/whatsapp-sync";
@@ -460,6 +463,118 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
               </span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── SECTION: PDF.CO ── */}
+      {matchesFilter("pdf cotizacion documento pdf.co generar reporte") && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-600">
+                <FileDown className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                  pdf.co — Generador de PDF
+                </h3>
+                <p className="text-left text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                  Cotizaciones y documentos automáticos vía WhatsApp
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://app.pdf.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[10px] font-bold text-rose-600 transition-colors hover:bg-rose-100 dark:border-rose-900/30 dark:bg-rose-900/10 dark:text-rose-400"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Ir a pdf.co
+            </a>
+          </div>
+
+          {/* API Key */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Key className="h-4 w-4 text-rose-500" />
+              <Label className="text-[11px] font-black tracking-widest text-slate-500 uppercase dark:text-slate-400">
+                API Key de pdf.co
+              </Label>
+            </div>
+            <Input
+              type="password"
+              value={((config?.pdfco as Record<string, string>) || {}).api_key || ""}
+              onChange={(e) => updateField("pdfco", { api_key: e.target.value })}
+              placeholder="Tu API Key de pdf.co (ej: abc123@example.com_...)"
+              className="font-mono text-sm"
+            />
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              Crea tu cuenta gratuita en{" "}
+              <a
+                href="https://app.pdf.co"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-rose-500 underline underline-offset-2"
+              >
+                app.pdf.co
+              </a>{" "}
+              y copia tu API Key desde el Dashboard → Account.
+            </p>
+          </div>
+
+          {/* Test button */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={async () => {
+                const apiKey = ((config?.pdfco as Record<string, string>) || {}).api_key;
+                if (!apiKey) {
+                  toast({ variant: "warning", title: "API Key requerida", description: "Introduce tu API Key de pdf.co primero." });
+                  return;
+                }
+                try {
+                  const res = await fetch("/api/pdf/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      html_template: "<html><body><h1>✅ pdf.co funcionando!</h1><p>Generado correctamente.</p></body></html>",
+                      filename: "test-pdfco.pdf",
+                      paper_size: "A4",
+                      variables: {},
+                    }),
+                  });
+                  const data = await res.json() as { success?: boolean; url?: string; error?: string };
+                  if (data.success && data.url) {
+                    toast({ variant: "success", title: "✅ pdf.co conectado", description: "PDF de prueba generado con éxito." });
+                    window.open(data.url, "_blank");
+                  } else {
+                    toast({ variant: "error", title: "Error pdf.co", description: data.error || "Error desconocido" });
+                  }
+                } catch {
+                  toast({ variant: "error", title: "Error de conexión con pdf.co" });
+                }
+              }}
+              className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 transition-all hover:bg-rose-100 dark:border-rose-900/30 dark:bg-rose-900/10 dark:text-rose-400 dark:hover:bg-rose-900/20"
+            >
+              <TestTube className="h-4 w-4" />
+              Probar conexión (genera PDF de prueba)
+            </button>
+          </div>
+
+          {/* Info card */}
+          <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+            <p className="text-[10px] font-black tracking-widest text-amber-600 uppercase dark:text-amber-400">
+              ¿Cómo usarlo?
+            </p>
+            <ol className="mt-2 space-y-1 text-[11px] text-amber-700/80 dark:text-amber-300/60 list-decimal list-inside">
+              <li>Configura la API Key arriba y guarda.</li>
+              <li>En el Constructor de IA, agrega el nodo <strong>"Generar PDF"</strong>.</li>
+              <li>Escribe tu plantilla HTML con <code className="font-mono bg-amber-100/50 px-1 rounded">&#123;&#123;variables&#125;&#125;</code>.</li>
+              <li>El nodo expone la URL del PDF como <code className="font-mono bg-amber-100/50 px-1 rounded">&#123;&#123;pdf_url&#125;&#125;</code>.</li>
+              <li>Pasa esa variable al nodo <strong>Agente de Texto IA</strong> o <strong>Plantilla WhatsApp</strong>.</li>
+            </ol>
+          </div>
         </div>
       )}
 

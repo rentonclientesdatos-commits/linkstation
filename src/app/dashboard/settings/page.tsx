@@ -20,19 +20,23 @@ import {
   ChevronDown,
   Utensils,
   Briefcase,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tenant } from "@/types/tenant";
+import { SYSTEM_MODULES } from "@/types/tenant";
 import { toast } from "@/components/ui/toast";
 import { KpiBuilder } from "./KpiBuilder";
 import { IntegrationsManager } from "./IntegrationsManager";
 import { LogoUploader } from "@/components/settings/LogoUploader";
+import { getSuperAdminStatus } from "@/lib/actions/auth";
 
 export default function SettingsPage() {
   const { setTenant: setActiveTenant } = useTenantStore();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<
     Partial<Tenant> & {
@@ -55,7 +59,14 @@ export default function SettingsPage() {
   const [showNewForm, setShowNewForm] = useState(false);
 
   useEffect(() => {
-    loadTenants();
+    getSuperAdminStatus().then((superAdmin) => {
+      setIsSuperAdmin(superAdmin);
+      if (superAdmin) {
+        loadTenants();
+      } else {
+        setLoading(false);
+      }
+    });
   }, []);
 
   async function loadTenants() {
@@ -202,9 +213,10 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Clients List */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
+      {/* Clients List - Exclusivo para Renton Super Admin */}
+      {isSuperAdmin && (
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
           <h2 className="text-lg text-[11px] font-bold tracking-widest text-slate-700 uppercase dark:text-slate-300">
             Clientes Activos
           </h2>
@@ -443,6 +455,154 @@ export default function SettingsPage() {
                               }}
                             />
                           </div>
+
+                          {/* ── MÓDULOS VISIBLES (Para Nuevo Cliente) ── */}
+                          {!(
+                            (editForm.name && editForm.name.toUpperCase().includes("RENTON")) ||
+                            (editForm.username && editForm.username.toLowerCase() === "renton")
+                          ) && (
+                            <div className="space-y-4 md:col-span-2">
+                              <div className="rounded-2xl border border-violet-200 bg-violet-50/50 p-6 shadow-sm dark:border-violet-900/30 dark:bg-violet-900/10">
+                                <div className="mb-4 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <LayoutGrid className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                                    <h3 className="text-sm font-black tracking-tight text-violet-700 uppercase dark:text-violet-300">
+                                      Módulos Visibles para este Cliente
+                                    </h3>
+                                  </div>
+                                  <span className="rounded-full bg-violet-200/60 px-2.5 py-0.5 text-[9px] font-black tracking-widest text-violet-800 uppercase dark:bg-violet-800/40 dark:text-violet-300">
+                                    Control Super Admin
+                                  </span>
+                                </div>
+                                <p className="mb-4 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                                  Define qué secciones del menú lateral podrá ver este usuario o empresa cliente.
+                                  Los módulos desactivados no aparecerán en su Sidebar.
+                                </p>
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                  {SYSTEM_MODULES.map((mod) => {
+                                    const currentModules = (() => {
+                                      try {
+                                        const conf =
+                                          typeof editForm.config === "string"
+                                            ? JSON.parse(editForm.config || "{}")
+                                            : editForm.config || {};
+                                        const vm = (conf as Record<string, unknown>).visible_modules;
+                                        if (Array.isArray(vm)) return vm as string[];
+                                        return SYSTEM_MODULES.filter((m) => m.defaultEnabled).map(
+                                          (m) => m.id
+                                        );
+                                      } catch {
+                                        return SYSTEM_MODULES.filter((m) => m.defaultEnabled).map(
+                                          (m) => m.id
+                                        );
+                                      }
+                                    })();
+                                    const isEnabled = currentModules.includes(mod.id);
+                                    return (
+                                      <label
+                                        key={mod.id}
+                                        className={cn(
+                                          "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all duration-150 hover:shadow-sm",
+                                          isEnabled
+                                            ? "border-violet-300 bg-violet-50 dark:border-violet-700/50 dark:bg-violet-900/20"
+                                            : "border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950 opacity-60"
+                                        )}
+                                      >
+                                        <div className="relative mt-0.5 flex-shrink-0">
+                                          <input
+                                            type="checkbox"
+                                            checked={isEnabled}
+                                            onChange={() => {
+                                              const newModules = isEnabled
+                                                ? currentModules.filter((m) => m !== mod.id)
+                                                : [...currentModules, mod.id];
+                                              const current =
+                                                typeof editForm.config === "string"
+                                                  ? JSON.parse(editForm.config || "{}")
+                                                  : editForm.config || {};
+                                              setEditForm({
+                                                ...editForm,
+                                                config: { ...current, visible_modules: newModules },
+                                              });
+                                            }}
+                                            className="sr-only"
+                                          />
+                                          <div
+                                            className={cn(
+                                              "flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all",
+                                              isEnabled
+                                                ? "border-violet-500 bg-violet-500"
+                                                : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900"
+                                            )}
+                                          >
+                                            {isEnabled && (
+                                              <Check
+                                                className="h-3 w-3 text-white"
+                                                strokeWidth={3}
+                                              />
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p
+                                            className={cn(
+                                              "text-[11px] font-black tracking-tight",
+                                              isEnabled
+                                                ? "text-violet-700 dark:text-violet-300"
+                                                : "text-slate-400"
+                                            )}
+                                          >
+                                            {mod.label}
+                                          </p>
+                                          <p className="mt-0.5 text-[9px] text-slate-400 leading-tight">
+                                            {mod.description}
+                                          </p>
+                                        </div>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                                {/* Quick actions */}
+                                <div className="mt-3 flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const current =
+                                        typeof editForm.config === "string"
+                                          ? JSON.parse(editForm.config || "{}")
+                                          : editForm.config || {};
+                                      setEditForm({
+                                        ...editForm,
+                                        config: {
+                                          ...current,
+                                          visible_modules: SYSTEM_MODULES.map((m) => m.id),
+                                        },
+                                      });
+                                    }}
+                                    className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-bold text-violet-600 transition hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-900/20 dark:text-violet-400"
+                                  >
+                                    ✓ Activar todos
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const current =
+                                        typeof editForm.config === "string"
+                                          ? JSON.parse(editForm.config || "{}")
+                                          : editForm.config || {};
+                                      setEditForm({
+                                        ...editForm,
+                                        config: { ...current, visible_modules: [] },
+                                      });
+                                    }}
+                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-bold text-slate-400 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
+                                  >
+                                    × Desactivar todos
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {/* API Type Selector */}
                           {!editForm.is_admin && (
@@ -815,6 +975,140 @@ export default function SettingsPage() {
                           />
                         </div>
 
+                        {/* ── MÓDULOS VISIBLES (Control Super Admin para cualquier cliente) ── */}
+                        {!(
+                          (editForm.name && editForm.name.toUpperCase().includes("RENTON")) ||
+                          (editForm.username && editForm.username.toLowerCase() === "renton")
+                        ) && (
+                          <div className="space-y-4 md:col-span-2">
+                            <div className="rounded-2xl border border-violet-200 bg-violet-50/50 p-6 shadow-sm dark:border-violet-900/30 dark:bg-violet-900/10">
+                              <div className="mb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <LayoutGrid className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                                  <h3 className="text-sm font-black tracking-tight text-violet-700 uppercase dark:text-violet-300">
+                                    Módulos Visibles para este Cliente
+                                  </h3>
+                                </div>
+                                <span className="rounded-full bg-violet-200/60 px-2.5 py-0.5 text-[9px] font-black tracking-widest text-violet-800 uppercase dark:bg-violet-800/40 dark:text-violet-300">
+                                  Control Super Admin
+                                </span>
+                              </div>
+                              <p className="mb-4 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                                Selecciona qué secciones del menú lateral puede ver este usuario. Aunque tenga rol de Admin en su empresa, sus accesos estarán restringidos a los módulos activos aquí.
+                              </p>
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {SYSTEM_MODULES.map((mod) => {
+                                  const currentModules = (() => {
+                                    try {
+                                      const conf =
+                                        typeof editForm.config === "string"
+                                          ? JSON.parse(editForm.config || "{}")
+                                          : editForm.config || {};
+                                      const vm = (conf as Record<string, unknown>).visible_modules;
+                                      if (Array.isArray(vm)) return vm as string[];
+                                      // Si no existe, todos enabled por defecto
+                                      return SYSTEM_MODULES.filter(m => m.defaultEnabled).map(m => m.id);
+                                    } catch {
+                                      return SYSTEM_MODULES.filter(m => m.defaultEnabled).map(m => m.id);
+                                    }
+                                  })();
+                                  const isEnabled = currentModules.includes(mod.id);
+                                  return (
+                                    <label
+                                      key={mod.id}
+                                      className={cn(
+                                        "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all duration-150 hover:shadow-sm",
+                                        isEnabled
+                                          ? "border-violet-300 bg-violet-50 dark:border-violet-700/50 dark:bg-violet-900/20"
+                                          : "border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950 opacity-60"
+                                      )}
+                                    >
+                                      <div className="relative mt-0.5 flex-shrink-0">
+                                        <input
+                                          type="checkbox"
+                                          checked={isEnabled}
+                                          onChange={() => {
+                                            const newModules = isEnabled
+                                              ? currentModules.filter((m) => m !== mod.id)
+                                              : [...currentModules, mod.id];
+                                            const current =
+                                              typeof editForm.config === "string"
+                                                ? JSON.parse(editForm.config || "{}")
+                                                : editForm.config || {};
+                                            setEditForm({
+                                              ...editForm,
+                                              config: { ...current, visible_modules: newModules },
+                                            });
+                                          }}
+                                          className="sr-only"
+                                        />
+                                        <div
+                                          className={cn(
+                                            "flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all",
+                                            isEnabled
+                                              ? "border-violet-500 bg-violet-500"
+                                              : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900"
+                                          )}
+                                        >
+                                          {isEnabled && (
+                                            <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className={cn(
+                                          "text-[11px] font-black tracking-tight",
+                                          isEnabled ? "text-violet-700 dark:text-violet-300" : "text-slate-400"
+                                        )}>
+                                          {mod.label}
+                                        </p>
+                                        <p className="mt-0.5 text-[9px] text-slate-400 leading-tight">
+                                          {mod.description}
+                                        </p>
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                              {/* Quick actions */}
+                              <div className="mt-3 flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const current =
+                                      typeof editForm.config === "string"
+                                        ? JSON.parse(editForm.config || "{}")
+                                        : editForm.config || {};
+                                    setEditForm({
+                                      ...editForm,
+                                      config: { ...current, visible_modules: SYSTEM_MODULES.map(m => m.id) },
+                                    });
+                                  }}
+                                  className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-[10px] font-bold text-violet-600 transition hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-900/20 dark:text-violet-400"
+                                >
+                                  ✓ Activar todos
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const current =
+                                      typeof editForm.config === "string"
+                                        ? JSON.parse(editForm.config || "{}")
+                                        : editForm.config || {};
+                                    setEditForm({
+                                      ...editForm,
+                                      config: { ...current, visible_modules: [] },
+                                    });
+                                  }}
+                                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-bold text-slate-400 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
+                                >
+                                  × Desactivar todos
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {!editForm.is_admin && (
                           <div className="space-y-4 border-t border-slate-100 pt-4 md:col-span-2">
                             <Label className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
@@ -984,15 +1278,27 @@ export default function SettingsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        {t.is_admin ? (
-                          <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-[9px] font-black text-blue-600 uppercase">
-                            Admin
-                          </span>
-                        ) : (
-                          <span className="rounded-full border border-slate-100 bg-slate-50 px-2 py-1 text-[9px] font-black text-slate-400 uppercase">
-                            Cliente
-                          </span>
-                        )}
+                        {(() => {
+                          const isRenton =
+                            t.name?.toUpperCase().includes("RENTON") ||
+                            t.username?.toLowerCase() === "renton";
+                          if (isRenton) {
+                            return (
+                              <span className="rounded-full border border-violet-200 bg-violet-100/70 px-2.5 py-1 text-[9px] font-black tracking-wide text-violet-700 uppercase dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-300">
+                                👑 Renton Admin
+                              </span>
+                            );
+                          }
+                          return t.is_admin ? (
+                            <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-[9px] font-black text-blue-600 uppercase">
+                              Admin Cliente
+                            </span>
+                          ) : (
+                            <span className="rounded-full border border-slate-100 bg-slate-50 px-2 py-1 text-[9px] font-black text-slate-400 uppercase">
+                              Cliente
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 pr-8 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -1004,14 +1310,19 @@ export default function SettingsPage() {
                           >
                             <Edit2 className="h-4 w-4" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(t.id)}
-                            title="Eliminar cliente"
-                            aria-label={`Eliminar cliente ${t.name}`}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          {!(
+                            t.name?.toUpperCase().includes("RENTON") ||
+                            t.username?.toLowerCase() === "renton"
+                          ) && (
+                            <button
+                              onClick={() => handleDelete(t.id)}
+                              title="Eliminar cliente"
+                              aria-label={`Eliminar cliente ${t.name}`}
+                              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </>
@@ -1022,6 +1333,25 @@ export default function SettingsPage() {
           </table>
         </div>
       </section>
+      )}
+
+      {!isSuperAdmin && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                Panel de Integraciones y Ajustes
+              </h2>
+              <p className="text-xs text-slate-400">
+                Gestiona las integraciones activas para tu cuenta y negocio.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Security Alert */}
       <div className="relative flex items-center gap-6 overflow-hidden rounded-3xl bg-blue-600 p-8 text-white shadow-xl shadow-blue-100">

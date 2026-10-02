@@ -38,23 +38,56 @@ export async function getWhatsAppTemplates() {
       return { success: true, data: config.whatsapp.templates };
     }
 
-    if (
-      !config.whatsapp?.accessToken ||
-      !config.whatsapp?.wabaId ||
-      !config.whatsapp?.phoneNumberId
-    ) {
+    // 2. Fallback to whatsapp_templates table in database
+    const { getAdminSupabaseClient } = await import("@/lib/supabase/server");
+    const adminSupabase = await getAdminSupabaseClient();
+    const { data: dbTemplates } = await adminSupabase
+      .from("whatsapp_templates")
+      .select("*")
+      .eq("tenant_id", tenant.id);
+
+    if (dbTemplates && dbTemplates.length > 0) {
+      const mapped = dbTemplates.map((t) => ({
+        id: t.meta_id || t.id,
+        name: t.name,
+        language: t.language || "es",
+        status: t.status,
+        category: t.category,
+        components: t.components,
+      }));
+      return { success: true, data: mapped };
+    }
+
+    // 3. Fallback: resolve credentials from config or waba_configurations
+    let waAccessToken = config.whatsapp?.accessToken;
+    let waWabaId = config.whatsapp?.wabaId;
+    let waPhoneNumberId = config.whatsapp?.phoneNumberId;
+
+    if (!waAccessToken || !waWabaId || !waPhoneNumberId) {
+      const { data: wabaRow } = await adminSupabase
+        .from("waba_configurations")
+        .select("access_token, waba_id, phone_number_id")
+        .eq("tenant_id", tenant.id)
+        .maybeSingle();
+
+      if (wabaRow) {
+        waAccessToken = wabaRow.access_token;
+        waWabaId = wabaRow.waba_id;
+        waPhoneNumberId = wabaRow.phone_number_id;
+      }
+    }
+
+    if (!waAccessToken || !waWabaId || !waPhoneNumberId) {
       return {
         error:
-          "Configuración de WhatsApp incompleta. Por favor, sincroniza las plantillas en Ajustes.",
+          "Configuración de WhatsApp incompleta. Por favor, ingresa tus credenciales en Ajustes → WhatsApp.",
       };
     }
 
-    const whatsapp = config.whatsapp; // Now inferred as non-nullable
-
     const waConfig: WhatsAppConfig = {
-      accessToken: whatsapp.accessToken as string, // Cast just to be safe with the type system
-      phoneNumberId: whatsapp.phoneNumberId as string,
-      wabaId: whatsapp.wabaId as string,
+      accessToken: waAccessToken,
+      phoneNumberId: waPhoneNumberId,
+      wabaId: waWabaId,
     };
 
     const templates = await whatsappBridge.getAvailableTemplates(waConfig);

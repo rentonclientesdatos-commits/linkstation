@@ -44,6 +44,7 @@ import {
   FileText,
   AlarmClock,
   LucideIcon,
+  FileDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -100,6 +101,13 @@ interface FlowNodeData {
   timeout?: number;
   max_retries?: number;
   message?: string;
+  // PDF Generator properties
+  pdf_template_name?: string;
+  pdf_html_template?: string;
+  pdf_output_variable?: string;
+  pdf_filename?: string;
+  pdf_paper_size?: string;
+  pdf_variables?: string;
   [key: string]: unknown;
 }
 
@@ -409,6 +417,49 @@ const AIAgentNode = ({
       type="source"
       position={Position.Bottom}
       className="h-3 w-3 border-2 border-slate-900 bg-indigo-500"
+    />
+  </NodeWrapper>
+);
+
+const PdfGeneratorNode = ({
+  data,
+  selected,
+}: {
+  data: { pdf_template_name?: string; pdf_output_variable?: string; pdf_filename?: string };
+  selected?: boolean;
+}) => (
+  <NodeWrapper
+    title="Generar PDF"
+    icon={FileDown}
+    color="bg-rose-500/20 text-rose-400"
+    headerColor="bg-rose-600"
+    selected={selected}
+    type="PDF.CO"
+  >
+    <Handle
+      type="target"
+      position={Position.Top}
+      className="h-3 w-3 border-2 border-slate-900 bg-rose-500"
+    />
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5 rounded border border-rose-500/10 bg-rose-500/5 p-1.5">
+        <FileDown className="h-3 w-3 text-rose-400 shrink-0" />
+        <span className="text-[9px] font-black text-rose-300 uppercase truncate">
+          {data.pdf_template_name || "Sin plantilla"}
+        </span>
+      </div>
+      {data.pdf_output_variable && (
+        <div className="flex items-center gap-1.5 rounded border border-white/5 bg-white/5 p-1.5">
+          <span className="text-[7px] font-bold text-white/30 uppercase">Salida →</span>
+          <span className="font-mono text-[8px] text-rose-300">{`{{${data.pdf_output_variable}}}`}</span>
+        </div>
+      )}
+      <p className="text-[8px] text-white/30 italic">Genera PDF y expone URL como variable</p>
+    </div>
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      className="h-3 w-3 border-2 border-slate-900 bg-rose-500"
     />
   </NodeWrapper>
 );
@@ -953,6 +1004,7 @@ export function AgentFlowBuilder({
       flow_ai_agent: AIAgentNode,
       flow_meta_template: MetaTemplateNode,
       flow_inactivity: InactivityNode,
+      flow_pdf_generator: PdfGeneratorNode,
     }),
     []
   );
@@ -1146,6 +1198,12 @@ export function AgentFlowBuilder({
           label: "Conectar BD / CRM",
           desc: "Sincroniza con Zoho, HubSpot, Salesforce, Pipedrive o API propia.",
           icon: Link2,
+        },
+        {
+          type: "flow_pdf_generator",
+          label: "Generar PDF",
+          desc: "Genera un PDF de cotización vía pdf.co y lo expone como variable.",
+          icon: FileDown,
         },
       ],
     },
@@ -2416,6 +2474,157 @@ export function AgentFlowBuilder({
                         </div>
                       );
                     })()}
+                </div>
+              )}
+
+              {selectedNode.type === "flow_pdf_generator" && (
+                <div className="space-y-5">
+                  {/* Header info */}
+                  <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4">
+                    <div className="mb-1 flex items-center gap-2">
+                      <FileDown className="h-4 w-4 text-rose-400" />
+                      <span className="text-[10px] font-black tracking-tighter text-rose-400 uppercase">
+                        Generador de PDF · pdf.co
+                      </span>
+                    </div>
+                    <p className="text-[9px] leading-relaxed font-bold text-white/40">
+                      Genera un PDF a partir de tu plantilla HTML y lo expone como variable URL para el agente de WhatsApp.
+                    </p>
+                  </div>
+
+                  {/* Template name */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                      Nombre de plantilla
+                    </label>
+                    <input
+                      value={(selectedNode.data.pdf_template_name as string) || ""}
+                      onChange={(e) => updateNodeData(selectedNode.id, { pdf_template_name: e.target.value })}
+                      className="h-10 w-full rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 text-xs font-bold text-rose-300 placeholder-white/20"
+                      placeholder="Ej: Cotización Grúas"
+                    />
+                  </div>
+
+                  {/* Output variable name */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black tracking-widest text-rose-400 uppercase">
+                      📤 Variable de Salida (URL del PDF)
+                    </label>
+                    <input
+                      value={(selectedNode.data.pdf_output_variable as string) || "pdf_url"}
+                      onChange={(e) => updateNodeData(selectedNode.id, { pdf_output_variable: e.target.value })}
+                      className="h-10 w-full rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 font-mono text-xs font-bold text-rose-300"
+                      placeholder="pdf_url"
+                    />
+                    <p className="text-[8px] text-white/30 italic">
+                      Esta variable queda disponible para el nodo de WhatsApp como <span className="font-mono text-rose-400">{`{{${(selectedNode.data.pdf_output_variable as string) || "pdf_url"}}}`}</span>
+                    </p>
+                  </div>
+
+                  {/* Filename */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                      Nombre del archivo PDF
+                    </label>
+                    <input
+                      value={(selectedNode.data.pdf_filename as string) || "cotizacion.pdf"}
+                      onChange={(e) => updateNodeData(selectedNode.id, { pdf_filename: e.target.value })}
+                      className="h-10 w-full rounded-xl border border-white/10 bg-white/5 px-4 font-mono text-xs text-white/80"
+                      placeholder="cotizacion.pdf"
+                    />
+                  </div>
+
+                  {/* Paper size */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                      Tamaño de página
+                    </label>
+                    <select
+                      value={(selectedNode.data.pdf_paper_size as string) || "Letter"}
+                      onChange={(e) => updateNodeData(selectedNode.id, { pdf_paper_size: e.target.value })}
+                      className="h-10 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-xs text-white/80 outline-none"
+                    >
+                      <option value="Letter">Letter</option>
+                      <option value="A4">A4</option>
+                      <option value="Legal">Legal</option>
+                      <option value="A3">A3</option>
+                    </select>
+                  </div>
+
+                  {/* Dynamic variables to inject */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                      Variables dinámicas (JSON)
+                    </label>
+                    <textarea
+                      value={(selectedNode.data.pdf_variables as string) || JSON.stringify({
+                        empresa: "{{empresa}}",
+                        cliente: "{{nombre}}",
+                        telefono: "{{telefono}}",
+                        items: "{{items}}",
+                        total: "{{total}}",
+                        fecha: "{{fecha}}"
+                      }, null, 2)}
+                      onChange={(e) => updateNodeData(selectedNode.id, { pdf_variables: e.target.value })}
+                      className="min-h-[130px] w-full rounded-2xl border border-white/5 bg-black/40 p-3 font-mono text-[10px] text-white/50 outline-none focus:text-white/80"
+                      placeholder='{"empresa": "{{empresa}}", "total": "{{total}}"}'
+                    />
+                    <p className="text-[8px] text-white/20 italic">
+                      Usa <span className="font-mono text-rose-400">{`{{variable}}`}</span> para insertar datos del flujo. Estos reemplazarán los placeholders en tu plantilla HTML.
+                    </p>
+                  </div>
+
+                  {/* HTML Template */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                      Plantilla HTML
+                    </label>
+                    <textarea
+                      value={(selectedNode.data.pdf_html_template as string) || `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+    .header { background: #1a1a2e; color: white; padding: 20px; border-radius: 8px; }
+    .logo { font-size: 24px; font-weight: bold; }
+    .subtitle { color: #aaa; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #f0f0f0; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">{{empresa}}</div>
+    <div class="subtitle">Cotización para: {{cliente}}</div>
+  </div>
+  <p>Fecha: {{fecha}} | Tel: {{telefono}}</p>
+  <table>
+    <thead><tr><th>Ítem</th><th>Cantidad</th><th>Precio</th></tr></thead>
+    <tbody>{{items}}</tbody>
+  </table>
+  <div class="total">Total: $ {{total}}</div>
+</body>
+</html>`}
+                      onChange={(e) => updateNodeData(selectedNode.id, { pdf_html_template: e.target.value })}
+                      className="min-h-[220px] w-full rounded-2xl border border-white/5 bg-black/40 p-3 font-mono text-[10px] text-white/50 outline-none focus:text-white/80"
+                    />
+                    <p className="text-[8px] text-white/20 italic">
+                      Escribe tu HTML de cotización. Los <span className="font-mono text-rose-400">{`{{placeholders}}`}</span> se reemplazarán con las variables del flujo antes de generar el PDF.
+                    </p>
+                  </div>
+
+                  {/* Info box */}
+                  <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+                    <p className="text-[9px] font-bold text-amber-400">
+                      ⚙ Configura tu API Key de pdf.co en
+                    </p>
+                    <p className="mt-0.5 text-[8px] text-white/30">
+                      Ajustes → Integraciones → pdf.co
+                    </p>
+                  </div>
                 </div>
               )}
 

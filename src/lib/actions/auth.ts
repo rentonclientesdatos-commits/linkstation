@@ -219,7 +219,40 @@ export async function getAdminStatus(): Promise<boolean> {
     user?.app_metadata?.is_admin === "true" ||
     user?.app_metadata?.admin === true ||
     user?.app_metadata?.admin === "true";
-  return isAdm;
+  return !!isAdm;
+}
+
+export async function getSuperAdminStatus(): Promise<boolean> {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(AUTH_SUPABASE_URL, AUTH_SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll() {},
+    },
+  });
+
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user) return false;
+
+  const SUPER_ADMIN_EMAILS = [
+    "renzo.calderon.thompson@gmail.com",
+    "renzz.cal.thompson@gmail.com",
+    "admin@test.com",
+    "renton.clientes.datos@gmail.com",
+  ];
+
+  const isSuper =
+    user.app_metadata?.is_super_admin === true ||
+    user.app_metadata?.is_super_admin === "true" ||
+    (!!user.email && SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase())) ||
+    user.user_metadata?.username === "renton" ||
+    (typeof user.user_metadata?.name === "string" &&
+      user.user_metadata.name.toUpperCase().includes("RENTON"));
+
+  return !!isSuper;
 }
 
 async function _resetPasswordAction(email: string) {

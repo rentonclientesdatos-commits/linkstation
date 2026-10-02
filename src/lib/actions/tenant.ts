@@ -8,13 +8,54 @@ import { requireEnvAny } from "@/lib/env";
 import { Tenant } from "@/types/tenant";
 import { OverviewKpisArraySchema } from "@/lib/schemas/overview-kpi";
 
+const SUPER_ADMIN_EMAILS = [
+  "renzo.calderon.thompson@gmail.com",
+  "renzz.cal.thompson@gmail.com",
+  "admin@test.com",
+  "renton.clientes.datos@gmail.com",
+];
+
+async function assertSuperAdminAccess(): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(AUTH_SUPABASE_URL, AUTH_SUPABASE_ANON_KEY, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll() {},
+      },
+    });
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+      return { ok: false, error: "No autenticado. Inicia sesión." };
+    }
+    const user = data.user;
+    const appMeta = user.app_metadata ?? {};
+    const isSuperAdmin =
+      appMeta.is_super_admin === true ||
+      appMeta.is_super_admin === "true" ||
+      appMeta.is_admin === true ||
+      appMeta.is_admin === "true" ||
+      appMeta.admin === true ||
+      appMeta.admin === "true" ||
+      (!!user.email && SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase())) ||
+      user.user_metadata?.username === "renton" ||
+      (typeof user.user_metadata?.name === "string" &&
+        user.user_metadata.name.toUpperCase().includes("RENTON"));
+
+    if (!isSuperAdmin) {
+      return { ok: false, error: "Acción reservada exclusivamente para administradores." };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("[assertSuperAdminAccess] error:", e);
+    return { ok: false, error: "Error verificando permisos de Super Admin." };
+  }
+}
+
 /**
- * Sprint 0 tarea 1-17: gate de admin para server actions sensibles
- * (createTenant, updateTenant, deleteTenant). Antes cualquier usuario
- * autenticado podía ejecutarlas → DA-2-004.
- *
- * Lee el user vía SSR cookies y verifica `app_metadata.is_admin` (1-16).
- * Devuelve error tipado para que las actions retornen `{ error }` consistente.
+ * Sprint 0 tarea 1-17: gate de admin general
  */
 async function assertAdminAccess(): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
@@ -110,9 +151,7 @@ async function getServiceSupabase() {
 
 export async function getTenants(): Promise<Tenant[]> {
   try {
-    // Sprint 0 tarea 1-17: solo admin puede listar todos los tenants
-    // (devuelve cross-tenant data; sin gate cualquier user autenticado lo veía).
-    const adminGate = await assertAdminAccess();
+    const adminGate = await assertSuperAdminAccess();
     if (!adminGate.ok) return [];
 
     // Sprint 0 tarea 1-04: sin fallback hardcoded.
@@ -250,7 +289,7 @@ export async function getTenantByUserId(userId: string): Promise<Tenant | null> 
 
 export async function createTenant(tenant: Partial<Tenant> & { password?: string }) {
   try {
-    const adminGate = await assertAdminAccess();
+    const adminGate = await assertSuperAdminAccess();
     if (!adminGate.ok) return { error: adminGate.error };
 
     const supabase = await getAdminSupabase();
@@ -331,7 +370,7 @@ export async function createTenant(tenant: Partial<Tenant> & { password?: string
 
 export async function updateTenant(id: string, updates: Partial<Tenant> & { password?: string }) {
   try {
-    const adminGate = await assertAdminAccess();
+    const adminGate = await assertSuperAdminAccess();
     if (!adminGate.ok) return { error: adminGate.error };
 
     const supabase = await getAdminSupabase();
@@ -372,8 +411,15 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
 
     // 1. Si tenemos un usuario en Auth vinculado (sea el existente por email o el previo)
     if (targetAuthUserId) {
-      if (updates.is_admin === false && targetAuthUserId === currentUser?.id) {
-        return { error: "No puedes quitarte el acceso de administrador a ti mismo por seguridad." };
+      // Solo proteger la cuenta maestra de Renton Admin de ser degradada:
+      const targetIsRenton =
+        updates.name?.toUpperCase().includes("RENTON") ||
+        updates.username?.toLowerCase() === "renton" ||
+        updates.client_email?.toLowerCase() === "renzz.cal.thompson@gmail.com" ||
+        updates.client_email?.toLowerCase() === "renzo.calderon.thompson@gmail.com";
+
+      if (targetIsRenton && updates.is_admin === false) {
+        return { error: "La cuenta maestra de Renton Admin no puede degradarse a Cliente." };
       }
 
       const authUpdatePayload: {
@@ -385,6 +431,8 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
       } = {
         app_metadata: {
           is_admin: !!updates.is_admin,
+          admin: !!updates.is_admin,
+          is_super_admin: targetIsRenton,
         },
         user_metadata: {
           username: updates.username,
@@ -578,10 +626,24 @@ export async function updateTenantConfig(id: string, partialConfig: Record<strin
 }
 
 export async function deleteTenant(id: string) {
-  // Sprint 0 tarea 1-17: gate admin (antes cualquier user autenticado podía borrar tenants).
-  const adminGate = await assertAdminAccess();
+  const adminGate = await assertSuperAdminAccess();
   if (!adminGate.ok) {
     throw new Error(adminGate.error);
+  }
+
+  const supabase = await getAdminSupabase();
+  const { data: targetTenant } = await supabase
+    .from("tenants")
+    .select("name, config")
+    .eq("id", id)
+    .maybeSingle();
+
+  const isRenton =
+    targetTenant?.name?.toUpperCase().includes("RENTON") ||
+    (targetTenant?.config as Record<string, unknown>)?.username === "renton";
+
+  if (isRenton) {
+    throw new Error("No es posible eliminar la cuenta principal de Renton Admin.");
   }
 
   const serviceSupabase = await getServiceSupabase();

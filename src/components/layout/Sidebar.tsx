@@ -43,7 +43,9 @@ interface NavItem {
   icon?: React.ReactNode;
   subItems?: NavItem[];
   adminOnly?: boolean;
+  superAdminOnly?: boolean;
   restaurantOnly?: boolean;
+  moduleId?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -51,18 +53,20 @@ const NAV_ITEMS: NavItem[] = [
     label: "Super Admin",
     href: "/dashboard/super-admin",
     icon: <ShieldCheck className="h-5 w-5 text-amber-500" strokeWidth={1.8} />,
-    adminOnly: true,
+    superAdminOnly: true,
   },
   {
     label: "Dashboard",
     href: "/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" strokeWidth={1.8} />,
+    moduleId: "dashboard",
   },
   {
     label: "Constructor & IA",
     href: "/dashboard/onboarding",
     icon: <Workflow className="h-5 w-5" strokeWidth={1.8} />,
     adminOnly: true,
+    moduleId: "ai_agents",
     subItems: [
       {
         label: "Constructor",
@@ -95,6 +99,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Leads",
     href: "/dashboard/historial",
     icon: <Users className="h-5 w-5" strokeWidth={1.8} />,
+    moduleId: "leads",
     subItems: [
       {
         label: "Resumen Leads",
@@ -117,17 +122,20 @@ const NAV_ITEMS: NavItem[] = [
     label: "Calendario",
     href: "/dashboard/calendar",
     icon: <Calendar className="h-5 w-5" strokeWidth={1.8} />,
+    moduleId: "calendar",
   },
   {
     label: "Pedidos & Mesas",
     href: "/dashboard/pedidos",
     icon: <Utensils className="h-5 w-5" strokeWidth={1.8} />,
     restaurantOnly: true,
+    moduleId: "restaurant",
   },
   {
     label: "Campañas",
     href: "/dashboard/campanas",
     icon: <Megaphone className="h-5 w-5" strokeWidth={1.8} />,
+    moduleId: "campaigns",
     subItems: [
       {
         label: "Métricas y Estado",
@@ -145,6 +153,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Métricas",
     href: "/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" strokeWidth={1.8} />,
+    moduleId: "dashboard",
     subItems: [
       {
         label: "Llamadas",
@@ -168,6 +177,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/simulator",
     icon: <FlaskConical className="h-5 w-5" strokeWidth={1.8} />,
     adminOnly: true,
+    moduleId: "simulator",
     subItems: [
       {
         label: "Simulador",
@@ -191,6 +201,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/costs",
     icon: <DollarSign className="h-5 w-5" strokeWidth={1.8} />,
     adminOnly: true,
+    moduleId: "costs",
     subItems: [
       {
         label: "Análisis de Costes",
@@ -209,6 +220,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/settings",
     icon: <Settings className="h-5 w-5" strokeWidth={1.8} />,
     adminOnly: true,
+    moduleId: "integrations",
     subItems: [
       {
         label: "Clientes y Config.",
@@ -237,26 +249,31 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/docs",
     icon: <BookOpen className="h-5 w-5" strokeWidth={1.8} />,
     adminOnly: true,
+    moduleId: "docs",
   },
   {
     label: "Doc Admin",
     href: "/dashboard/docs-admin",
     icon: <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />,
     adminOnly: true,
+    moduleId: "docs",
   },
   {
     label: "Docs Clientes",
     href: "/dashboard/docs-clientes",
     icon: <BookOpen className="h-5 w-5" strokeWidth={1.8} />,
+    moduleId: "docs",
   },
 ];
 
 export function Sidebar({
   isAdmin,
+  isSuperAdmin,
   mobileOpen,
   onMobileClose,
 }: {
   isAdmin: boolean;
+  isSuperAdmin?: boolean;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
 }) {
@@ -288,9 +305,28 @@ export function Sidebar({
   const isRestaurant =
     !businessType || businessType === "restaurant" || businessType === "restaurante";
 
+  const visibleModules = (tenantConfig as Record<string, unknown>)?.visible_modules as
+    | string[]
+    | undefined;
+
   const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (item.adminOnly && !isAdmin) return false;
+    // 1. Super Admin restringido estrictamente al Super Admin global
+    if (item.superAdminOnly && !isSuperAdmin) return false;
+
+    // 2. Control de adminOnly
+    if (item.adminOnly && !isAdmin && !isSuperAdmin) return false;
+
+    // 3. Negocio tipo restaurante
     if (item.restaurantOnly && !isRestaurant) return false;
+
+    // 4. Módulos asignados por el Super Admin
+    // Si el usuario es Super Admin, tiene visión total de todo
+    if (!isSuperAdmin && item.moduleId && visibleModules && Array.isArray(visibleModules)) {
+      if (!visibleModules.includes(item.moduleId)) {
+        return false;
+      }
+    }
+
     return true;
   });
 

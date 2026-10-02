@@ -93,6 +93,29 @@ export interface ChartConfig {
   order?: number;
 }
 
+export interface TenantModuleDefinition {
+  id: string;
+  label: string;
+  description: string;
+  iconName?: string;
+  defaultEnabled: boolean;
+}
+
+export const SYSTEM_MODULES: TenantModuleDefinition[] = [
+  { id: "dashboard", label: "Dashboard & Métricas", description: "Métricas principales, llamadas y estadísticas", defaultEnabled: true },
+  { id: "ai_agents", label: "Constructor & Agentes IA", description: "Agentes inteligentes, prompts y chatbot", defaultEnabled: true },
+  { id: "voice_agents", label: "Llamadas y Agentes de Voz", description: "Historial de llamadas de voz y Ultravox", defaultEnabled: true },
+  { id: "whatsapp", label: "WhatsApp & Conversaciones", description: "Bandeja de chats de WhatsApp y métricas", defaultEnabled: true },
+  { id: "leads", label: "Gestión de Leads", description: "Historial, prospectos y detalles comerciales", defaultEnabled: true },
+  { id: "calendar", label: "Calendario y Citas", description: "Agenda de citas y reuniones", defaultEnabled: true },
+  { id: "campaigns", label: "Campañas de Marketing", description: "Creación y seguimiento de campañas", defaultEnabled: true },
+  { id: "restaurant", label: "Pedidos & Mesas", description: "Comandas, mesas y carta de restaurante", defaultEnabled: false },
+  { id: "simulator", label: "Simulador & Logs", description: "Pruebas interactivas de agentes y logs", defaultEnabled: false },
+  { id: "costs", label: "Análisis de Costes", description: "Consumo de tokens, minutos y gastos", defaultEnabled: false },
+  { id: "integrations", label: "Integraciones (Sheets / CRM)", description: "Conexión con Google Sheets y CRMs", defaultEnabled: true },
+  { id: "docs", label: "Documentación y Ayuda", description: "Guías de usuario y soporte", defaultEnabled: true },
+];
+
 export interface TenantConfigData {
   dashboard_title?: string;
   primary_color?: string;
@@ -100,6 +123,7 @@ export interface TenantConfigData {
   headers?: string[];
   business_type?: "restaurant" | "sales" | "other" | string;
   kpis?: KpiConfig[];
+  visible_modules?: string[];
   [key: string]: unknown;
 }
 
@@ -108,6 +132,7 @@ export interface TenantConfig {
   tenantName: string;
   config?: TenantConfigData | Record<string, unknown>;
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
   businessType?: string;
   logoUrl?: string;
 }
