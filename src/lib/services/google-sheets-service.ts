@@ -5,6 +5,7 @@ import { getAdminSupabaseClient } from "@/lib/supabase/server";
 /**
  * GOOGLE SHEETS SERVICE
  * Handles synchronization of lead data to Google Sheets via OAuth2.
+ * Also supports reading rows for Ultravox tool calls (repuestos lookup, cotización data).
  */
 export class GoogleSheetsService {
   private static async getOAuthClient(tenantId: string, googleConfig: any) {
@@ -110,5 +111,105 @@ export class GoogleSheetsService {
         metadata: { leadId: lead.id },
       } as any);
     }
+  }
+
+  /**
+   * Reads all rows from a given sheet tab and returns them as an array of objects.
+   * The first row is treated as headers.
+   */
+  static async readRows(
+    tenantId: string,
+    sheetName?: string
+  ): Promise<Array<Record<string, string>>> {
+    try {
+      const supabase = (await getAdminSupabaseClient()) as any;
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("config")
+        .eq("id", tenantId)
+        .single();
+
+      const config = tenant?.config?.google;
+
+      if (!config || !config.connected || !config.tokens || !config.spreadsheetId) {
+        console.log(
+          `[SHEETS SERVICE] ℹ️ Google Sheets not connected for tenant ${tenantId}`
+        );
+        return [];
+      }
+
+      const auth = await this.getOAuthClient(tenantId, config);
+      const sheets = google.sheets({ version: "v4", auth });
+
+      const tab = sheetName || config.repuestosSheet || config.sheetName || "Repuestos";
+
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: config.spreadsheetId,
+        range: `${tab}!A:Z`,
+      });
+
+      const rows = response.data.values || [];
+      if (rows.length < 2) return []; // no data beyond headers
+
+      const headers = (rows[0] as string[]).map((h) => h?.toString().trim().toLowerCase());
+      return (rows.slice(1) as string[][]).map((row) => {
+        const obj: Record<string, string> = {};
+        headers.forEach((h, i) => {
+          obj[h] = row[i]?.toString().trim() || "";
+        });
+        return obj;
+      });
+    } catch (error: any) {
+      console.error(`[SHEETS SERVICE] ❌ Error reading rows:`, error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Search for spare parts (repuestos) in Google Sheets.
+   * Searches across common column names: codigo, descripcion, nombre, parte, part_number.
+   * Returns matching rows with price and stock info.
+   */
+  static async searchRepuestos(
+    tenantId: string,
+    query: string,
+    sheetName?: string
+  ): Promise<Array<Record<string, string>>> {
+    const rows = await this.readRows(tenantId, sheetName);
+    if (!rows.length) return [];
+
+    const q = query.toLowerCase().trim();
+    const searchFields = [
+      "codigo",
+      "descripcion",
+      "nombre",
+      "parte",
+      "part_number",
+      "part number",
+      "item",
+      "repuesto",
+      "modelo",
+      "model",
+      "referencia",
+      "ref",
+    ];
+
+    return rows.filter((row) => {
+      return searchFields.some((field) => {
+        const val = row[field] || "";
+        return val.toLowerCase().includes(q);
+      });
+    });
+  }
+
+  /**
+   * Reads cotización/pricing data from a dedicated tab.
+   * Returns all rows as structured objects for the Ultravox AI.
+   */
+  static async getCotizacionData(
+    tenantId: string,
+    sheetName?: string
+  ): Promise<Array<Record<string, string>>> {
+    return this.readRows(tenantId, sheetName || "Cotizacion");
   }
 }

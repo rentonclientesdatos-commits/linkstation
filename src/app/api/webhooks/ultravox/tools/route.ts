@@ -4,6 +4,7 @@ import { getAdminSupabaseClient } from "@/lib/supabase/server";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/types/database";
 import { PdfService } from "@/lib/services/pdf-service";
+import { GoogleSheetsService } from "@/lib/services/google-sheets-service";
 
 export async function POST(req: Request) {
   try {
@@ -82,6 +83,22 @@ export async function POST(req: Request) {
       case "get_lead_info":
       case "consultar_datos":
         return await handleGetLeadInfo(supabase, leadId);
+
+      // ── Workflow 2: Google Sheets data lookup ──────────────────────
+      case "buscar_repuestos":
+      case "search_parts":
+      case "consultar_repuestos":
+        return await handleBuscarRepuestos(supabase, tenantId, args);
+
+      case "obtener_precios_cotizacion":
+      case "get_quotation_data":
+      case "consultar_precios":
+        return await handleObtenerPreciosCotizacion(supabase, tenantId, args);
+
+      // ── Workflow 3: Agendar visita para arriendo ───────────────────
+      case "agendar_visita_arriendo":
+      case "schedule_rental_visit":
+        return await handleAgendarVisitaArriendo(supabase, tenantId, leadId, args);
 
       default:
         console.warn(`[ULTRAVOX TOOLS] Unknown tool called: ${toolName}`);
@@ -614,4 +631,300 @@ async function handleCapturaCotizacion(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WORKFLOW 2: Google Sheets - Buscar Repuestos y Precios
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Tool: buscar_repuestos
+ * Searches the tenant's Google Sheet (tab "Repuestos") for matching spare parts.
+ * Returns part code, description, price, and stock availability.
+ */
+async function handleBuscarRepuestos(
+  supabase: SupabaseClient<Database>,
+  tenantId: string | undefined,
+  args: Record<string, unknown>
+) {
+  try {
+    const effectiveTenantId = await resolveTenant(supabase, tenantId);
+    const query = String(
+      args.query ||
+        args.repuesto ||
+        args.parte ||
+        args.busqueda ||
+        args.codigo ||
+        args.search ||
+        ""
+    );
+    const sheetName = String(args.sheet || args.hoja || "") || undefined;
+
+    if (!query) {
+      return NextResponse.json({
+        success: false,
+        message: "Por favor proporciona el nombre o código del repuesto a buscar.",
+        results: [],
+      });
+    }
+
+    console.log(`[ULTRAVOX TOOL: buscar_repuestos] Buscando: "${query}" en tenant ${effectiveTenantId}`);
+
+    const results = await GoogleSheetsService.searchRepuestos(
+      effectiveTenantId,
+      query,
+      sheetName
+    );
+
+    if (!results.length) {
+      return NextResponse.json({
+        success: true,
+        found: false,
+        count: 0,
+        message: `No encontré el repuesto "${query}" en el catálogo. Puedo verificar con el equipo técnico.`,
+        results: [],
+      });
+    }
+
+    // Format results for the AI to read naturally
+    const formatted = results.slice(0, 10).map((row) => ({
+      codigo: row.codigo || row.code || row.ref || row.referencia || "—",
+      descripcion: row.descripcion || row.nombre || row.item || row.repuesto || row.description || "—",
+      precio: row.precio || row.price || row.valor || row.monto || row.costo || "Consultar",
+      stock: row.stock || row.disponibilidad || row.cantidad || row.inventory || "Disponible",
+      modelo_compatible: row.modelo || row.model || row.modelo_compatible || row.maquina || "",
+      marca: row.marca || row.brand || row.fabricante || "",
+      unidad: row.unidad || row.unit || row.um || "unidad",
+    }));
+
+    const summary = formatted
+      .map(
+        (r, i) =>
+          `${i + 1}. ${r.descripcion} (Cód: ${r.codigo}) - Precio: ${r.precio} - Stock: ${r.stock}${
+            r.modelo_compatible ? ` - Compatible con: ${r.modelo_compatible}` : ""
+          }`
+      )
+      .join("; ");
+
+    return NextResponse.json({
+      success: true,
+      found: true,
+      count: results.length,
+      showing: Math.min(results.length, 10),
+      results: formatted,
+      summary,
+      message: `Encontré ${results.length} resultado(s) para "${query}": ${summary}`,
+    });
+  } catch (error) {
+    console.error("[BUSCAR_REPUESTOS ERROR]:", error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+/**
+ * Tool: obtener_precios_cotizacion
+ * Fetches all rows from the quotation/pricing tab in Google Sheets.
+ * Used by the AI to have full catalog context for building quotations.
+ */
+async function handleObtenerPreciosCotizacion(
+  supabase: SupabaseClient<Database>,
+  tenantId: string | undefined,
+  args: Record<string, unknown>
+) {
+  try {
+    const effectiveTenantId = await resolveTenant(supabase, tenantId);
+    const sheetName = String(args.sheet || args.hoja || args.tab || "") || undefined;
+    const limit = Number(args.limit || args.limite || 50);
+
+    console.log(`[ULTRAVOX TOOL: obtener_precios_cotizacion] Tenant: ${effectiveTenantId}`);
+
+    const rows = await GoogleSheetsService.getCotizacionData(effectiveTenantId, sheetName);
+
+    if (!rows.length) {
+      return NextResponse.json({
+        success: true,
+        found: false,
+        count: 0,
+        message: "No hay datos de cotización disponibles en el momento. Procederé con precios estándar.",
+        rows: [],
+      });
+    }
+
+    const sliced = rows.slice(0, limit);
+
+    return NextResponse.json({
+      success: true,
+      found: true,
+      count: rows.length,
+      showing: sliced.length,
+      rows: sliced,
+      message: `Catálogo cargado: ${rows.length} ítems disponibles para cotizar.`,
+    });
+  } catch (error) {
+    console.error("[OBTENER_PRECIOS_COTIZACION ERROR]:", error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WORKFLOW 3: Agendar Visita para Arriendo de Maquinaria
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Tool: agendar_visita_arriendo
+ * Books a visit appointment for machinery rental (Workflow 3).
+ * Saves the appointment in the CRM and sends WhatsApp confirmation.
+ */
+async function handleAgendarVisitaArriendo(
+  supabase: SupabaseClient<Database>,
+  tenantId: string | undefined,
+  leadId: string | undefined,
+  args: Record<string, unknown>
+) {
+  try {
+    const effectiveTenantId = await resolveTenant(supabase, tenantId);
+    const empresa = String(args.Nombre_empresa || args.nombre_empresa || args.empresa || args.cliente || "Empresa");
+    const telefono = String(args.WhatsApp || args.whatsapp || args.telefono || args.celular || "");
+    const fecha = String(args.fecha || args.date || args.dia || "");
+    const hora = String(args.hora || args.time || args.horario || "") || undefined;
+    const tipoMaquinaria = String(args.tipo_maquinaria || args.maquinaria || args.equipo || args.grua || "");
+    const lugarVisita = String(args.lugar || args.direccion || args.address || args.ubicacion || "");
+    const notas = String(args.notas || args.observaciones || args.detalles || "");
+
+    console.log("[ULTRAVOX TOOL: agendar_visita_arriendo] Recibido:", {
+      empresa,
+      telefono,
+      fecha,
+      hora,
+      tipoMaquinaria,
+      lugarVisita,
+    });
+
+    if (!fecha) {
+      return NextResponse.json({
+        success: false,
+        message: "Necesito la fecha para agendar la visita. ¿Qué día te viene mejor?",
+      });
+    }
+
+    // 1. Create or update lead
+    let activeLeadId = leadId;
+    if (!activeLeadId) {
+      const { data: newLead } = await (supabase as any)
+        .from("lead")
+        .insert({
+          tenant_id: effectiveTenantId,
+          nombre: empresa,
+          telefono,
+          tipo_lead: "arriendo_maquinaria",
+          status: "visita_agendada",
+          origen: "ultravox",
+          metadata: {
+            tool_name: "agendar_visita_arriendo",
+            tipo_maquinaria: tipoMaquinaria,
+            lugar_visita: lugarVisita,
+            captured_at: new Date().toISOString(),
+          },
+        })
+        .select("id")
+        .single();
+      activeLeadId = newLead?.id;
+    } else {
+      await (supabase as any)
+        .from("lead")
+        .update({
+          tipo_lead: "arriendo_maquinaria",
+          status: "visita_agendada",
+          metadata: {
+            tool_name: "agendar_visita_arriendo",
+            tipo_maquinaria: tipoMaquinaria,
+            lugar_visita: lugarVisita,
+            updated_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", activeLeadId);
+    }
+
+    // 2. Book appointment via AppointmentService
+    let appointmentId: string | undefined;
+    let scheduledAtFormatted = fecha;
+    try {
+      const { AppointmentService } = await import("@/lib/services/appointment-service");
+      const visitNotes = [
+        tipoMaquinaria ? `Maquinaria: ${tipoMaquinaria}` : "",
+        lugarVisita ? `Lugar: ${lugarVisita}` : "",
+        notas,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      const appointment = await AppointmentService.bookAppointment(
+        effectiveTenantId,
+        activeLeadId ?? "",
+        fecha,
+        hora,
+        visitNotes || `Visita de arriendo de maquinaria para ${empresa}`
+      );
+      appointmentId = appointment?.id as string | undefined;
+      scheduledAtFormatted = appointment?.scheduled_at
+        ? new Date(appointment.scheduled_at as string).toLocaleString("es-CL", {
+            timeZone: "America/Santiago",
+            dateStyle: "full",
+            timeStyle: "short",
+          })
+        : fecha;
+    } catch (apptErr) {
+      console.error("[AGENDAR_VISITA] Error al agendar cita:", apptErr);
+      // Continue without appointment, we still saved the lead
+    }
+
+    // 3. Send WhatsApp confirmation
+    if (telefono) {
+      try {
+        // Load WhatsApp config from tenant settings
+        const { data: tenantRow } = await (supabase as any)
+          .from("tenants")
+          .select("config")
+          .eq("id", effectiveTenantId)
+          .single();
+
+        const waConfig = tenantRow?.config?.whatsapp;
+        if (waConfig?.access_token && waConfig?.phone_number_id) {
+          const { WhatsAppBridge } = await import("@/lib/integrations/whatsapp");
+          const bridge = new WhatsAppBridge();
+          await bridge.sendTextMessage(
+            telefono,
+            `✅ *Visita Agendada - LinkStation*\n\n` +
+              `Hola ${empresa}, confirmamos tu visita técnica:\n\n` +
+              `📅 *Fecha:* ${scheduledAtFormatted}\n` +
+              (hora ? `🕐 *Hora:* ${hora}\n` : "") +
+              (tipoMaquinaria ? `🏗️ *Maquinaria:* ${tipoMaquinaria}\n` : "") +
+              (lugarVisita ? `📍 *Lugar:* ${lugarVisita}\n` : "") +
+              `\nNuestro equipo comercial te contactará para confirmar los detalles. ¡Hasta pronto!`,
+            {
+              accessToken: waConfig.access_token,
+              phoneNumberId: waConfig.phone_number_id,
+              wabaId: waConfig.waba_id,
+            }
+          );
+          console.log(`[AGENDAR_VISITA] ✅ Confirmación WhatsApp enviada a ${telefono}`);
+        } else {
+          console.warn("[AGENDAR_VISITA] WhatsApp config missing — skipping notification.");
+        }
+      } catch (waErr) {
+        console.error("[AGENDAR_VISITA] Error enviando WhatsApp:", waErr);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      lead_id: activeLeadId,
+      appointment_id: appointmentId,
+      scheduled_at: scheduledAtFormatted,
+      message: `Perfecto ${empresa}, tu visita ha sido agendada para el ${scheduledAtFormatted}${
+        hora ? ` a las ${hora}` : ""
+      }. Recibirás confirmación en tu WhatsApp (${telefono}). ¿Hay algo más en lo que pueda ayudarte?`,
+    });
+  } catch (error) {
+    console.error("[AGENDAR_VISITA_ARRIENDO ERROR]:", error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
