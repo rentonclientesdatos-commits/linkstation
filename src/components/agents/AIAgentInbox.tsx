@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -2194,7 +2194,10 @@ function ChatMessageBubble({
 }) {
   const isOut = message.direction === "OUTBOUND";
   const isBot =
-    message.sent_by?.toLowerCase().includes("agente") || message.message_type === "TEMPLATE";
+    message.sent_by?.toLowerCase().includes("agente") ||
+    message.sent_by?.toLowerCase().includes("agent") ||
+    message.sent_by === "AI_AGENT" ||
+    message.message_type === "TEMPLATE";
   const time = new Date(message.created_at).toLocaleTimeString("es-ES", {
     hour: "2-digit",
     minute: "2-digit",

@@ -499,24 +499,24 @@ export async function assignAgentToLead(leadId: string, agentId: string | null) 
   if (!tenant) return { success: false, error: "No tenant" };
 
   const supabase = await getAdminSupabaseClient();
-  const { error } = await (
-    supabase
-       
-      .from("lead" as any) as any
-  )
-    .update({ ai_agent_id: agentId } as never)
+
+  // ai_agent_id no existe como columna directa en lead — se almacena en metadata JSON.
+  // Leemos primero para hacer un merge seguro del JSON sin perder otros campos.
+  const { data: existing } = await supabase
+    .from("lead")
+    .select("metadata")
+    .eq("id", leadId)
+    .eq("tenant_id", tenant.id)
+    .maybeSingle();
+
+  const currentMeta = (existing?.metadata as Record<string, unknown>) || {};
+  const { error } = await supabase
+    .from("lead")
+    .update({ metadata: { ...currentMeta, ai_agent_id: agentId } } as never)
     .eq("id", leadId)
     .eq("tenant_id", tenant.id);
 
-  if (error) {
-    if (error.message.includes("column")) {
-      return {
-        success: false,
-        error: "Columna 'ai_agent_id' no encontrada. Por favor, ejecuta la migración SQL.",
-      };
-    }
-    return { success: false, error: error.message };
-  }
+  if (error) return { success: false, error: error.message };
   return { success: true };
 }
 

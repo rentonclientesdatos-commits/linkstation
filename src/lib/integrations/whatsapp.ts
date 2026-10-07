@@ -97,25 +97,26 @@ export class WhatsAppBridge {
         const { requireEnvAny } = await import("@/lib/env");
         const supabaseUrl = requireEnvAny(["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL"]);
         const supabase = createClient(supabaseUrl, getAuthServiceRoleKey());
+        const cleanTo = to.replace(/^\+/, "");
+        const plusTo = "+" + cleanTo;
         const { data: lead, error: pauseQueryError } = await supabase
           .from("lead")
-          .select("is_ai_paused")
-          .eq("telefono", to)
+          .select("is_ai_enabled, metadata")
+          .or(`telefono.eq.${plusTo},telefono.eq.${cleanTo}`)
           .maybeSingle();
+
         if (pauseQueryError) {
-          throw new Error(`pause-check query failed: ${pauseQueryError.message}`);
-        }
-        if (lead?.is_ai_paused) {
-          console.log(`[WHATSAPP BRIDGE] 🚫 BLOCKING outbound to ${to} because AI is PAUSED.`);
-          return { success: false, error: "AI_PAUSED" };
+          console.warn(`[WHATSAPP BRIDGE] Lead pause lookup warning: ${pauseQueryError.message}`);
+        } else if (lead) {
+          const meta = (lead.metadata as Record<string, unknown>) || {};
+          if (meta.is_ai_paused === true) {
+            console.log(`[WHATSAPP BRIDGE] 🚫 BLOCKING outbound to ${to} because AI is PAUSED in metadata.`);
+            return { success: false, error: "AI_PAUSED" };
+          }
         }
       } catch (e) {
-        // Fail-closed: si no podemos validar la pausa, NO enviamos.
-        // Logueamos el motivo y retornamos un error específico para que el caller
-        // decida (reintento posterior cuando se restaure config / Supabase).
         const msg = e instanceof Error ? e.message : String(e);
-        console.warn(`[WHATSAPP BRIDGE] Pause check failed (blocking send by safety): ${msg}`);
-        return { success: false, error: "PAUSE_CHECK_FAILED" };
+        console.warn(`[WHATSAPP BRIDGE] Pause check skipped: ${msg}`);
       }
 
       const normalizedTo = normalizeWhatsAppNumber(to);

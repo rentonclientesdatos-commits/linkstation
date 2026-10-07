@@ -989,7 +989,7 @@ ${restaurantPromptSection}`;
           await new Promise((resolve) => setTimeout(resolve, typingDuration - elapsed));
         }
 
-        await whatsappBridge.sendTextMessage(
+        const sendResult = await whatsappBridge.sendTextMessage(
           ensurePlusPrefix(
             (
               lead as unknown as {
@@ -1005,6 +1005,7 @@ ${restaurantPromptSection}`;
           aiResponse,
           waConfig as { accessToken: string; phoneNumberId: string }
         );
+        console.log(`[AI PROCESSOR] 📤 WhatsApp send result for lead ${leadId}:`, sendResult);
 
         // 11b. Resilient Save to Database (Ensures visibility in Dashboard)
         // Using EXACT SAME format as Inbound messages which are working
