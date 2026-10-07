@@ -149,6 +149,71 @@ export class WhatsAppBridge {
   }
 
   /**
+   * Sends a document (PDF, XLSX, etc.) via Meta WhatsApp Cloud API.
+   * If document sending fails (e.g. Meta URL restriction), gracefully falls back to sending
+   * the direct document link in a text message.
+   */
+  public async sendDocumentMessage(
+    to: string,
+    documentUrl: string,
+    filename: string = "cotizacion.pdf",
+    caption?: string,
+    config?: WhatsAppConfig
+  ) {
+    if (!config || !config.accessToken || !config.phoneNumberId) {
+      throw new Error("Missing WhatsApp configuration (AccessToken or PhoneNumberId)");
+    }
+
+    const normalizedTo = normalizeWhatsAppNumber(to);
+    const url = `${WhatsAppBridge.API_URL}/${config.phoneNumberId}/messages`;
+
+    console.log(
+      `[WHATSAPP BRIDGE] 📄 Sending document to ${to}: ${filename} (${documentUrl})`
+    );
+
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: normalizedTo,
+      type: "document",
+      document: {
+        link: documentUrl,
+        filename: filename,
+        ...(caption ? { caption } : {}),
+      },
+    };
+
+    try {
+      const response = await axios.post(url, payload, {
+        headers: {
+          Authorization: `Bearer ${config.accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log(`[WHATSAPP BRIDGE] ✅ Document message sent successfully to ${to}`);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: unknown }; message?: string };
+      console.error(
+        "[WHATSAPP BRIDGE] ⚠️ Error sending native document:",
+        err.response?.data || err.message
+      );
+
+      // Resilient Fallback: send as text message with direct download link
+      try {
+        console.log(`[WHATSAPP BRIDGE] 🔄 Attempting fallback: text message with PDF link`);
+        const fallbackText = caption
+          ? `${caption}\n\n📄 *Descargar Cotización (PDF):*\n${documentUrl}`
+          : `📄 *Aquí tienes tu cotización en PDF:*\n${documentUrl}`;
+        return await this.sendTextMessage(to, fallbackText, config);
+      } catch (fallbackError) {
+        throw error;
+      }
+    }
+  }
+
+  /**
    * Sends a typing indicator (Beta/New feature in Meta Cloud API)
    * Marks the message as 'read' and shows typing dots.
    */

@@ -2118,6 +2118,122 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
           </div>
         )}
 
+        {/* ── ULTRAVOX TRIGGER CONFIG ⭐ NUEVO ─────────────────────── */}
+        {type === "ultravoxTrigger" && (
+          <div className="space-y-5">
+            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/10 p-4">
+              <div className="mb-1 flex items-center gap-2">
+                <Phone className="h-4 w-4 text-violet-400" />
+                <span className="text-[10px] font-black tracking-tighter text-violet-400 uppercase">
+                  Disparador de Voz · Ultravox AI
+                </span>
+              </div>
+              <p className="text-[9px] leading-relaxed font-bold text-white/40">
+                Se activa en tiempo real cuando el agente de voz de Ultravox ejecuta la herramienta de captura de cotización durante la llamada telefónica.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                URL del Webhook (Tool Endpoint)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value="https://linkstationapp.vercel.app/api/webhooks/ultravox/tools"
+                  className="w-full rounded-xl border border-white/5 bg-black/40 px-3 py-2 font-mono text-[10px] text-violet-300 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText("https://linkstationapp.vercel.app/api/webhooks/ultravox/tools");
+                    alert("¡URL copiada al portapapeles!");
+                  }}
+                  className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-[10px] font-bold text-violet-300 hover:bg-violet-500/20"
+                >
+                  Copiar
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Nombre de la Función (Tool Name)
+              </label>
+              <input
+                type="text"
+                value={(config.tool_name as string) || "capturarDatosCotizacion"}
+                onChange={(e) => setConfig({ ...config, tool_name: e.target.value })}
+                className="w-full rounded-xl border border-white/5 bg-black/40 px-3 py-2 text-xs text-white/80 outline-none"
+                placeholder="capturarDatosCotizacion"
+              />
+              <p className="text-[8px] text-white/30 italic">
+                En tu agente de Ultravox, asigna este mismo nombre a la Tool.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Definición JSON para Ultravox (Tool Schema)
+              </label>
+              <textarea
+                readOnly
+                rows={8}
+                value={JSON.stringify(
+                  {
+                    name: (config.tool_name as string) || "capturarDatosCotizacion",
+                    description: "Captura los datos del cliente, repuestos y servicios para generar y enviar la cotización en PDF oficial por WhatsApp.",
+                    dynamicParameters: [
+                      { name: "Nombre_del_cliente", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Nombre del cliente" }, required: true },
+                      { name: "WhatsApp", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Teléfono con código de país (ej: +56912345678)" }, required: true },
+                      { name: "repuestos", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Detalle de repuestos o piezas solicitadas" }, required: true },
+                      { name: "total", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Monto o total cotizado estimado si aplica" }, required: false },
+                      { name: "Correo_electronico", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Email opcional del cliente" }, required: false }
+                    ],
+                    http: {
+                      baseUrlPattern: "https://linkstationapp.vercel.app/api/webhooks/ultravox/tools",
+                      httpMethod: "POST"
+                    }
+                  },
+                  null,
+                  2
+                )}
+                className="w-full rounded-xl border border-white/5 bg-black/40 p-3 font-mono text-[9px] text-white/60 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const toolJson = JSON.stringify(
+                    {
+                      name: (config.tool_name as string) || "capturarDatosCotizacion",
+                      description: "Captura los datos del cliente, repuestos y servicios para generar y enviar la cotización en PDF oficial por WhatsApp.",
+                      dynamicParameters: [
+                        { name: "Nombre_del_cliente", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Nombre del cliente" }, required: true },
+                        { name: "WhatsApp", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Teléfono con código de país (ej: +56912345678)" }, required: true },
+                        { name: "repuestos", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Detalle de repuestos o piezas solicitadas" }, required: true },
+                        { name: "total", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Monto o total cotizado estimado si aplica" }, required: false },
+                        { name: "Correo_electronico", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Email opcional del cliente" }, required: false }
+                      ],
+                      http: {
+                        baseUrlPattern: "https://linkstationapp.vercel.app/api/webhooks/ultravox/tools",
+                        httpMethod: "POST"
+                      }
+                    },
+                    null,
+                    2
+                  );
+                  navigator.clipboard.writeText(toolJson);
+                  alert("¡Definición de Tool copiada! Pégala en tu configuración de Ultravox.");
+                }}
+                className="w-full rounded-xl border border-violet-500/30 bg-violet-600/20 py-2.5 text-[10px] font-bold text-violet-300 hover:bg-violet-600/30"
+              >
+                Copiar Tool Schema para Ultravox
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* VARIABLE EXPLORER (HINT) */}
         <div className="bg-primary/5 border-primary/10 space-y-2 rounded-xl border p-4 text-left">
           <div className="text-primary flex items-center gap-2">

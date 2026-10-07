@@ -36,6 +36,7 @@ import {
   ConditionNode,
   RetrySequenceNode,
   PdfGeneratorNode,
+  UltravoxTriggerNode,
 } from "./nodes/TriggerNodes";
 import { NodeConfigSidebar } from "./NodeConfigSidebar";
 import {
@@ -58,6 +59,7 @@ import {
   MessageCircle,
   ArrowRightLeft,
   FileDown,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
@@ -65,6 +67,7 @@ import { toast } from "@/components/ui/toast";
 // ─── NODE TYPES REGISTRY ─────────────────────────────────────────
 const nodeTypes = {
   // New specialized nodes
+  ultravoxTrigger: UltravoxTriggerNode,
   timeCondition: TimeConditionNode,
   voiceCall: VoiceCallNode,
   textAgent: TextAgentNode,
@@ -107,6 +110,18 @@ const NODE_MENU = [
         label: "Entry Lead (CRM / Webhook)",
         icon: <Globe className="h-4 w-4" />,
         color: "text-orange-400 hover:bg-orange-500/20",
+      },
+      {
+        type: "ultravoxTrigger",
+        label: "Llamada Ultravox (Cotización)",
+        icon: <Phone className="h-4 w-4" />,
+        color: "text-violet-400 hover:bg-violet-500/20",
+        data: {
+          config: {
+            tool_name: "capturarDatosCotizacion",
+            agent_name: "Asistente Voz Ultravox",
+          },
+        },
       },
       {
         type: "webhookTrigger",
@@ -404,6 +419,75 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
     setSelectedNode(null);
   };
 
+  const loadUltravoxQuotationFlow = () => {
+    const newNodes: Node[] = [
+      {
+        id: "node-ultravox-trigger",
+        type: "ultravoxTrigger",
+        position: { x: 350, y: 80 },
+        data: {
+          label: "Llamada Ultravox: Captura",
+          config: {
+            tool_name: "capturarDatosCotizacion",
+            agent_name: "Asistente de Voz Ultravox",
+          },
+        },
+      },
+      {
+        id: "node-pdf-generator",
+        type: "pdfGenerator",
+        position: { x: 350, y: 250 },
+        data: {
+          label: "Crear PDF (Cotización)",
+          config: {
+            pdf_template_name: "Cotización Repuestos y Maquinaria",
+            pdf_filename: "Cotizacion.pdf",
+            pdf_output_variable: "pdf_url",
+            pdf_paper_size: "Letter",
+          },
+        },
+      },
+      {
+        id: "node-whatsapp-sender",
+        type: "whatsapp",
+        position: { x: 350, y: 420 },
+        data: {
+          label: "Enviar PDF por WhatsApp",
+          config: {
+            send_pdf: true,
+            caption: "Hola {{lead.nombre}}, aquí tienes el PDF con tu cotización.",
+            templateId: "",
+          },
+        },
+      },
+    ];
+
+    const newEdges: Edge[] = [
+      {
+        id: "edge-trigger-to-pdf",
+        source: "node-ultravox-trigger",
+        target: "node-pdf-generator",
+        animated: true,
+        style: { stroke: "#8b5cf6", strokeWidth: 2 },
+      },
+      {
+        id: "edge-pdf-to-whatsapp",
+        source: "node-pdf-generator",
+        target: "node-whatsapp-sender",
+        animated: true,
+        style: { stroke: "#10b981", strokeWidth: 2 },
+      },
+    ];
+
+    setNodes(newNodes);
+    setEdges(newEdges);
+    toast({
+      title: "Flujo Cargado con Éxito",
+      description: "Llamada Ultravox ➔ Crear PDF ➔ Enviar por WhatsApp",
+      variant: "success",
+    });
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addNode = (type: string, extraData?: any) => {
     const id = `${type}-${Date.now()}`;
@@ -546,6 +630,15 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         <div className="mx-1 h-4 w-px bg-white/10" />
 
         <button
+          onClick={loadUltravoxQuotationFlow}
+          className="flex items-center gap-2 rounded-xl border border-violet-500/40 bg-violet-600/20 px-3 py-2 text-[10px] font-black tracking-widest text-violet-300 uppercase shadow-lg transition-all hover:bg-violet-600/30 active:scale-95"
+          title="Cargar flujo completo: Llamada Ultravox ➔ Crear PDF ➔ WhatsApp"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-violet-300" />
+          Plantilla Ultravox ➔ PDF
+        </button>
+
+        <button
           onClick={onDeploy}
           disabled={isPublishing}
           className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
@@ -585,6 +678,7 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         <MiniMap
           className="overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-2xl"
           nodeColor={(n: Node) => {
+            if (n.type === "ultravoxTrigger") return "#8b5cf6";
             if (n.type === "leadTrigger") return "#f97316";
             if (n.type === "timeCondition") return "#eab308";
             if (n.type === "voiceCall") return "#3b82f6";

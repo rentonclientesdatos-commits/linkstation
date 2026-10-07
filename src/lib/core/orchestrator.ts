@@ -5,6 +5,7 @@ import { buildComplianceDecision } from "./compliance";
 import { whatsappBridge, WhatsAppConfig } from "../integrations/whatsapp";
 
 import { ultravoxBridge } from "../integrations/ultravox";
+import { PdfService } from "../services/pdf-service";
 import { getAgentVariants } from "../actions/agents";
 import {
   getOrchestratorConfigForTenant,
@@ -998,6 +999,7 @@ export class Orchestrator {
     const tenantConf = (tenant as any)?.config;
 
     switch (action_type) {
+      case "VOICE_CALL":
       case "CALL": {
         const uApiKey = tenantConf?.ultravox?.api_key;
         if (!uApiKey) {
@@ -1029,13 +1031,86 @@ export class Orchestrator {
         }
         break;
       }
+      case "PDF_GENERATOR": {
+        console.log(`[ORCHESTRATOR] 📄 Executing PDF Generator for lead ${lead.id}`);
+        try {
+          const customTemplate = conf?.pdf_html_template;
+          const metadataParams = (lead.metadata as any)?.parameters || {};
+          const repuestos =
+            conf?.repuestos ||
+            metadataParams.repuestos ||
+            (lead.metadata as any)?.repuestos ||
+            "Cotización de Repuestos y Servicios";
+          const maquinaria =
+            conf?.maquinaria ||
+            metadataParams.maquinaria ||
+            (lead.metadata as any)?.maquinaria ||
+            "";
+          const modelo =
+            conf?.modelo ||
+            metadataParams.modelo ||
+            (lead.metadata as any)?.modelo ||
+            "";
+          const total =
+            conf?.total ||
+            metadataParams.total ||
+            (lead.metadata as any)?.total ||
+            undefined;
+
+          const quotationResult = await PdfService.executeQuotationAndWhatsApp({
+            supabase,
+            tenantId,
+            leadId: lead.id,
+            quotationData: {
+              cliente: lead.nombre || "Cliente",
+              telefono: lead.telefono || "",
+              email: lead.email || undefined,
+              repuestos,
+              maquinaria,
+              modelo,
+              total,
+            },
+            customHtmlTemplate: customTemplate,
+          });
+
+          // Store generated PDF URL in execution context for subsequent nodes
+          context.pdf_url = quotationResult.pdfUrl;
+          context.last_pdf_url = quotationResult.pdfUrl;
+          console.log(`[ORCHESTRATOR] ✅ PDF Generated: ${quotationResult.pdfUrl}`);
+        } catch (pdfErr) {
+          console.error("[ORCHESTRATOR] ❌ Error in PDF_GENERATOR:", pdfErr);
+        }
+        break;
+      }
+      case "WHATSAPP_TEMPLATE":
       case "WHATSAPP": {
         const waConfig: WhatsAppConfig = {
           accessToken: tenantConf?.whatsapp?.accessToken,
           phoneNumberId: tenantConf?.whatsapp?.phoneNumberId,
         };
 
+        // If a PDF URL was generated in context or in lead metadata, dispatch document
+        const pdfUrl = (context.pdf_url || (lead.metadata as any)?.last_pdf_url) as string | undefined;
         const template = conf?.templateId || "";
+
+        if (pdfUrl && (!template || conf?.send_pdf)) {
+          const docName = conf?.pdf_filename || "Cotizacion.pdf";
+          const caption = conf?.caption || `Hola *${lead.nombre || "Cliente"}*, aquí tienes tu cotización en PDF.`;
+          try {
+            await whatsappBridge.sendDocumentMessage(
+              lead.telefono || "",
+              pdfUrl,
+              docName,
+              caption,
+              waConfig
+            );
+            console.log(`[ORCHESTRATOR] ✅ WhatsApp PDF Document sent to ${lead.telefono}`);
+          } catch (waDocErr) {
+            console.error("[ORCHESTRATOR] ❌ Error sending WhatsApp document:", waDocErr);
+          }
+          break;
+        }
+
         const mappings = conf?.variableMappings || {};
 
         const parameters: any[] = [];
@@ -1046,6 +1121,7 @@ export class Orchestrator {
           if (value === "lead.nombre") value = lead.nombre || "Cliente";
           else if (value === "lead.apellido") value = lead.apellido || "";
           else if (value === "lead.email") value = lead.email || "";
+          else if (value === "pdf_url" || value === "context.pdf_url") value = pdfUrl || "";
 
           const paramObj: any = { type: "text", text: value };
           if (isNaN(Number(idx))) {
@@ -1056,13 +1132,15 @@ export class Orchestrator {
 
         const components = parameters.length > 0 ? [{ type: "body", parameters: parameters }] : [];
 
-        await whatsappBridge.sendTemplateMessage(
-          lead.telefono || "",
-          template,
-          "es",
-          components,
-          waConfig
-        );
+        if (template) {
+          await whatsappBridge.sendTemplateMessage(
+            lead.telefono || "",
+            template,
+            "es",
+            components,
+            waConfig
+          );
+        }
         break;
       }
       case "AI_AGENT": {

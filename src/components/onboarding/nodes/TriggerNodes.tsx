@@ -786,7 +786,43 @@ export const PdfGeneratorNode = memo(({ data, selected }: NodeProps) => {
   );
 });
 
+// ─── ULTRAVOX TRIGGER NODE ⭐ NUEVO ────────────────────────────────
+export const UltravoxTriggerNode = memo(({ data, selected }: NodeProps) => {
+  const toolName = data.config?.tool_name || "capturarDatosCotizacion";
+  const agentName = data.config?.agent_name || "Voz AI (Ultravox)";
+
+  return (
+    <BaseNode
+      label="Disparador: Llamada Ultravox"
+      icon={<Phone className="h-4 w-4" />}
+      colorClass="bg-violet-600"
+      selected={selected}
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-1.5">
+          <span className="rounded border border-violet-500/30 bg-violet-500/20 px-1.5 py-0.5 text-[8px] font-black text-violet-300 uppercase">
+            ULTRAVOX AI
+          </span>
+          <p className="truncate font-mono text-[10px] text-white/90">{agentName}</p>
+        </div>
+        <div className="rounded-md border border-violet-500/20 bg-violet-500/5 px-2 py-1 font-mono text-[9px] text-violet-300">
+          Tool: {toolName}
+        </div>
+        <div className="flex items-center gap-1 text-[9px] font-bold text-violet-400/80">
+          <span>📞 Captura datos durante la llamada</span>
+        </div>
+      </div>
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="h-3 w-3 border-2 border-white bg-violet-600"
+      />
+    </BaseNode>
+  );
+});
+
 // ─── Display Names ────────────────────────────────────────────────
+UltravoxTriggerNode.displayName = "UltravoxTriggerNode";
 PdfGeneratorNode.displayName = "PdfGeneratorNode";
 LeadTriggerNode.displayName = "LeadTriggerNode";
 TimeConditionNode.displayName = "TimeConditionNode";

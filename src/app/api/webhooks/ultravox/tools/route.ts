@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAdminSupabaseClient } from "@/lib/supabase/server";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/types/database";
+import { PdfService } from "@/lib/services/pdf-service";
 
 export async function POST(req: Request) {
   try {
@@ -468,31 +469,144 @@ async function handleCapturaCotizacion(
 ) {
   try {
     const effectiveTenantId = await resolveTenant(supabase, tenantId);
-    const cliente = String(args.Nombre_del_cliente || args.nombre_del_cliente || args.nombre || "Cliente");
-    const telefono = String(args.WhatsApp || args.whatsapp || args.telefono || "");
-    const email = String(args.Correo_electronico || args.correo_electronico || args.email || "");
+    const cliente = String(
+      args.Nombre_del_cliente ||
+        args.nombre_del_cliente ||
+        args.nombre ||
+        args.cliente ||
+        "Cliente"
+    );
+    const telefono = String(
+      args.WhatsApp ||
+        args.whatsapp ||
+        args.telefono ||
+        args.celular ||
+        args.phone ||
+        ""
+    );
+    const email = String(
+      args.Correo_electronico ||
+        args.correo_electronico ||
+        args.email ||
+        ""
+    );
+    const repuestos = String(
+      args.repuestos ||
+        args.repuesto ||
+        args.items ||
+        args.repuestos_solicitados ||
+        args.repuesto_solicitado ||
+        args.repuesto_a_cotizar ||
+        ""
+    );
+    const maquinaria = String(
+      args.maquinaria ||
+        args.maquina ||
+        args.tipo_maquina ||
+        args.grua ||
+        ""
+    );
+    const modelo = String(
+      args.modelo ||
+        args.modelo_maquina ||
+        args.numero_serie ||
+        args.serie ||
+        ""
+    );
+    const total = args.total || args.precio || args.valor || args.monto || "";
+    const notas = String(
+      args.detalles || args.observaciones || args.notas || args.descripcion || ""
+    );
 
-    console.log("[ULTRAVOX TOOL: capturarDatosCotizacion] Recibido:", args);
+    console.log("[ULTRAVOX TOOL: capturarDatosCotizacion] Recibido:", {
+      cliente,
+      telefono,
+      email,
+      repuestos,
+      maquinaria,
+      modelo,
+      total,
+      notas,
+    });
 
-    await (supabase as any).from("lead").insert({
-      tenant_id: effectiveTenantId,
-      nombre: cliente,
-      telefono: telefono,
-      email: email || null,
-      tipo_lead: "cotizacion",
-      status: "nuevo",
-      origen: "ultravox",
-      metadata: {
-        tool_name: "capturarDatosCotizacion",
-        category: "cotizacion",
-        parameters: args,
-        captured_at: new Date().toISOString(),
+    // 1. Ingest / Update Lead in Database
+    let activeLeadId = leadId;
+    if (activeLeadId) {
+      await (supabase as any)
+        .from("lead")
+        .update({
+          nombre: cliente !== "Cliente" ? cliente : undefined,
+          telefono: telefono || undefined,
+          email: email || undefined,
+          tipo_lead: "cotizacion",
+          status: "cotizacion_solicitada",
+          metadata: {
+            tool_name: "capturarDatosCotizacion",
+            category: "cotizacion",
+            parameters: args,
+            repuestos,
+            maquinaria,
+            modelo,
+            total,
+            captured_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", activeLeadId);
+    } else {
+      const { data: newLead } = await (supabase as any)
+        .from("lead")
+        .insert({
+          tenant_id: effectiveTenantId,
+          nombre: cliente,
+          telefono: telefono,
+          email: email || null,
+          tipo_lead: "cotizacion",
+          status: "cotizacion_solicitada",
+          origen: "ultravox",
+          metadata: {
+            tool_name: "capturarDatosCotizacion",
+            category: "cotizacion",
+            parameters: args,
+            repuestos,
+            maquinaria,
+            modelo,
+            total,
+            captured_at: new Date().toISOString(),
+          },
+        })
+        .select("id")
+        .single();
+      activeLeadId = newLead?.id;
+    }
+
+    // 2. Generate PDF and dispatch directly via WhatsApp
+    const quotationResult = await PdfService.executeQuotationAndWhatsApp({
+      supabase,
+      tenantId: effectiveTenantId,
+      leadId: activeLeadId,
+      quotationData: {
+        cliente,
+        telefono,
+        email,
+        repuestos: repuestos || "Repuestos y Servicios para Maquinaria",
+        maquinaria,
+        modelo,
+        total: total ? String(total) : undefined,
+        observaciones: notas,
       },
     });
 
+    const itemsResumen = repuestos ? `los repuestos "${repuestos}"` : "tu solicitud de cotización";
+    const waNote = quotationResult.whatsappSent
+      ? `y te acabo de enviar el documento oficial en PDF directamente a tu WhatsApp (${telefono})`
+      : `y prepararemos el PDF para enviártelo a la brevedad`;
+
     return NextResponse.json({
       success: true,
-      message: `Listo ${cliente}, hemos capturado la solicitud de cotización de repuestos. Te enviaremos el detalle y valorización a la brevedad.`,
+      lead_id: activeLeadId,
+      pdf_url: quotationResult.pdfUrl,
+      whatsapp_sent: quotationResult.whatsappSent,
+      message: `Listo ${cliente}, he registrado con éxito ${itemsResumen} ${waNote}. ¿Deseas consultar algo más?`,
     });
   } catch (error) {
     console.error("[CAPTURAR_COTIZACION ERROR]:", error);

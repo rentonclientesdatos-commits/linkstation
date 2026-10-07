@@ -106,9 +106,8 @@ export async function POST(req: Request) {
  * HELPER: FLATTEN GRAPH (v5.0 - True Branching & Pointer-based Execution)
  */
 function flattenGraph(nodes: Node[], edges: Edge[]) {
-  const triggerNodes = nodes.filter((n) =>
-    ["leadTrigger", "webhookTrigger", "flow_trigger"].includes(n.type || "")
-  );
+  const triggerTypes = ["leadTrigger", "webhookTrigger", "flow_trigger", "ultravoxTrigger", "inboundWhatsApp"];
+  const triggerNodes = nodes.filter((n) => triggerTypes.includes(n.type || ""));
   if (triggerNodes.length === 0) return [];
 
   const allSteps: any[] = [];
@@ -117,7 +116,7 @@ function flattenGraph(nodes: Node[], edges: Edge[]) {
   // First pass: Assign unique sequence_order to each non-trigger node
   let currentOrder = 1;
   nodes.forEach((node) => {
-    if (!["leadTrigger", "webhookTrigger", "flow_trigger", "end"].includes(node.type || "")) {
+    if (![...triggerTypes, "end"].includes(node.type || "")) {
       nodeIdToOrder.set(node.id, currentOrder++);
     }
   });
@@ -125,7 +124,7 @@ function flattenGraph(nodes: Node[], edges: Edge[]) {
   // Second pass: Map each node to an execution rule
   nodes.forEach((node) => {
     const type = node.type || "unknown";
-    if (["leadTrigger", "webhookTrigger", "flow_trigger", "end"].includes(type)) return;
+    if ([...triggerTypes, "end"].includes(type)) return;
 
     const data = (node.data || {}) as VisualNodeData;
     let actionType = "UNKNOWN";
