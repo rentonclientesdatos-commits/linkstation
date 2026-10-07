@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -92,7 +92,7 @@ export default function AIAgentInbox() {
     "PUESTO 1",
     "REVISADO",
     "CUALIFICADO",
-    "SIN INTERÉS",
+    "SIN INTERÃ‰S",
   ]);
   const [isEditingSegments, setIsEditingSegments] = useState(false);
 
@@ -138,7 +138,7 @@ export default function AIAgentInbox() {
         const newLeads = res.data;
         setLeads(newLeads);
 
-        // 🔄 Sync selectedLead if it's currently open
+        // ðŸ”„ Sync selectedLead if it's currently open
         if (selectedLeadRef.current) {
           const updatedLead = newLeads.find((l) => l.id === selectedLeadRef.current?.id);
           if (updatedLead) {
@@ -165,7 +165,8 @@ export default function AIAgentInbox() {
 
   const loadChat = useCallback(async (leadId: string) => {
     setLoadingChat(true);
-    const res = await getChatHistory(leadId);
+    const activeTenantId = tenantId || useTenantStore.getState().tenantId;
+    const res = await getChatHistory(leadId, activeTenantId || undefined);
     if (res.success && typeof res.data !== "undefined") {
       setMessages(res.data);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
@@ -224,7 +225,7 @@ export default function AIAgentInbox() {
     };
     runInitialFetch();
 
-    // 🛡️ Polling Fallback: Check for new messages/leads every 30 seconds
+    // ðŸ›¡ï¸ Polling Fallback: Check for new messages/leads every 30 seconds
     // Use a recursive timeout to prevent overlapping requests if the network is slow
     let timerId: NodeJS.Timeout;
     const poll = async () => {
@@ -323,21 +324,22 @@ export default function AIAgentInbox() {
 
   useEffect(() => {
     const supabase = getSupabaseClient();
-    const tenantId = useTenantStore.getState().tenantId;
-    if (!tenantId) return;
+    // Use tenantId from React state (same as dependency array) to avoid stale store snapshot
+    const activeTenantId = tenantId || useTenantStore.getState().tenantId;
+    if (!activeTenantId) return;
 
-    console.log(`[REALTIME] Subscribing for tenant: ${tenantId}`);
+    console.log(`[REALTIME] Subscribing for tenant: ${activeTenantId}`);
 
-    // ── 1. New or Updated chat messages ─────────────────────────────
+    // -- 1. New or Updated chat messages
     const messageChannel = supabase
-      .channel(`inbox:chat_summaries:${tenantId}`)
+      .channel(`inbox:chat_summaries:${activeTenantId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "chat_summaries",
-          filter: `tenant_id=eq.${tenantId}`,
+          filter: `tenant_id=eq.${activeTenantId}`,
         },
         (payload) => {
           const row = payload.new as { summary: string; lead_id: string };
@@ -353,7 +355,7 @@ export default function AIAgentInbox() {
                   const [, time, role, content] = match;
                   return {
                     id: `sum-${leadId}-${idx}`,
-                    tenant_id: tenantId,
+                    tenant_id: activeTenantId,
                     lead_id: leadId,
                     direction: role === "Usuario" ? "INBOUND" : "OUTBOUND",
                     message_type: "TEXT",
@@ -400,7 +402,7 @@ export default function AIAgentInbox() {
           event: "INSERT",
           schema: "public",
           table: "chat_messages",
-          filter: `tenant_id=eq.${tenantId}`,
+          filter: `tenant_id=eq.${activeTenantId}`,
         },
         (payload) => {
           const newMsg = payload.new as ChatMessage;
@@ -408,17 +410,21 @@ export default function AIAgentInbox() {
 
           if (selectedLeadRef.current?.id === newMsg.lead_id) {
             setMessages((prev) => {
-              // Avoid duplicates
               if (prev.find((m) => m.id === newMsg.id)) return prev;
               const updated = [...prev, newMsg];
-              // Auto-scroll
               setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
               return updated;
             });
           }
 
-          // Also update the lead preview in the sidebar
+          // Update lead preview in sidebar; if lead not found, force reload
           setLeads((prev) => {
+            const leadExists = prev.find((l) => l.id === newMsg.lead_id);
+            if (!leadExists) {
+              console.log("[REALTIME] Message for unknown lead, forcing reload:", newMsg.lead_id);
+              loadLeads(true);
+              return prev;
+            }
             const updated = prev.map((l) =>
               l.id === newMsg.lead_id
                 ? { ...l, last_message: newMsg.content, last_message_time: newMsg.created_at }
@@ -438,7 +444,7 @@ export default function AIAgentInbox() {
           event: "UPDATE",
           schema: "public",
           table: "chat_messages",
-          filter: `tenant_id=eq.${tenantId}`,
+          filter: `tenant_id=eq.${activeTenantId}`,
         },
         (payload) => {
           const updatedMsg = payload.new as ChatMessage;
@@ -449,30 +455,29 @@ export default function AIAgentInbox() {
       )
       .subscribe();
 
-    // ── 2. New leads (e.g. from WhatsApp inbound) ──────────────────
+    // -- 2. New leads (e.g. from WhatsApp inbound)
     const newLeadChannel = supabase
-      .channel(`inbox:new_leads:${tenantId}`)
+      .channel(`inbox:new_leads:${activeTenantId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "lead", filter: `tenant_id=eq.${tenantId}` },
+        { event: "INSERT", schema: "public", table: "lead", filter: `tenant_id=eq.${activeTenantId}` },
         (payload) => {
           const newLead = payload.new as Record<string, unknown>;
           console.log("[REALTIME] New lead:", newLead.id);
 
-          // Normalise phone
           let phone = (newLead.telefono as string) || null;
           if (phone && !phone.startsWith("+")) phone = "+" + phone;
 
           const inboxLead: InboxLead = {
             id: newLead.id as string,
-            tenant_id: tenantId as string,
+            tenant_id: activeTenantId as string,
             nombre: (newLead.nombre as string) || null,
             apellido: (newLead.apellido as string) || null,
             telefono: phone,
-            foto_url: (newLead.foto_url as string) || null,
+            foto_url: (newLead.photo_url as string) || (newLead.foto_url as string) || null,
             is_ai_enabled: (newLead.is_ai_enabled as boolean) ?? true,
-            ai_agent_id: (newLead.ai_agent_id as string) || null,
-            last_message: "Nueva conversación",
+            ai_agent_id: ((newLead.metadata as Record<string, unknown>)?.ai_agent_id as string) || (newLead.ai_agent_id as string) || null,
+            last_message: "Nueva conversacion",
             last_message_time: (newLead.fecha_creacion as string) || new Date().toISOString(),
             created_at: (newLead.fecha_creacion as string) || null,
             tipo_lead: (newLead.tipo_lead as string) || "SIN CALIFICAR",
@@ -492,12 +497,12 @@ export default function AIAgentInbox() {
       )
       .subscribe();
 
-    // ── 3. Lead updates (metadata, ai_enabled, segmentation) ───────
+    // -- 3. Lead updates (metadata, ai_enabled, segmentation)
     const leadUpdateChannel = supabase
-      .channel(`inbox:lead_updates:${tenantId}`)
+      .channel(`inbox:lead_updates:${activeTenantId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "lead", filter: `tenant_id=eq.${tenantId}` },
+        { event: "UPDATE", schema: "public", table: "lead", filter: `tenant_id=eq.${activeTenantId}` },
         (payload) => {
           const updated = payload.new as Partial<InboxLead>;
           console.log("[REALTIME] Lead updated:", updated.id);
@@ -516,7 +521,7 @@ export default function AIAgentInbox() {
       supabase.removeChannel(newLeadChannel);
       supabase.removeChannel(leadUpdateChannel);
     };
-  }, [tenantId]); // Re-subscribe when tenantId changes or becomes available
+  }, [tenantId, loadLeads]); // Re-subscribe when tenantId changes or becomes available
 
   const handleSendTemplate = async (templateName: string) => {
     if (!selectedLead) return;
@@ -570,11 +575,11 @@ export default function AIAgentInbox() {
           } else if (varName === "3") {
             const meta = (selectedLead.metadata as Record<string, unknown>) || {};
             val =
-              (meta.appointment_date as string) || (meta.fecha_cita as string) || "próximamente";
+              (meta.appointment_date as string) || (meta.fecha_cita as string) || "prÃ³ximamente";
           }
         }
-        const paramObj: any = { type: "text", text: val || "—" };
-        // Si la variable es texto (ej: {{nombre}}) y no un número (ej: {{1}}),
+        const paramObj: any = { type: "text", text: val || "â€”" };
+        // Si la variable es texto (ej: {{nombre}}) y no un nÃºmero (ej: {{1}}),
         // Meta exige incluir el parameter_name en el payload.
         if (isNaN(Number(varName))) {
           paramObj.parameter_name = varName;
@@ -723,11 +728,11 @@ export default function AIAgentInbox() {
           <div className="flex items-center gap-3">
             <GitBranch className="text-primary h-5 w-5" />
             <h2 className="text-foreground text-sm font-black tracking-widest uppercase">
-              Constructor de Lógica IA
+              Constructor de LÃ³gica IA
             </h2>
           </div>
           <button
-            title="Cerrar constructor de lógica"
+            title="Cerrar constructor de lÃ³gica"
             onClick={() => setActiveView("INBOX")}
             className="hover:bg-card bg-card/40 border-border flex h-10 w-10 items-center justify-center rounded-full border transition-all"
           >
@@ -781,7 +786,7 @@ export default function AIAgentInbox() {
 
   return (
     <div className="text-foreground selection:bg-primary/30 flex h-full overflow-hidden font-sans">
-      {/* ─── COLUMN 1: CONVERSATION LIST (Standard 320px) ───────────────────────── */}
+      {/* â”€â”€â”€ COLUMN 1: CONVERSATION LIST (Standard 320px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="border-border bg-card/40 z-20 flex w-80 flex-shrink-0 flex-col border-r backdrop-blur-3xl">
         <div className="border-border bg-card/20 flex h-16 items-center justify-between border-b px-6">
           <div className="flex items-center gap-3">
@@ -816,10 +821,10 @@ export default function AIAgentInbox() {
                 >
                   <div className="space-y-2">
                     <p className="text-muted-foreground/60 px-1 text-[9px] font-black tracking-widest uppercase">
-                      Segmentación
+                      SegmentaciÃ³n
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {["PUESTO 1", "REVISADO", "CUALIFICADO", "SIN INTERÉS"].map((s) => (
+                      {["PUESTO 1", "REVISADO", "CUALIFICADO", "SIN INTERÃ‰S"].map((s) => (
                         <button
                           key={s}
                           onClick={() => setSegmentFilter(segmentFilter === s ? null : s)}
@@ -912,8 +917,8 @@ export default function AIAgentInbox() {
             <div className="p-6">
               <EmptyState
                 icon={<MessageSquare className="h-12 w-12" />}
-                title="Aún no hay conversaciones"
-                description="Cuando un lead inicie un chat por WhatsApp o web, aparecerá aquí. Puedes crear un lead manualmente para arrancar."
+                title="AÃºn no hay conversaciones"
+                description="Cuando un lead inicie un chat por WhatsApp o web, aparecerÃ¡ aquÃ­. Puedes crear un lead manualmente para arrancar."
                 action={
                   <Button size="sm" onClick={() => setIsCreateLeadModalOpen(true)}>
                     <PlusCircle className="h-4 w-4" />
@@ -941,7 +946,7 @@ export default function AIAgentInbox() {
                       size="sm"
                       icon={<Search className="h-10 w-10" />}
                       title="Sin resultados"
-                      description="Ningún lead coincide con los filtros actuales."
+                      description="NingÃºn lead coincide con los filtros actuales."
                       action={
                         <Button
                           size="sm"
@@ -1008,7 +1013,7 @@ export default function AIAgentInbox() {
                         lead.unread_count ? "text-primary font-black" : "text-muted-foreground/60"
                       )}
                     >
-                      {lead.last_message || "Esperando interacción..."}
+                      {lead.last_message || "Esperando interacciÃ³n..."}
                     </p>
                   </div>
                 </button>
@@ -1018,7 +1023,7 @@ export default function AIAgentInbox() {
         </div>
       </div>
 
-      {/* ─── COLUMN 2: MAIN CHAT AREA (Flexible Container) ───────────────────────── */}
+      {/* â”€â”€â”€ COLUMN 2: MAIN CHAT AREA (Flexible Container) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="bg-background border-border relative z-10 flex min-w-0 flex-1 flex-col border-r shadow-2xl">
         <div
           className={cn(
@@ -1122,7 +1127,7 @@ export default function AIAgentInbox() {
                   value={selectedLead?.ai_agent_id || ""}
                   disabled={isAssigningAgent}
                   onChange={(e) => handleAssignAgent(e.target.value || null)}
-                  title="Vincular este lead a un agente específico"
+                  title="Vincular este lead a un agente especÃ­fico"
                   className={cn(
                     "bg-card/40 border-border text-primary focus:border-primary/20 h-9 cursor-pointer appearance-none rounded-xl border text-[9px] font-black tracking-widest uppercase transition-all focus:outline-none disabled:opacity-50",
                     showDetails
@@ -1143,7 +1148,7 @@ export default function AIAgentInbox() {
 
               <button
                 onClick={handleDeleteChat}
-                title="Vaciar conversación"
+                title="Vaciar conversaciÃ³n"
                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 transition-all hover:bg-red-500/20"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -1220,7 +1225,7 @@ export default function AIAgentInbox() {
                   <Star className="h-3.5 w-3.5" /> Enviar Plantilla Meta
                 </button>
                 <button
-                  title="Añadir nota privada"
+                  title="AÃ±adir nota privada"
                   className="bg-card border-border hover:bg-card/60 text-muted-foreground/60 flex h-9 items-center gap-2 rounded-xl border px-4 text-[9px] font-black tracking-widest uppercase transition-all"
                 >
                   <Archive className="h-3.5 w-3.5" /> Nota Privada
@@ -1239,8 +1244,8 @@ export default function AIAgentInbox() {
                   }}
                   placeholder={
                     selectedLead.is_ai_enabled
-                      ? "El agente IA está respondiendo... (Pausa para responder tú)"
-                      : "Escribe tu mensaje aquí..."
+                      ? "El agente IA estÃ¡ respondiendo... (Pausa para responder tÃº)"
+                      : "Escribe tu mensaje aquÃ­..."
                   }
                   className={cn(
                     "bg-background border-border focus:ring-primary/20 custom-scrollbar text-foreground max-h-40 min-h-[60px] w-full resize-none rounded-2xl border px-6 py-4 pr-32 text-[14px] font-medium transition-all focus:ring-2 focus:outline-none",
@@ -1266,7 +1271,7 @@ export default function AIAgentInbox() {
         )}
       </div>
 
-      {/* ─── COLUMN 3: LEAD DETAILS (Fixed Right Sidebar) ───────────────────────── */}
+      {/* â”€â”€â”€ COLUMN 3: LEAD DETAILS (Fixed Right Sidebar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {selectedLead && showDetails && (
           <motion.div
@@ -1327,7 +1332,7 @@ export default function AIAgentInbox() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between px-1">
                     <p className="text-muted-foreground/40 text-[10px] font-black tracking-widest uppercase">
-                      Segmentación
+                      SegmentaciÃ³n
                     </p>
                     <button
                       onClick={() => setIsEditingSegments(!isEditingSegments)}
@@ -1369,7 +1374,7 @@ export default function AIAgentInbox() {
                           onClick={() => setSegmentations([...segmentations, "NUEVO SEGMENTO"])}
                           className="bg-card border-border text-muted-foreground hover:bg-card/60 flex h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-dashed text-[9px] font-black uppercase"
                         >
-                          <PlusCircle className="h-3 w-3" /> Añadir
+                          <PlusCircle className="h-3 w-3" /> AÃ±adir
                         </button>
                         <button
                           onClick={async () => {
@@ -1424,7 +1429,7 @@ export default function AIAgentInbox() {
                               );
                               toast({
                                 variant: "error",
-                                title: "Error al guardar segmentación",
+                                title: "Error al guardar segmentaciÃ³n",
                                 description: res.error,
                               });
                             }
@@ -1443,7 +1448,7 @@ export default function AIAgentInbox() {
                   )}
                 </div>
                 <DetailField
-                  label="Teléfono"
+                  label="TelÃ©fono"
                   value={selectedLead.telefono || "Desconocido"}
                   icon={Phone}
                   copyable
@@ -1457,14 +1462,14 @@ export default function AIAgentInbox() {
                     } else {
                       toast({
                         variant: "error",
-                        title: "Error al actualizar teléfono",
+                        title: "Error al actualizar telÃ©fono",
                         description: res.error,
                       });
                     }
                   }}
                 />
                 <DetailField
-                  label="País"
+                  label="PaÃ­s"
                   value={
                     selectedLead.pais ||
                     resolveCountryFromPhone(selectedLead.telefono) ||
@@ -1474,7 +1479,7 @@ export default function AIAgentInbox() {
                 />
                 <DetailField
                   label="Origen"
-                  value={selectedLead.origen || "Campaña Orgánica"}
+                  value={selectedLead.origen || "CampaÃ±a OrgÃ¡nica"}
                   icon={GitBranch}
                 />
               </div>
@@ -1503,7 +1508,7 @@ export default function AIAgentInbox() {
                       onClick={async () => {
                         if (
                           confirm(
-                            "¿Estás seguro de que deseas borrar todas las variables capturadas para este lead? Esto reiniciará la memoria de la IA."
+                            "Â¿EstÃ¡s seguro de que deseas borrar todas las variables capturadas para este lead? Esto reiniciarÃ¡ la memoria de la IA."
                           )
                         ) {
                           const res = await deleteLeadFacts(selectedLead.id);
@@ -1614,7 +1619,7 @@ export default function AIAgentInbox() {
                     return (
                       <div className="bg-card border-border rounded-2xl border border-dashed p-4 text-center">
                         <p className="text-muted-foreground/20 text-[9px] font-bold tracking-widest uppercase">
-                          Sin datos capturados aún
+                          Sin datos capturados aÃºn
                         </p>
                       </div>
                     );
@@ -1695,7 +1700,7 @@ export default function AIAgentInbox() {
               {/* Automation Timeline */}
               <div className="space-y-6 pt-4">
                 <p className="px-1 text-[10px] font-black tracking-widest text-slate-400 uppercase dark:text-white/20">
-                  Progreso de Automatización
+                  Progreso de AutomatizaciÃ³n
                 </p>
                 <div className="space-y-4">
                   <TimelineItem
@@ -1706,7 +1711,7 @@ export default function AIAgentInbox() {
                     active
                   />
                   <TimelineItem
-                    label="Llamada de Cualificación"
+                    label="Llamada de CualificaciÃ³n"
                     time="Hace 1h"
                     status={
                       messages.some(
@@ -1728,7 +1733,7 @@ export default function AIAgentInbox() {
                     active
                   />
                   <TimelineItem
-                    label="Cualificación WhatsApp"
+                    label="CualificaciÃ³n WhatsApp"
                     time="En curso"
                     status="PROCESANDO"
                     icon={Zap}
@@ -1758,7 +1763,7 @@ export default function AIAgentInbox() {
         )}
       </AnimatePresence>
 
-      {/* ─── LEAD PROFILE MODAL ─── */}
+      {/* â”€â”€â”€ LEAD PROFILE MODAL â”€â”€â”€ */}
       <AnimatePresence>
         {isProfileModalOpen && selectedLead && (
           <LeadProfileModal
@@ -1772,7 +1777,7 @@ export default function AIAgentInbox() {
         )}
       </AnimatePresence>
 
-      {/* ─── TEMPLATE SELECTOR MODAL ─── */}
+      {/* â”€â”€â”€ TEMPLATE SELECTOR MODAL â”€â”€â”€ */}
       <AnimatePresence>
         {isTemplateModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -1793,7 +1798,7 @@ export default function AIAgentInbox() {
                 <div className="space-y-1">
                   <h3 className="text-2xl font-black tracking-tight uppercase">Plantillas Meta</h3>
                   <p className="text-muted-foreground/40 text-[11px] font-bold tracking-widest uppercase">
-                    Verificación Cloud API de WhatsApp
+                    VerificaciÃ³n Cloud API de WhatsApp
                   </p>
                 </div>
                 <button
@@ -1825,7 +1830,7 @@ export default function AIAgentInbox() {
                       <TemplateCard
                         key={tpl.id}
                         name={tpl.name}
-                        description={`Categoría: ${tpl.category} | Idioma: ${tpl.language}`}
+                        description={`CategorÃ­a: ${tpl.category} | Idioma: ${tpl.language}`}
                         onClick={() => handleSendTemplate(tpl.name)}
                         status={tpl.status}
                       />
@@ -1851,7 +1856,7 @@ export default function AIAgentInbox() {
         />
       )}
 
-      {/* ─── DELETE CONFIRMATION MODAL ─── */}
+      {/* â”€â”€â”€ DELETE CONFIRMATION MODAL â”€â”€â”€ */}
       <AnimatePresence>
         {deleteModal.isOpen && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
@@ -1874,12 +1879,12 @@ export default function AIAgentInbox() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-foreground text-xl font-black tracking-tight uppercase">
-                    {deleteModal.type === "LEAD" ? "Eliminar Lead" : "Vaciar Conversación"}
+                    {deleteModal.type === "LEAD" ? "Eliminar Lead" : "Vaciar ConversaciÃ³n"}
                   </h3>
                   <p className="text-muted-foreground/40 text-xs leading-relaxed font-bold tracking-widest uppercase">
                     {deleteModal.type === "LEAD"
-                      ? "¿Estás seguro de que deseas borrar este lead completamente? Se eliminarán todos sus mensajes y datos de memoria."
-                      : "¿Deseas vaciar todos los mensajes de esta conversación?"}
+                      ? "Â¿EstÃ¡s seguro de que deseas borrar este lead completamente? Se eliminarÃ¡n todos sus mensajes y datos de memoria."
+                      : "Â¿Deseas vaciar todos los mensajes de esta conversaciÃ³n?"}
                   </p>
                 </div>
               </div>

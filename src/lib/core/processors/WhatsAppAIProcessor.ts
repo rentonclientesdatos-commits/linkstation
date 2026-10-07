@@ -292,7 +292,31 @@ export async function generateAIWhatsAppResponse(
         };
       }
     )?.config;
-    const waConfig = tenantConfig?.whatsapp;
+    let waConfig = tenantConfig?.whatsapp;
+
+    // Fallback: Check waba_configurations if credentials are missing in tenantConfig
+    if (!waConfig?.accessToken || !waConfig?.phoneNumberId) {
+      try {
+        const { data: wabaRow } = await supabase
+          .from("waba_configurations")
+          .select("access_token, phone_number_id")
+          .eq("tenant_id", tenantId)
+          .eq("is_active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (wabaRow?.access_token && wabaRow?.phone_number_id) {
+          waConfig = {
+            accessToken: wabaRow.access_token,
+            phoneNumberId: wabaRow.phone_number_id,
+          };
+          console.log(`[AI PROCESSOR] Loaded WhatsApp credentials from waba_configurations for tenant ${tenantId}`);
+        }
+      } catch (wabaErr) {
+        console.warn("[AI PROCESSOR] Failed checking waba_configurations:", wabaErr);
+      }
+    }
+
     const businessType = tenantConfig?.business_type || "restaurant";
     const isRestaurant = !tenantConfig?.business_type || businessType === "restaurant";
 
@@ -990,6 +1014,7 @@ ${restaurantPromptSection}`;
           direction: "OUTBOUND",
           message_type: "TEXT",
           content: aiResponse,
+          sent_by: "AI_AGENT",
           status: "SENT",
           metadata: {
             meta_id: completion.id,
@@ -1051,14 +1076,38 @@ ${restaurantPromptSection}`;
         } else {
           // 11c. REFRESH DASHBOARD (Crucial for visibility)
           try {
-            await (supabase.from("conversaciones_whatsapp") as any).upsert(
-              {
-                tenant_id: tenantId,
-                id_lead: leadId,
-                fecha_ultimo_mensaje: new Date().toISOString(),
-              },
-              { onConflict: "tenant_id,id_lead" }
-            );
+            const { data: existingConv } = await supabase
+              .from("conversaciones_whatsapp")
+              .select("id")
+              .eq("tenant_id", tenantId)
+              .eq("id_lead", leadId)
+              .maybeSingle();
+
+            if (existingConv?.id) {
+              await supabase
+                .from("conversaciones_whatsapp")
+                .update({
+                  fecha_ultimo_mensaje: new Date().toISOString(),
+                  estado: "ACTIVA",
+                })
+                .eq("id", existingConv.id);
+            } else {
+              await supabase
+                .from("conversaciones_whatsapp")
+                .insert({
+                  tenant_id: tenantId,
+                  id_lead: leadId,
+                  fecha_ultimo_mensaje: new Date().toISOString(),
+                  estado: "ACTIVA",
+                });
+            }
+
+            // Also bump lead.fecha_actualizacion so lead rises to top of inbox
+            await supabase
+              .from("lead")
+              .update({ fecha_actualizacion: new Date().toISOString() } as never)
+              .eq("id", leadId);
+
             console.log(`[AI PROCESSOR] 🔄 Dashboard refreshed for lead ${leadId}`);
           } catch (refreshErr) {
             console.warn(`[AI PROCESSOR] Failed to refresh dashboard:`, refreshErr);

@@ -177,12 +177,32 @@ export default function SuperAdminPage() {
     return { total, restaurants, salud, educacion, otros, withAdminUser };
   }, [tenants]);
 
+  // All available module IDs in the app (used to show all sidebar items when Super Admin accesses a tenant)
+  const ALL_MODULE_IDS = [
+    "dashboard",
+    "ai_agents",
+    "leads",
+    "calendar",
+    "restaurant",
+    "campaigns",
+    "simulator",
+    "costs",
+    "integrations",
+    "docs",
+  ];
+
   // Switch to tenant view as Developer
   const handleAccessAsTenant = async (tenant: Tenant) => {
+    // Inject all module IDs so the sidebar shows every section when Super Admin views a client
+    const configWithAllModules = {
+      ...(tenant.config as Record<string, unknown>),
+      visible_modules: ALL_MODULE_IDS,
+    };
+
     setTenant({
       tenantId: tenant.id,
       tenantName: tenant.name,
-      config: tenant.config,
+      config: configWithAllModules,
       isAdmin: true,
       businessType: tenant.business_type,
     });

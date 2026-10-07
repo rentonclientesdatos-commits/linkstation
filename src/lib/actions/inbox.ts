@@ -84,13 +84,14 @@ export async function getInboxLeads(
 
     const supabase = await getAdminSupabaseClient();
 
-    // 1. Fetch ALL leads for this tenant (Limit to 50 most recent for performance)
+    // 1. Fetch leads for this tenant (ordered by recent activity)
     const { data: leads, error: leadError } = await supabase
       .from("lead")
       .select("*")
       .eq("tenant_id", tenant.id)
+      .order("fecha_actualizacion", { ascending: false })
       .order("fecha_creacion", { ascending: false })
-      .limit(50);
+      .limit(100);
 
     if (leadError) throw leadError;
     const leadList = (leads as LeadRow[]) || [];
@@ -169,11 +170,11 @@ export async function getInboxLeads(
         nombre: l.nombre || null,
         apellido: l.apellido || null,
         telefono: phone,
-        foto_url: (l as LeadRow & { foto_url?: string }).foto_url || null,
+        foto_url: (l as any).photo_url || (l as any).foto_url || null,
         is_ai_enabled: l.is_ai_enabled ?? true,
-        ai_agent_id: (l as unknown as Lead).ai_agent_id || null,
+        ai_agent_id: (l as any).metadata?.ai_agent_id || (l as any).ai_agent_id || null,
         last_message: msg?.content || "Nueva conversación (sin mensajes)",
-        last_message_time: msg?.time || l.fecha_creacion || null,
+        last_message_time: msg?.time || l.fecha_actualizacion || l.fecha_creacion || null,
         created_at: l.fecha_creacion || null,
         tipo_lead: l.tipo_lead || "SIN CALIFICAR",
         pais: l.pais || "Identificando...",
@@ -204,23 +205,27 @@ export async function getInboxLeads(
  * Loads the full chat history for a specific lead.
  */
 export async function getChatHistory(
-  leadId: string
+  leadId: string,
+  tenantIdOverride?: string
 ): Promise<{ success: boolean; data?: ChatMessage[]; error?: string }> {
-  const tenant = await getActiveTenantConfig();
-  if (!tenant) return { success: false, error: "No tenant" };
-
+  const tenant = tenantIdOverride ? { id: tenantIdOverride } : await getActiveTenantConfig();
   const supabase = await getAdminSupabaseClient();
 
   let messages: ChatMessage[] = [];
 
   // 1. Fetch REAL messages directly from DB (Priority for accuracy)
-  const { data: realMsgs, error: msgError } = await supabase
+  let query = supabase
     .from("chat_messages")
     .select("*")
-    .eq("tenant_id", tenant.id)
     .eq("lead_id", leadId)
     .order("created_at", { ascending: true }) // Order for UI
     .limit(200);
+
+  if (tenant?.id) {
+    query = query.eq("tenant_id", tenant.id);
+  }
+
+  const { data: realMsgs, error: msgError } = await query;
 
   if (msgError) return { success: false, error: msgError.message };
   messages = (realMsgs as ChatMessage[]) || [];
@@ -239,7 +244,7 @@ export async function getChatHistory(
             const [, time, role, content] = match;
             return {
               id: `sum-${leadId}-${idx}`,
-              tenant_id: tenant.id,
+              tenant_id: tenant?.id || "",
               lead_id: leadId,
               direction: role === "Usuario" ? "INBOUND" : "OUTBOUND",
               message_type: "TEXT",
@@ -277,7 +282,7 @@ export async function getChatHistory(
     (calls as unknown as CallTimelineItem[]).forEach((call) => {
       chronological.push({
         id: `call-${call.id}`,
-        tenant_id: tenant.id,
+        tenant_id: tenant?.id || "",
         lead_id: leadId,
         direction: "OUTBOUND",
         message_type: "SYSTEM_LOG",
