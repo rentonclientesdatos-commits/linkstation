@@ -28,6 +28,8 @@ import {
   MessageCircle,
   ArrowRightLeft,
   FileDown,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -71,6 +73,47 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isExtractingTemplate, setIsExtractingTemplate] = useState(false);
+  const [extractSuccess, setExtractSuccess] = useState<string | null>(null);
+
+  const handleFileUploadForTemplate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsExtractingTemplate(true);
+    setExtractSuccess(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/pdf/extract-template", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Error al procesar el archivo");
+      }
+
+      setConfig((prev) => ({
+        ...prev,
+        pdf_template_name:
+          data.templateName || (prev.pdf_template_name as string) || file.name.replace(/\.[^/.]+$/, ""),
+        pdf_html_template: data.htmlTemplate || (prev.pdf_html_template as string),
+        pdf_variables: JSON.stringify(data.variables || {}, null, 2),
+      }));
+
+      setExtractSuccess(`¡Plantilla y variables creadas con IA desde "${file.name}"!`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al procesar el archivo";
+      alert(msg);
+    } finally {
+      setIsExtractingTemplate(false);
+      e.target.value = "";
+    }
+  };
 
   async function loadTemplates() {
     setLoadingTemplates(true);
@@ -1907,6 +1950,45 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
               <p className="text-[9px] leading-relaxed font-bold text-white/40">
                 Genera un PDF a partir de una plantilla HTML y expone su URL como variable para WhatsApp o emails.
               </p>
+            </div>
+
+            {/* Subida de PDF o Excel muestra para generar plantilla con IA */}
+            <div className="rounded-2xl border border-dashed border-rose-500/40 bg-rose-500/5 p-4 text-center transition-all hover:bg-rose-500/10">
+              <input
+                type="file"
+                id="pdf-template-upload"
+                accept=".pdf,.xlsx,.xls,.csv"
+                className="hidden"
+                disabled={isExtractingTemplate}
+                onChange={handleFileUploadForTemplate}
+              />
+              <label
+                htmlFor="pdf-template-upload"
+                className="flex cursor-pointer flex-col items-center justify-center gap-2"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/20 text-rose-300">
+                  {isExtractingTemplate ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-5 w-5 text-rose-300" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-black tracking-wide text-rose-300 uppercase">
+                    {isExtractingTemplate ? "Analizando y generando plantilla con IA..." : "Subir PDF o Excel de Muestra"}
+                  </p>
+                  <p className="mt-1 text-[9px] leading-relaxed text-white/50">
+                    Sube tu cotización actual (.pdf o .xlsx) y la IA recreará el diseño HTML y detectará las variables automáticamente.
+                  </p>
+                </div>
+              </label>
+
+              {extractSuccess && (
+                <div className="mt-3 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2 text-[10px] font-bold text-emerald-300">
+                  <Check className="h-3.5 w-3.5" />
+                  <span>{extractSuccess}</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

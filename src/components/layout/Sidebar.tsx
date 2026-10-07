@@ -65,7 +65,6 @@ const NAV_ITEMS: NavItem[] = [
     label: "Constructor & IA",
     href: "/dashboard/onboarding",
     icon: <Workflow className="h-5 w-5" strokeWidth={1.8} />,
-    adminOnly: true,
     moduleId: "ai_agents",
     subItems: [
       {
@@ -176,7 +175,6 @@ const NAV_ITEMS: NavItem[] = [
     label: "Pruebas y Logs",
     href: "/dashboard/simulator",
     icon: <FlaskConical className="h-5 w-5" strokeWidth={1.8} />,
-    adminOnly: true,
     moduleId: "simulator",
     subItems: [
       {
@@ -200,7 +198,6 @@ const NAV_ITEMS: NavItem[] = [
     label: "Negocio",
     href: "/dashboard/costs",
     icon: <DollarSign className="h-5 w-5" strokeWidth={1.8} />,
-    adminOnly: true,
     moduleId: "costs",
     subItems: [
       {
@@ -212,6 +209,7 @@ const NAV_ITEMS: NavItem[] = [
         label: "Admin Panel",
         href: "/dashboard/admin",
         icon: <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />,
+        superAdminOnly: true,
       },
     ],
   },
@@ -219,13 +217,13 @@ const NAV_ITEMS: NavItem[] = [
     label: "Ajustes",
     href: "/dashboard/settings",
     icon: <Settings className="h-5 w-5" strokeWidth={1.8} />,
-    adminOnly: true,
     moduleId: "integrations",
     subItems: [
       {
         label: "Clientes y Config.",
         href: "/dashboard/settings",
         icon: <SlidersHorizontal className="h-4 w-4" strokeWidth={1.8} />,
+        superAdminOnly: true,
       },
       {
         label: "Google Sheets",
@@ -248,14 +246,13 @@ const NAV_ITEMS: NavItem[] = [
     label: "Docs",
     href: "/dashboard/docs",
     icon: <BookOpen className="h-5 w-5" strokeWidth={1.8} />,
-    adminOnly: true,
     moduleId: "docs",
   },
   {
     label: "Doc Admin",
     href: "/dashboard/docs-admin",
     icon: <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />,
-    adminOnly: true,
+    superAdminOnly: true,
     moduleId: "docs",
   },
   {
@@ -309,26 +306,50 @@ export function Sidebar({
     | string[]
     | undefined;
 
-  const visibleNavItems = NAV_ITEMS.filter((item) => {
+  const filterNavItem = (item: NavItem): NavItem | null => {
     // 1. Super Admin restringido estrictamente al Super Admin global
-    if (item.superAdminOnly && !isSuperAdmin) return false;
+    if (item.superAdminOnly && !isSuperAdmin) return null;
 
     // 2. Control de adminOnly
-    if (item.adminOnly && !isAdmin && !isSuperAdmin) return false;
+    if (item.adminOnly && !isAdmin && !isSuperAdmin) return null;
 
     // 3. Negocio tipo restaurante
-    if (item.restaurantOnly && !isRestaurant) return false;
+    if (item.restaurantOnly && !isRestaurant) return null;
 
     // 4. Módulos asignados por el Super Admin
-    // Si el usuario es Super Admin, tiene visión total de todo
     if (!isSuperAdmin && item.moduleId && visibleModules && Array.isArray(visibleModules)) {
       if (!visibleModules.includes(item.moduleId)) {
-        return false;
+        return null;
       }
     }
 
-    return true;
-  });
+    let filteredSubItems: NavItem[] | undefined = undefined;
+    if (item.subItems) {
+      filteredSubItems = item.subItems
+        .map(filterNavItem)
+        .filter((sub): sub is NavItem => sub !== null);
+
+      if (filteredSubItems.length === 0 && item.subItems.length > 0) {
+        return null;
+      }
+    }
+
+    // Si es Ajustes y no es Super Admin, redirigir al primer subItem visible (ej: WhatsApp WABA o Sheets)
+    const activeHref =
+      !isSuperAdmin && item.label === "Ajustes" && filteredSubItems?.[0]
+        ? filteredSubItems[0].href
+        : item.href;
+
+    return {
+      ...item,
+      href: activeHref,
+      subItems: filteredSubItems,
+    };
+  };
+
+  const visibleNavItems = NAV_ITEMS.map(filterNavItem).filter(
+    (item): item is NavItem => item !== null
+  );
 
   const NavLink = ({ item, depth = 0 }: { item: NavItem; depth?: number }) => {
     const hasSubItems = item.subItems && item.subItems.length > 0;
