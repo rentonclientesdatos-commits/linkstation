@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   description: "Plataforma SaaS de gestión de llamadas IA, agendamiento y contactabilidad para cualquier tipo de negocio",
   icons: {
     icon: [
-      { url: "/favicon-ls.svg", type: "image/svg+xml" },
-      { url: "/favicon-ls.png", sizes: "32x32" },
+      { url: "/favicon-ls.png", sizes: "64x64", type: "image/png" },
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
     ],
-    shortcut: "/favicon-ls.svg",
-    apple: "/favicon-ls.png",
+    shortcut: "/favicon-ls.png",
+    apple: "/apple-icon.png",
   },
 };
 
