@@ -58,6 +58,8 @@ export async function GET(req: Request) {
   return new Response("Forbidden", { status: 403 });
 }
 
+export const maxDuration = 60;
+
 // Message Receiver (POST)
 export async function POST(req: Request) {
   try {
@@ -92,7 +94,8 @@ export async function POST(req: Request) {
     }
 
     // 3. Procesar mensajes a través del procesador central
-    // Nota: Meta envía una estructura compleja, processIncomingWhatsApp maneja la extracción interna.
+    // Nota: Await obligatorio en Vercel Serverless para evitar que el runtime
+    // congele la ejecución al enviar NextResponse.json antes de guardar en BD.
     const entries = body.entry || [];
     for (const entry of entries) {
       const changes = entry.changes || [];
@@ -105,10 +108,11 @@ export async function POST(req: Request) {
           const wabaId = value.metadata?.phone_number_id;
           const contactName = value.contacts?.[0]?.profile?.name || null;
 
-          // Procesamiento asíncrono para no bloquear a Meta
-          processIncomingWhatsApp(from, message, wabaId, contactName).catch((err) => {
+          try {
+            await processIncomingWhatsApp(from, message, wabaId, contactName);
+          } catch (err) {
             console.error("[WHATSAPP WEBHOOK] Error en procesamiento:", err);
-          });
+          }
         }
       }
     }
