@@ -35,6 +35,7 @@ import {
   EndNode,
   ConditionNode,
   RetrySequenceNode,
+  PdfGeneratorNode,
 } from "./nodes/TriggerNodes";
 import { NodeConfigSidebar } from "./NodeConfigSidebar";
 import {
@@ -56,6 +57,7 @@ import {
   CheckCircle2,
   MessageCircle,
   ArrowRightLeft,
+  FileDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
@@ -69,6 +71,8 @@ const nodeTypes = {
   whatsapp: WhatsAppNode,
   condition: ConditionNode,
   retrySequence: RetrySequenceNode,
+  pdfGenerator: PdfGeneratorNode,
+  flow_pdf_generator: PdfGeneratorNode,
   end: EndNode,
   // Legacy / generic nodes (keep backward compat)
   leadTrigger: LeadTriggerNode,
@@ -211,6 +215,65 @@ const NODE_MENU = [
         label: "Webhook Espera",
         icon: <Hourglass className="h-4 w-4" />,
         color: "text-pink-500 hover:bg-pink-600/20",
+      },
+    ],
+  },
+  {
+    section: "📄 Documentos & PDF",
+    items: [
+      {
+        type: "pdfGenerator",
+        label: "Crear PDF (Cotización)",
+        icon: <FileDown className="h-4 w-4" />,
+        color: "text-rose-400 hover:bg-rose-500/20",
+        data: {
+          config: {
+            pdf_template_name: "Cotización Grúas",
+            pdf_output_variable: "pdf_url",
+            pdf_filename: "cotizacion.pdf",
+            pdf_paper_size: "Letter",
+            pdf_variables: JSON.stringify(
+              {
+                cliente: "{{lead.nombre}}",
+                telefono: "{{lead.telefono}}",
+                items: "{{items}}",
+                total: "{{total}}",
+                fecha: "{{fecha}}",
+              },
+              null,
+              2
+            ),
+            pdf_html_template: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+    .header { background: #1a1a2e; color: white; padding: 20px; border-radius: 8px; }
+    .logo { font-size: 24px; font-weight: bold; }
+    .subtitle { color: #aaa; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #f0f0f0; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Cotización de Servicio</div>
+    <div class="subtitle">Cliente: {{cliente}} | Tel: {{telefono}} | Fecha: {{fecha}}</div>
+  </div>
+  <table>
+    <thead><tr><th>Descripción</th><th>Detalles</th></tr></thead>
+    <tbody>
+      <tr><td>Items / Servicios</td><td>{{items}}</td></tr>
+    </tbody>
+  </table>
+  <div class="total">Total: {{total}}</div>
+</body>
+</html>`,
+          },
+        },
       },
     ],
   },
@@ -531,6 +594,7 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
             if (n.type === "delay") return "#f59e0b";
             if (n.type === "llm") return "#a855f7";
             if (n.type === "api") return "#06b6d4";
+            if (n.type === "pdfGenerator" || n.type === "flow_pdf_generator") return "#f43f5e";
             if (n.type === "end") return "#6b7280";
             return "#fff";
           }}

@@ -27,6 +27,7 @@ import {
   Database,
   MessageCircle,
   ArrowRightLeft,
+  FileDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -1890,6 +1891,148 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
                 </motion.div>
               );
             })()}
+          </div>
+        )}
+
+        {/* ── PDF GENERATOR CONFIG ─────────────────────────────────── */}
+        {(type === "pdfGenerator" || type === "flow_pdf_generator") && (
+          <div className="space-y-5">
+            <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4">
+              <div className="mb-1 flex items-center gap-2">
+                <FileDown className="h-4 w-4 text-rose-400" />
+                <span className="text-[10px] font-black tracking-tighter text-rose-400 uppercase">
+                  Generador de PDF · pdf.co
+                </span>
+              </div>
+              <p className="text-[9px] leading-relaxed font-bold text-white/40">
+                Genera un PDF a partir de una plantilla HTML y expone su URL como variable para WhatsApp o emails.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Nombre de plantilla
+              </label>
+              <input
+                value={(config.pdf_template_name as string) || ""}
+                onChange={(e) => setConfig({ ...config, pdf_template_name: e.target.value })}
+                className="h-10 w-full rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 text-xs font-bold text-rose-300 placeholder-white/20"
+                placeholder="Ej: Cotización Grúas"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-rose-400 uppercase">
+                📤 Variable de Salida (URL del PDF)
+              </label>
+              <input
+                value={(config.pdf_output_variable as string) || "pdf_url"}
+                onChange={(e) => setConfig({ ...config, pdf_output_variable: e.target.value })}
+                className="h-10 w-full rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 font-mono text-xs font-bold text-rose-300"
+                placeholder="pdf_url"
+              />
+              <p className="text-[8px] text-white/30 italic">
+                Disponible en pasos siguientes como <span className="font-mono text-rose-400">{`{{${(config.pdf_output_variable as string) || "pdf_url"}}}`}</span>
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Nombre del archivo PDF
+              </label>
+              <input
+                value={(config.pdf_filename as string) || "cotizacion.pdf"}
+                onChange={(e) => setConfig({ ...config, pdf_filename: e.target.value })}
+                className="h-10 w-full rounded-xl border border-white/10 bg-white/5 px-4 font-mono text-xs text-white/80"
+                placeholder="cotizacion.pdf"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Tamaño de página
+              </label>
+              <select
+                value={(config.pdf_paper_size as string) || "Letter"}
+                onChange={(e) => setConfig({ ...config, pdf_paper_size: e.target.value })}
+                className="h-10 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-xs text-white/80 outline-none"
+              >
+                <option value="Letter">Letter</option>
+                <option value="A4">A4</option>
+                <option value="Legal">Legal</option>
+                <option value="A3">A3</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Variables dinámicas (JSON)
+              </label>
+              <textarea
+                value={
+                  (config.pdf_variables as string) ||
+                  JSON.stringify(
+                    {
+                      cliente: "{{lead.nombre}}",
+                      telefono: "{{lead.telefono}}",
+                      items: "{{items}}",
+                      total: "{{total}}",
+                      fecha: "{{fecha}}",
+                    },
+                    null,
+                    2
+                  )
+                }
+                onChange={(e) => setConfig({ ...config, pdf_variables: e.target.value })}
+                className="min-h-[110px] w-full rounded-2xl border border-white/5 bg-black/40 p-3 font-mono text-[10px] text-white/50 outline-none focus:text-white/80"
+                placeholder='{"cliente": "{{lead.nombre}}", "total": "{{total}}"}'
+              />
+              <p className="text-[8px] text-white/20 italic">
+                Usa <span className="font-mono text-rose-400">{`{{variable}}`}</span> para reemplazar placeholders en tu plantilla HTML.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                Plantilla HTML
+              </label>
+              <textarea
+                value={
+                  (config.pdf_html_template as string) ||
+                  `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+    .header { background: #1a1a2e; color: white; padding: 20px; border-radius: 8px; }
+    .logo { font-size: 24px; font-weight: bold; }
+    .subtitle { color: #aaa; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #f0f0f0; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Cotización de Servicio</div>
+    <div class="subtitle">Cliente: {{cliente}} | Tel: {{telefono}} | Fecha: {{fecha}}</div>
+  </div>
+  <table>
+    <thead><tr><th>Descripción</th><th>Detalles</th></tr></thead>
+    <tbody>
+      <tr><td>Items / Servicios</td><td>{{items}}</td></tr>
+    </tbody>
+  </table>
+  <div class="total">Total: {{total}}</div>
+</body>
+</html>`
+                }
+                onChange={(e) => setConfig({ ...config, pdf_html_template: e.target.value })}
+                className="min-h-[180px] w-full rounded-2xl border border-white/5 bg-black/40 p-3 font-mono text-[10px] text-white/60 outline-none focus:text-white/90"
+              />
+            </div>
           </div>
         )}
 

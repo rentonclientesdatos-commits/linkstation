@@ -19,6 +19,7 @@ import {
   ArrowRightLeft,
   Sun,
   Moon,
+  FileDown,
 } from "lucide-react";
 import { BaseNode } from "./BaseNode";
 import { cn } from "@/lib/utils";
@@ -746,7 +747,47 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
   );
 });
 
+// ─── PDF GENERATOR NODE ──────────────────────────────────────────
+export const PdfGeneratorNode = memo(({ data, selected }: NodeProps) => {
+  const templateName = data.config?.pdf_template_name || data.pdf_template_name || "Cotización";
+  const outputVar = data.config?.pdf_output_variable || data.pdf_output_variable || "pdf_url";
+  const filename = data.config?.pdf_filename || data.pdf_filename || "documento.pdf";
+
+  return (
+    <BaseNode
+      label="Crear PDF"
+      icon={<FileDown className="h-4 w-4" />}
+      colorClass="bg-rose-500"
+      selected={selected}
+    >
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="h-2 w-2 border border-rose-500 bg-white"
+      />
+      <div className="space-y-2">
+        <div className="flex items-center gap-1.5">
+          <span className="rounded border border-rose-500/30 bg-rose-500/20 px-1.5 py-0.5 text-[8px] font-bold text-rose-400 uppercase">
+            PDF.CO
+          </span>
+          <p className="truncate font-mono text-[10px] text-white/90">{templateName}</p>
+        </div>
+        <div className="rounded-md border border-rose-500/20 bg-rose-500/5 px-2 py-1 font-mono text-[9px] text-rose-300">
+          Salida: {`{{${outputVar}}}`}
+        </div>
+        <div className="truncate text-[9px] italic opacity-40">{filename}</div>
+      </div>
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="h-2 w-2 border border-rose-500 bg-white"
+      />
+    </BaseNode>
+  );
+});
+
 // ─── Display Names ────────────────────────────────────────────────
+PdfGeneratorNode.displayName = "PdfGeneratorNode";
 LeadTriggerNode.displayName = "LeadTriggerNode";
 TimeConditionNode.displayName = "TimeConditionNode";
 ConditionNode.displayName = "ConditionNode";
