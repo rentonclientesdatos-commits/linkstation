@@ -34,6 +34,7 @@ import {
   RefreshCw,
   Utensils,
   PhoneCall,
+  Instagram,
 } from "lucide-react";
 import { TenantSelector } from "./TenantSelector";
 
@@ -240,6 +241,11 @@ const NAV_ITEMS: NavItem[] = [
         href: "/dashboard/settings/whatsapp",
         icon: <MessageSquare className="h-4 w-4" strokeWidth={1.8} />,
       },
+      {
+        label: "Instagram",
+        href: "/dashboard/settings/integrations/instagram",
+        icon: <Instagram className="h-4 w-4" strokeWidth={1.8} />,
+      },
     ],
   },
   {
@@ -303,8 +309,7 @@ export function Sidebar({
     !businessType || businessType === "restaurant" || businessType === "restaurante";
 
   const visibleModules = (tenantConfig as Record<string, unknown>)?.visible_modules as
-    | string[]
-    | undefined;
+    string[] | undefined;
 
   const filterNavItem = (item: NavItem): NavItem | null => {
     // 1. Super Admin restringido estrictamente al Super Admin global

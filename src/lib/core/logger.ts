@@ -1,7 +1,7 @@
 import { getAdminSupabaseClient } from "@/lib/supabase/server";
 
 export type LogLevel = "INFO" | "WARN" | "ERROR";
-export type LogSource = "ORCHESTRATOR" | "API" | "RESCUE" | "WHATSAPP" | "SYSTEM";
+export type LogSource = "ORCHESTRATOR" | "API" | "RESCUE" | "WHATSAPP" | "INSTAGRAM" | "SYSTEM";
 
 export class GlobalLogger {
   /**
