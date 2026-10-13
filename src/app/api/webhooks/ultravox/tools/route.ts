@@ -10,26 +10,50 @@ export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
 
-    let payload: {
-      toolName?: string;
-      name?: string; // Fallback
-      parameters?: Record<string, unknown>;
-      args?: Record<string, unknown>; // Fallback
-      callId?: string;
-      call?: {
-        callId?: string;
-        systemMetadata?: Record<string, string>;
-        templateContext?: Record<string, string>;
-      };
-    };
+    let payload: Record<string, any> = {};
     try {
       payload = JSON.parse(rawBody);
     } catch {
       return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
-    const toolName = payload.toolName || payload.name;
-    const args = payload.parameters || payload.args || {};
+    const { searchParams } = new URL(req.url);
+    const queryTool =
+      searchParams.get("tool") ||
+      searchParams.get("toolName") ||
+      searchParams.get("name") ||
+      searchParams.get("action");
+
+    // Resolve toolName from payload, query parameter, or payload keys
+    let toolName = payload.toolName || payload.name || queryTool;
+
+    // Resolve args: if payload has nested parameters/args, use them; otherwise use payload itself
+    let args: Record<string, any> = payload.parameters || payload.args || {};
+    if (Object.keys(args).length === 0) {
+      args = payload;
+    }
+
+    // Auto-detect toolName if Ultravox HTTP tool called endpoint directly without wrapping
+    if (!toolName) {
+      if (
+        args.Repuesto_solicitado_y_cantidad ||
+        args.repuesto_solicitado_y_cantidad ||
+        args.Datos_de_la_grua ||
+        args.datos_de_la_grua ||
+        args.Comuna_o_Ciudad ||
+        args.comuna_o_ciudad ||
+        args.repuestos ||
+        args.repuesto
+      ) {
+        toolName = "capturarDatosCotizacion";
+      } else if (args.Nombre_empresa || args.nombre_empresa) {
+        toolName = "Arriendo_de_Gruas";
+      } else {
+        // Fallback default for LinkStation
+        toolName = "capturarDatosCotizacion";
+      }
+    }
+
     const call = payload.call;
 
     console.log(`[ULTRAVOX TOOLS] Incoming function call: ${toolName}`, args);
@@ -55,6 +79,10 @@ export async function POST(req: Request) {
 
       case "capturarDatosCotizacion":
       case "capturar_datos_cotizacion":
+      case "cotizacion":
+      case "Cotizacion":
+      case "enviar_cotizacion":
+      case "mandar_pdf":
         return await handleCapturaCotizacion(supabase, tenantId, leadId, args);
 
       case "guardar_datos_contacto":
@@ -492,48 +520,75 @@ async function handleCapturaCotizacion(
         args.nombre ||
         args.cliente ||
         "Cliente"
-    );
-    const telefono = String(
-      args.WhatsApp ||
-        args.whatsapp ||
-        args.telefono ||
-        args.celular ||
-        args.phone ||
-        ""
-    );
+    ).trim();
+
+    // Clean phone number from string, float or number
+    let rawPhone =
+      args.WhatsApp ??
+      args.whatsapp ??
+      args.telefono ??
+      args.celular ??
+      args.phone ??
+      "";
+    const telefono = String(rawPhone || "");
+
     const email = String(
       args.Correo_electronico ||
         args.correo_electronico ||
         args.email ||
         ""
-    );
+    ).trim();
+
     const repuestos = String(
-      args.repuestos ||
+      args.Repuesto_solicitado_y_cantidad ||
+        args.repuesto_solicitado_y_cantidad ||
+        args.repuestos ||
         args.repuesto ||
         args.items ||
         args.repuestos_solicitados ||
         args.repuesto_solicitado ||
         args.repuesto_a_cotizar ||
         ""
-    );
+    ).trim();
+
     const maquinaria = String(
-      args.maquinaria ||
+      args.Datos_de_la_grua ||
+        args.datos_de_la_grua ||
+        args.maquinaria ||
         args.maquina ||
         args.tipo_maquina ||
         args.grua ||
         ""
-    );
+    ).trim();
+
+    const comuna = String(
+      args.Comuna_o_Ciudad ||
+        args.comuna_o_ciudad ||
+        args.comuna ||
+        args.ciudad ||
+        args.direccion ||
+        ""
+    ).trim();
+
     const modelo = String(
       args.modelo ||
         args.modelo_maquina ||
         args.numero_serie ||
         args.serie ||
         ""
-    );
+    ).trim();
+
     const total = args.total || args.precio || args.valor || args.monto || "";
     const notas = String(
       args.detalles || args.observaciones || args.notas || args.descripcion || ""
-    );
+    ).trim();
+
+    const observacionesCompletas = [
+      comuna ? `Despacho / Ciudad: ${comuna}` : "",
+      notas,
+    ]
+      .filter(Boolean)
+      .join(" | ");
 
     console.log("[ULTRAVOX TOOL: capturarDatosCotizacion] Recibido:", {
       cliente,
@@ -541,6 +596,7 @@ async function handleCapturaCotizacion(
       email,
       repuestos,
       maquinaria,
+      comuna,
       modelo,
       total,
       notas,
@@ -563,6 +619,7 @@ async function handleCapturaCotizacion(
             parameters: args,
             repuestos,
             maquinaria,
+            comuna,
             modelo,
             total,
             captured_at: new Date().toISOString(),
@@ -586,6 +643,7 @@ async function handleCapturaCotizacion(
             parameters: args,
             repuestos,
             maquinaria,
+            comuna,
             modelo,
             total,
             captured_at: new Date().toISOString(),
@@ -596,7 +654,7 @@ async function handleCapturaCotizacion(
       activeLeadId = newLead?.id;
     }
 
-    // 2. Generate PDF and dispatch directly via WhatsApp
+    // 2. Generate PDF and dispatch directly via Email ONLY (sendWhatsApp: false to prevent memory collision with WhatsApp bot)
     const quotationResult = await PdfService.executeQuotationAndWhatsApp({
       supabase,
       tenantId: effectiveTenantId,
@@ -606,24 +664,27 @@ async function handleCapturaCotizacion(
         telefono,
         email,
         repuestos: repuestos || "Repuestos y Servicios para Maquinaria",
-        maquinaria,
+        maquinaria: maquinaria || "Grúa Horquilla / Maquinaria Pesada",
         modelo,
         total: total ? String(total) : undefined,
-        observaciones: notas,
+        observaciones: observacionesCompletas,
       },
+      sendWhatsApp: false, // Prevents dual-agent collision in WhatsApp!
     });
 
     const itemsResumen = repuestos ? `los repuestos "${repuestos}"` : "tu solicitud de cotización";
-    const waNote = quotationResult.whatsappSent
-      ? `y te acabo de enviar el documento oficial en PDF directamente a tu WhatsApp (${telefono})`
-      : `y prepararemos el PDF para enviártelo a la brevedad`;
+    const emailConfirmation = email
+      ? `y te acabo de enviar la cotización oficial en PDF directamente a tu correo electrónico (${email})`
+      : `y nuestro equipo te enviará la cotización oficial en PDF`;
 
     return NextResponse.json({
       success: true,
       lead_id: activeLeadId,
       pdf_url: quotationResult.pdfUrl,
-      whatsapp_sent: quotationResult.whatsappSent,
-      message: `Listo ${cliente}, he registrado con éxito ${itemsResumen} ${waNote}. ¿Deseas consultar algo más?`,
+      whatsapp_sent: false,
+      email_sent: quotationResult.emailSent,
+      email_error: quotationResult.emailError,
+      message: `Listo ${cliente}, he registrado con éxito ${itemsResumen} para tu equipo ${maquinaria || "grúa"}, ${emailConfirmation}. ¿Deseas consultar algo más?`,
     });
   } catch (error) {
     console.error("[CAPTURAR_COTIZACION ERROR]:", error);

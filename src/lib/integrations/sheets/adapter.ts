@@ -29,7 +29,7 @@ const DRIVE_WATCH_TTL_DAYS = 7;
 const DRIVE_WATCH_RENEW_BEFORE_HOURS = 24;
 
 export class GoogleSheetsAdapter {
-  private oauth2!: OAuth2Client;
+  private oauth2!: any;
   private integrationId!: string;
   private sheets!: sheets_v4.Sheets;
   private drive!: drive_v3.Drive;
@@ -66,7 +66,7 @@ export class GoogleSheetsAdapter {
     adapter.oauth2.setCredentials(tokens);
 
     // Persistir tokens refrescados.
-    adapter.oauth2.on("tokens", (next) => {
+    adapter.oauth2.on("tokens", (next: any) => {
       const merged = {
         access_token: next.access_token ?? tokens.access_token,
         refresh_token: next.refresh_token ?? tokens.refresh_token,

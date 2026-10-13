@@ -444,7 +444,7 @@ export function CampanasCharts({ data }: Props) {
                   <Tooltip
                     content={<TooltipBar />}
                     cursor={{ fill: "rgba(245,158,11,0.04)", radius: 8 }}
-                    formatter={(v: number | undefined) => formatDuration(v ?? 0)}
+                    formatter={(v: any) => formatDuration(Number(v) || 0)}
                   />
                   <Bar
                     dataKey="value"

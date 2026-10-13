@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         if (extension === "csv") {
           await workbook.csv.read(buffer as unknown as any);
         } else {
-          await workbook.xlsx.load(buffer);
+          await workbook.xlsx.load(buffer as any);
         }
 
         const lines: string[] = [];

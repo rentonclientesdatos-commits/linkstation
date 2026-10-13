@@ -599,6 +599,26 @@ export async function generateAIWhatsAppResponse(
           },
         },
       },
+      {
+        type: "function",
+        function: {
+          name: "generar_cotizacion_por_correo",
+          description:
+            "Genera una cotización formal en PDF con formato oficial de Jorklift SPA y la envía automáticamente por correo electrónico al cliente. Úsala cuando el cliente solicite una cotización, precios de repuestos o servicios y confirme su correo electrónico.",
+          parameters: {
+            type: "object",
+            properties: {
+              cliente: { type: "string", description: "Nombre completo del cliente o empresa" },
+              email: { type: "string", description: "Correo electrónico del cliente donde recibirá la cotización en PDF" },
+              repuestos: { type: "string", description: "Detalle de los repuestos o servicios solicitados con sus cantidades (ej: 2 filtros de aceite, 1 alternador)" },
+              maquinaria: { type: "string", description: "Marca, modelo o tipo de grúa horquilla / maquinaria (ej: Toyota 8FD25, Hyster, etc.)" },
+              modelo: { type: "string", description: "Modelo específico o número de serie de la máquina si fue proporcionado" },
+              comuna: { type: "string", description: "Comuna o ciudad de despacho si fue indicada" },
+            },
+            required: ["email", "repuestos"],
+          },
+        },
+      },
     ];
 
     if (isRestaurant) {
@@ -937,6 +957,57 @@ ${restaurantPromptSection}`;
               source: "whatsapp",
             });
             result = JSON.stringify(res);
+          } else if (name === "generar_cotizacion_por_correo") {
+            const { PdfService } = await import("@/lib/services/pdf-service");
+            const customerEmail = String(args.email || (lead as any)?.email || "").trim();
+            const clienteName = String(args.cliente || (lead as any)?.nombre || "Cliente").trim();
+            const repuestosDesc = String(args.repuestos || "Repuestos y Servicios para Maquinaria").trim();
+            const maquinariaDesc = String(args.maquinaria || "Grúa Horquilla / Maquinaria Pesada").trim();
+            const comunaDesc = args.comuna ? String(args.comuna).trim() : "";
+            const modeloDesc = args.modelo ? String(args.modelo).trim() : "";
+
+            if (!customerEmail) {
+              result = JSON.stringify({
+                success: false,
+                error: "Falta el correo electrónico del cliente para poder despacharle la cotización en PDF.",
+              });
+            } else {
+              // Actualizar email y estado del prospecto
+              try {
+                await (supabase.from("lead") as any).update({
+                  email: customerEmail,
+                  tipo_lead: "cotizacion",
+                  status: "cotizacion_solicitada",
+                }).eq("id", leadId);
+              } catch (e) {
+                console.warn("[AI PROCESSOR] Error actualizando email del lead:", e);
+              }
+
+              const cotResult = await PdfService.executeQuotationAndWhatsApp({
+                supabase,
+                tenantId,
+                leadId,
+                quotationData: {
+                  cliente: clienteName,
+                  telefono: (lead as any)?.telefono || "",
+                  email: customerEmail,
+                  repuestos: repuestosDesc,
+                  maquinaria: maquinariaDesc,
+                  modelo: modeloDesc || undefined,
+                  observaciones: comunaDesc ? `Despacho / Ciudad: ${comunaDesc}` : undefined,
+                },
+                sendWhatsApp: false, // Se envía por email; el agente de WhatsApp le confirma textualmente al cliente en el chat actual
+              });
+
+              result = JSON.stringify({
+                success: true,
+                email_enviado: cotResult.emailSent,
+                email_error: cotResult.emailError,
+                destinatario: customerEmail,
+                pdf_url: cotResult.pdfUrl,
+                mensaje: `Cotización PDF oficial generada con éxito y enviada al correo ${customerEmail}.`,
+              });
+            }
           }
         } catch (e) {
           console.error(`[AI PROCESSOR] ❌ Error executing tool ${name}:`, e);
