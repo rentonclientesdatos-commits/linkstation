@@ -46,6 +46,7 @@ interface NavItem {
   adminOnly?: boolean;
   superAdminOnly?: boolean;
   restaurantOnly?: boolean;
+  tenantOnly?: string | string[];
   moduleId?: string;
 }
 
@@ -146,6 +147,7 @@ const NAV_ITEMS: NavItem[] = [
         label: "Jorklif (Cartera & Cotiz)",
         href: "/dashboard/campanas/jorklif",
         icon: <PhoneCall className="h-4 w-4" strokeWidth={1.8} />,
+        tenantOnly: ["jorklif", "jorklift", "45f45121-4ed4-48f1-bd13-816df3755188"],
       },
       {
         label: "Constructor",
@@ -306,6 +308,8 @@ export function Sidebar({
 
   const tenantConfig = useTenantStore((s) => s.config);
   const storeBusinessType = useTenantStore((s) => s.businessType);
+  const tenantName = useTenantStore((s) => s.tenantName);
+  const tenantId = useTenantStore((s) => s.tenantId);
   const businessType =
     ((tenantConfig as Record<string, unknown>)?.business_type as string | undefined) ||
     storeBusinessType;
@@ -326,7 +330,19 @@ export function Sidebar({
     // 3. Negocio tipo restaurante
     if (item.restaurantOnly && !isRestaurant) return null;
 
-    // 4. Módulos asignados por el Super Admin
+    // 4. Tenant específico (ej: exclusivo para Jorklif)
+    if (item.tenantOnly) {
+      const currentName = (tenantName || "").toLowerCase().trim();
+      const currentId = (tenantId || "").toLowerCase().trim();
+      const targets = Array.isArray(item.tenantOnly) ? item.tenantOnly : [item.tenantOnly];
+      const matches = targets.some((t) => {
+        const target = t.toLowerCase().trim();
+        return currentName.includes(target) || currentId === target;
+      });
+      if (!matches) return null;
+    }
+
+    // 5. Módulos asignados por el Super Admin
     if (!isSuperAdmin && item.moduleId && visibleModules && Array.isArray(visibleModules)) {
       if (!visibleModules.includes(item.moduleId)) {
         return null;
