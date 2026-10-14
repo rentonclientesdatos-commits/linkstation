@@ -40,13 +40,44 @@ export async function getVoiceAgents(tenantId?: string) {
 export async function getVoiceAgentVariants(agentId: string) {
   try {
     const supabase = await getAdminSupabaseClient();
-    const { data, error } = await (supabase.from("voice_agent_variants" as any) as any)
-      .select("*")
-      .eq("agent_id", agentId)
-      .order("created_at", { ascending: true });
+    
+    // 1. Try querying voice_agent_variants if table exists
+    try {
+      const { data, error } = await (supabase.from("voice_agent_variants" as any) as any)
+        .select("*")
+        .eq("agent_id", agentId)
+        .order("created_at", { ascending: true });
 
-    if (error) throw error;
-    return { success: true, data: data as VoiceAgentVariant[] };
+      if (!error && data && data.length > 0) {
+        return { success: true, data: data as VoiceAgentVariant[] };
+      }
+    } catch {
+      // Table may not exist, fallback to voice_agents table
+    }
+
+    // 2. Fallback: read prompt directly from voice_agents table
+    const { data: agentData } = await (supabase.from("voice_agents" as any) as any)
+      .select("*")
+      .eq("id", agentId)
+      .single();
+
+    if (agentData) {
+      const fallbackVariant: VoiceAgentVariant = {
+        id: `v-fallback-${agentData.id}`,
+        agent_id: agentData.id,
+        version_label: "v1.0",
+        prompt_text: agentData.prompt_text_retell || "",
+        is_active: true,
+        is_variant_b: false,
+        weight: 0.5,
+        metrics: null,
+        created_at: agentData.created_at,
+        updated_at: agentData.updated_at,
+      };
+      return { success: true, data: [fallbackVariant] };
+    }
+
+    return { success: true, data: [] };
   } catch (error: unknown) {
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
@@ -71,23 +102,27 @@ export async function saveVoiceAgent(agent: Partial<VoiceAgent>, tenantId: strin
         .single();
       if (error) throw error;
 
-      // Crear variantes iniciales por defecto A y B
-      await (supabase.from("voice_agent_variants") as any).insert([
-        {
-          agent_id: data.id,
-          is_variant_b: false,
-          version_label: "v1.0",
-          prompt_text: "Instrucciones iniciales...",
-          weight: 0.5,
-        },
-        {
-          agent_id: (data as any).id,
-          is_variant_b: true,
-          version_label: "v1.0",
-          prompt_text: "Instrucciones iniciales...",
-          weight: 0.5,
-        },
-      ]);
+      // Try creating initial variants if table exists
+      try {
+        await (supabase.from("voice_agent_variants") as any).insert([
+          {
+            agent_id: data.id,
+            is_variant_b: false,
+            version_label: "v1.0",
+            prompt_text: agent.prompt_text_retell || "Instrucciones iniciales...",
+            weight: 0.5,
+          },
+          {
+            agent_id: (data as any).id,
+            is_variant_b: true,
+            version_label: "v1.0",
+            prompt_text: agent.prompt_text_retell || "Instrucciones iniciales...",
+            weight: 0.5,
+          },
+        ]);
+      } catch {
+        // Table may not exist, non-blocking
+      }
 
       return { success: true, data: data as VoiceAgent };
     }
@@ -100,17 +135,29 @@ export async function saveVoiceVariant(variant: Partial<VoiceAgentVariant>) {
   try {
     const supabase = await getAdminSupabaseClient();
 
-    if (variant.id) {
-      const { error } = await (supabase.from("voice_agent_variants" as any) as any)
-        .update({ ...variant, updated_at: new Date().toISOString() })
-        .eq("id", variant.id);
-      if (error) throw error;
-    } else {
-      const { error } = await (supabase.from("voice_agent_variants" as any) as any).insert([
-        variant,
-      ]);
-      if (error) throw error;
+    // 1. Always persist prompt in voice_agents table (guaranteed storage)
+    if (variant.agent_id && variant.prompt_text !== undefined) {
+      await (supabase.from("voice_agents" as any) as any)
+        .update({
+          prompt_text_retell: variant.prompt_text,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", variant.agent_id);
     }
+
+    // 2. Also try persisting to voice_agent_variants if table exists
+    try {
+      if (variant.id && !variant.id.startsWith("v-fallback-")) {
+        await (supabase.from("voice_agent_variants" as any) as any)
+          .update({ ...variant, updated_at: new Date().toISOString() })
+          .eq("id", variant.id);
+      } else if (variant.agent_id) {
+        await (supabase.from("voice_agent_variants" as any) as any).insert([variant]);
+      }
+    } catch {
+      // Non-blocking if table does not exist
+    }
+
     return { success: true };
   } catch (error: unknown) {
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };

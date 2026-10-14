@@ -178,35 +178,60 @@ export default function VoiceAgentsPage() {
       // Initialize editingAgentData with the selected DB agent
       setEditingAgentData(selectedAgent as Partial<VoiceAgent>);
 
-      const loadVariants = async (agentId: string) => {
-        const res = await getVoiceAgentVariants(agentId);
-        if (res.success && res.data) {
+      // 1. Immediately initialize variant with the prompt of the newly selected agent
+      // to avoid showing the previous agent's prompt while network calls resolve
+      const initialPrompt = selectedAgent.prompt_text_retell || "";
+      setVariantA({
+        agent_id: selectedAgent.id,
+        is_variant_b: false,
+        version_label: "v1.0",
+        prompt_text: initialPrompt,
+        weight: 0.5,
+      });
+      setVariantB({
+        agent_id: selectedAgent.id,
+        is_variant_b: true,
+        version_label: "v1.0",
+        prompt_text: "",
+        weight: 0.5,
+      });
+
+      // 2. Load DB variants or check Ultravox cached agents
+      const loadVariants = async (agent: VoiceAgent) => {
+        const res = await getVoiceAgentVariants(agent.id);
+        if (res.success && res.data && res.data.length > 0) {
           const data = res.data as VoiceAgentVariant[];
           const a = data.find((v) => !v.is_variant_b);
           const b = data.find((v) => v.is_variant_b);
-          setVariantA(
-            a || {
-              agent_id: agentId,
+          if (a && a.prompt_text) {
+            setVariantA(a);
+          } else if (agent.prompt_text_retell) {
+            setVariantA({
+              agent_id: agent.id,
               is_variant_b: false,
               version_label: "v1.0",
-              prompt_text: "",
+              prompt_text: agent.prompt_text_retell,
               weight: 0.5,
-            }
+            });
+          }
+          if (b) setVariantB(b);
+        }
+
+        // If Ultravox agent and prompt is still empty, check availableUltravoxAgents
+        if (agent.provider === "ULTRAVOX" && agent.provider_agent_id) {
+          const uMatch = availableUltravoxAgents.find(
+            (u) => (u.agentId || u.id) === agent.provider_agent_id
           );
-          setVariantB(
-            b || {
-              agent_id: agentId,
-              is_variant_b: true,
-              version_label: "v1.0",
-              prompt_text: "",
-              weight: 0.5,
-            }
-          );
+          if (uMatch?.systemPrompt) {
+            setVariantA((prev) =>
+              prev.prompt_text ? prev : { ...prev, prompt_text: uMatch.systemPrompt }
+            );
+          }
         }
       };
-      loadVariants(selectedAgent.id);
+      loadVariants(selectedAgent);
     }
-  }, [selectedAgent?.id, retellApiKey]);
+  }, [selectedAgent?.id, retellApiKey, availableUltravoxAgents]);
 
   const handleSaveVariants = async () => {
     if (!selectedAgent) return;
@@ -214,6 +239,35 @@ export default function VoiceAgentsPage() {
     try {
       await saveVoiceVariant(variantA);
       await saveVoiceVariant(variantB);
+
+      // If Ultravox agent, keep remote API synchronized
+      if (
+        selectedAgent.provider === "ULTRAVOX" &&
+        selectedAgent.provider_agent_id &&
+        ultravoxApiKey
+      ) {
+        try {
+          await updateUltravoxAgent(ultravoxApiKey, selectedAgent.provider_agent_id, {
+            systemPrompt: variantA.prompt_text || "",
+            model: selectedAgent.retell_llm_id || "fixie-ai/ultravox-70b",
+            voice: selectedAgent.voice_id || "",
+          });
+        } catch (syncErr) {
+          console.error("[Ultravox Save Sync Error]:", syncErr);
+        }
+      }
+
+      // Update in local state so selectedAgent has fresh prompt_text_retell
+      const updatedPrompt = variantA.prompt_text || "";
+      setSelectedAgent((prev) =>
+        prev ? { ...prev, prompt_text_retell: updatedPrompt } : null
+      );
+      setAgents((prev) =>
+        prev.map((a) =>
+          a.id === selectedAgent.id ? { ...a, prompt_text_retell: updatedPrompt } : a
+        )
+      );
+
       toast({
         variant: "success",
         title: "Cambios publicados",
@@ -1017,6 +1071,7 @@ export default function VoiceAgentsPage() {
             {/* Main Config Column */}
             <div className="border-border min-w-[400px] flex-1 overflow-y-auto border-r p-6">
               <UltravoxConfigPanel
+                key={`ultravox-panel-${selectedAgent.id}`}
                 agent={selectedAgent}
                 variant={activeTab === "A" ? variantA : variantB}
                 onVariantChange={activeTab === "A" ? setVariantA : (setVariantB as any)}
