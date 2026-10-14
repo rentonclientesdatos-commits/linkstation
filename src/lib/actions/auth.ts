@@ -99,13 +99,17 @@ async function _loginAction(email: string, password: string) {
         user.app_metadata?.admin === "true";
 
       // ⚡ AUTO-CONFIG TENANT COOKIE
-      const currentTenantCookie = cookieStore.get("esden-tenant-id")?.value;
       if (!isAdmin) {
-        const tenant = await getTenantByUserId(user.id);
+        const tenant = await getTenantByUserId(user.id, user.email);
         if (tenant) {
           await setTenantCookies(tenant.id, tenant.name);
+        } else {
+          cookieStore.delete("esden-tenant-id");
+          cookieStore.delete("esden-tenant-name");
         }
-      } else if (!currentTenantCookie) {
+      } else {
+        const currentTenantCookie = cookieStore.get("esden-tenant-id")?.value;
+        if (!currentTenantCookie) {
         // Para admin sin cookie previa, inicializamos con el primer tenant disponible
         const { data: firstTenant } = await (await import("@/lib/supabase/server"))
           .getAdminSupabaseClient()
@@ -121,6 +125,7 @@ async function _loginAction(email: string, password: string) {
           await setTenantCookies(t.id, t.name || "");
         }
       }
+    }
 
       console.log(`[AUTH] Login completado para ${emailTag}. Redirigiendo...`);
       if (isAdmin) {
@@ -191,9 +196,10 @@ export async function logoutAction() {
   await supabase.auth.signOut();
 
   // Clear our custom tenant logic cookies as well
+  cookieStore.delete("esden-tenant-id");
+  cookieStore.delete("esden-tenant-name");
   cookieStore.delete("esden-tenant-url");
   cookieStore.delete("esden-tenant-key");
-  cookieStore.delete("esden-tenant-name");
 
   redirect("/login");
 }

@@ -15,6 +15,10 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
 
   async function handleLogout() {
     try {
+      useTenantStore.getState().clearTenant();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("linkstation-tenant");
+      }
       await logoutAction();
     } catch (e) {
       console.error("Logout error:", e);

@@ -194,86 +194,7 @@ export async function getTenants(): Promise<Tenant[]> {
   }
 }
 
-export async function getActiveTenantConfig(): Promise<Tenant | null> {
-  const cookieStore = await cookies();
-  const tenantId = cookieStore.get("esden-tenant-id")?.value;
-  const supabase = await getAdminSupabase();
-
-  if (tenantId) {
-    const { data, error } = await supabase
-      .from("tenants")
-      .select("*")
-      .eq("id", tenantId)
-      .maybeSingle();
-    if (data && !error) {
-      return {
-        ...data,
-        is_admin: !!(data.config as Record<string, unknown>)?.is_admin,
-        api_type:
-          ((data.config as Record<string, unknown>)?.api_type as "internal" | "client") ||
-          "internal",
-        username: ((data.config as Record<string, unknown>)?.username as string) || "",
-        business_type:
-          (data.business_type as string) ||
-          ((data.config as Record<string, unknown>)?.business_type as string) ||
-          "general",
-      } as Tenant;
-    }
-  }
-
-  // Fallback al primer tenant disponible si no hay cookie o la cookie es inválida
-  try {
-    const { data: fallbackData } = await supabase
-      .from("tenants")
-      .select("*")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (fallbackData) {
-      // Intentamos setear la cookie para futuras peticiones
-      try {
-        cookieStore.set("esden-tenant-id", fallbackData.id, {
-          path: "/",
-          maxAge: 30 * 24 * 60 * 60,
-        });
-        cookieStore.set("esden-tenant-name", fallbackData.name, {
-          path: "/",
-          maxAge: 30 * 24 * 60 * 60,
-        });
-      } catch {
-        // En Server Components de solo lectura cookies().set puede no aplicar; ignoramos
-      }
-
-      return {
-        ...fallbackData,
-        is_admin: !!(fallbackData.config as Record<string, unknown>)?.is_admin,
-        api_type:
-          ((fallbackData.config as Record<string, unknown>)?.api_type as "internal" | "client") ||
-          "internal",
-        username: ((fallbackData.config as Record<string, unknown>)?.username as string) || "",
-        business_type:
-          (fallbackData.business_type as string) ||
-          ((fallbackData.config as Record<string, unknown>)?.business_type as string) ||
-          "general",
-      } as Tenant;
-    }
-  } catch (err) {
-    console.error("[getActiveTenantConfig] Fallback error:", err);
-  }
-
-  return null;
-}
-
-export async function getTenantByUserId(userId: string): Promise<Tenant | null> {
-  const supabase = await getAdminSupabase();
-  const { data, error } = await supabase
-    .from("tenants")
-    .select("*")
-    .eq("auth_user_id", userId)
-    .single();
-  if (error || !data) return null;
-
+function mapTenantRecord(data: any): Tenant {
   return {
     ...data,
     is_admin: !!(data.config as Record<string, unknown>)?.is_admin,
@@ -285,6 +206,120 @@ export async function getTenantByUserId(userId: string): Promise<Tenant | null> 
       ((data.config as Record<string, unknown>)?.business_type as string) ||
       "general",
   } as Tenant;
+}
+
+export async function getActiveTenantConfig(): Promise<Tenant | null> {
+  const cookieStore = await cookies();
+  const serviceSupabase = await getServiceSupabase();
+  const authSupabase = await getAdminSupabase();
+
+  // 1. Obtener usuario autenticado actual para verificar pertenencia legítima
+  let currentUser: any = null;
+  let isSuperAdmin = false;
+  try {
+    const { data: authData } = await authSupabase.auth.getUser();
+    currentUser = authData?.user ?? null;
+    if (currentUser) {
+      const appMeta = currentUser.app_metadata ?? {};
+      isSuperAdmin =
+        appMeta.is_super_admin === true ||
+        appMeta.is_super_admin === "true" ||
+        (!!currentUser.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) ||
+        currentUser.user_metadata?.username === "renton" ||
+        (typeof currentUser.user_metadata?.name === "string" &&
+          currentUser.user_metadata.name.toUpperCase().includes("RENTON"));
+    }
+  } catch (err) {
+    console.warn("[getActiveTenantConfig] Warning getting auth user:", err);
+  }
+
+  // 2. Si el usuario NO es Super Admin (ej. cliente Jorklif o Reforma), FORZAR estrictamente su propio tenant
+  if (currentUser && !isSuperAdmin) {
+    const userEmail = currentUser.email?.trim().toLowerCase();
+    const query = serviceSupabase
+      .from("tenants")
+      .select("*");
+    
+    const { data: userTenant } = userEmail
+      ? await query.or(`auth_user_id.eq.${currentUser.id},client_email.ilike.${userEmail}`).maybeSingle()
+      : await query.eq("auth_user_id", currentUser.id).maybeSingle();
+
+    if (userTenant) {
+      // Si la cookie no coincide, sobreescribirla de inmediato con el tenant legítimo del usuario
+      const currentCookieId = cookieStore.get("esden-tenant-id")?.value;
+      if (currentCookieId !== userTenant.id) {
+        try {
+          cookieStore.set("esden-tenant-id", userTenant.id, {
+            path: "/",
+            maxAge: 30 * 24 * 60 * 60,
+          });
+          cookieStore.set("esden-tenant-name", userTenant.name, {
+            path: "/",
+            maxAge: 30 * 24 * 60 * 60,
+          });
+        } catch {
+          // Ignorar en componentes de renderizado de solo lectura
+        }
+      }
+      return mapTenantRecord(userTenant);
+    }
+  }
+
+  // 3. Si es Super Admin, respetar la cookie del tenant seleccionado
+  const tenantId = cookieStore.get("esden-tenant-id")?.value;
+  if (tenantId) {
+    const { data, error } = await serviceSupabase
+      .from("tenants")
+      .select("*")
+      .eq("id", tenantId)
+      .maybeSingle();
+    if (data && !error) {
+      return mapTenantRecord(data);
+    }
+  }
+
+  // 4. Fallback solo si es Super Admin sin cookie seleccionada
+  try {
+    const { data: fallbackData } = await serviceSupabase
+      .from("tenants")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (fallbackData) {
+      try {
+        cookieStore.set("esden-tenant-id", fallbackData.id, {
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60,
+        });
+        cookieStore.set("esden-tenant-name", fallbackData.name, {
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60,
+        });
+      } catch {}
+
+      return mapTenantRecord(fallbackData);
+    }
+  } catch (err) {
+    console.error("[getActiveTenantConfig] Fallback error:", err);
+  }
+
+  return null;
+}
+
+export async function getTenantByUserId(userId: string, email?: string): Promise<Tenant | null> {
+  const supabase = await getServiceSupabase();
+  let query = supabase.from("tenants").select("*");
+  if (email) {
+    query = query.or(`auth_user_id.eq.${userId},client_email.ilike.${email.trim().toLowerCase()}`);
+  } else {
+    query = query.eq("auth_user_id", userId);
+  }
+  const { data, error } = await query.maybeSingle();
+  if (error || !data) return null;
+
+  return mapTenantRecord(data);
 }
 
 export async function createTenant(tenant: Partial<Tenant> & { password?: string }) {

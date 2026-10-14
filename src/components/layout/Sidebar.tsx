@@ -143,6 +143,11 @@ const NAV_ITEMS: NavItem[] = [
         icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.8} />,
       },
       {
+        label: "Jorklif (Cartera & Cotiz)",
+        href: "/dashboard/campanas/jorklif",
+        icon: <PhoneCall className="h-4 w-4" strokeWidth={1.8} />,
+      },
+      {
         label: "Constructor",
         href: "/dashboard/campanas/nuevo",
         icon: <PlusCircle className="h-4 w-4" strokeWidth={1.8} />,

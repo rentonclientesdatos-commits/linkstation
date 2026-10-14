@@ -1,19 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { useTenantStore } from "@/store/tenant";
+import { Tenant } from "@/types/tenant";
 
 export function DashboardShell({
   isAdmin,
   isSuperAdmin,
+  activeTenant,
   children,
 }: {
   isAdmin: boolean;
   isSuperAdmin?: boolean;
+  activeTenant?: Tenant | null;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const setTenant = useTenantStore((s) => s.setTenant);
+  const currentTenantId = useTenantStore((s) => s.tenantId);
+
+  // Sincronizar SIEMPRE el tenant verificado por el servidor con el store del cliente
+  useEffect(() => {
+    if (activeTenant && activeTenant.id !== currentTenantId) {
+      setTenant({
+        tenantId: activeTenant.id,
+        tenantName: activeTenant.name,
+        config: activeTenant.config,
+        isAdmin,
+        businessType: activeTenant.business_type,
+      });
+    }
+  }, [activeTenant, currentTenantId, isAdmin, setTenant]);
 
   return (
     <div className="bg-background text-foreground flex h-screen overflow-hidden transition-all duration-500">
