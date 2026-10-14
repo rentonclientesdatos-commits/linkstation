@@ -479,15 +479,23 @@ export async function downloadJorklifTemplateBase64(): Promise<string> {
 }
 
 /**
- * Dispara una llamada outbound real de Jorklif via Ultravox.
+ * Dispara una llamada outbound real de Jorklif via Ultravox + Conectabit SIP.
  *
  * Flujo:
  * 1. Carga el lead de Supabase.
  * 2. Resuelve la API Key de Ultravox (tenant config → env var).
  * 3. Construye el templateContext con las variables del lead (nombre, monto, documento, etc.)
  *    e incluye tenant_id + lead_id en systemMetadata para que el webhook pueda vincular la respuesta.
- * 4. Llama a Ultravox via createAgentCall usando el medio configurado (Twilio outbound).
+ * 4. Llama a Ultravox via createAgentCall usando medium.sip.outgoing (troncal Conectabit).
  * 5. Actualiza el estado del lead a "EN_LLAMADA" con el call_id retornado.
+ *
+ * Variables de entorno requeridas:
+ *   ULTRAVOX_API_KEY                      — API Key de Ultravox
+ *   ULTRAVOX_JORKLIF_COBRANZA_AGENT_ID    — ID del agente de cobranza en Ultravox
+ *   CONECTABIT_SIP_DOMAIN                 — Servidor SIP de Conectabit (ej: sip.conectabit.com)
+ *   CONECTABIT_SIP_USERNAME               — Usuario SIP de Conectabit
+ *   CONECTABIT_SIP_PASSWORD               — Contraseña SIP de Conectabit
+ *   JORKLIF_CALLER_ID                     — Número emisor (ej: +56229XXXXXX o +569XXXXXXXX)
  */
 export async function triggerJorklifCallAction(leadId: string): Promise<{ success: boolean; message: string; callId?: string }> {
   try {
@@ -532,23 +540,30 @@ export async function triggerJorklifCallAction(leadId: string): Promise<{ succes
       };
     }
 
-    // ── 3. Resolver número emisor y credenciales Twilio ───────────────────────
-    const twilioAccountSid =
-      tenantConfig?.telephony?.credentials?.accountSid ||
-      process.env.TWILIO_ACCOUNT_SID;
+    // ── 3. Resolver credenciales SIP de Conectabit ───────────────────────────
+    const sipDomain =
+      tenantConfig?.telephony?.sip?.domain ||
+      process.env.CONECTABIT_SIP_DOMAIN;
 
-    const twilioAuthToken =
-      tenantConfig?.telephony?.credentials?.authToken ||
-      process.env.TWILIO_AUTH_TOKEN;
+    const sipUsername =
+      tenantConfig?.telephony?.sip?.username ||
+      process.env.CONECTABIT_SIP_USERNAME;
+
+    const sipPassword =
+      tenantConfig?.telephony?.sip?.password ||
+      process.env.CONECTABIT_SIP_PASSWORD;
 
     const fromNumber =
       tenantConfig?.telephony?.fromNumber ||
       tenantConfig?.jorklif?.caller_id ||
-      process.env.JORKLIF_CALLER_ID ||
-      process.env.TWILIO_FROM_NUMBER;
+      process.env.JORKLIF_CALLER_ID;
 
     if (!fromNumber) {
-      return { success: false, message: "Número emisor no configurado (JORKLIF_CALLER_ID / TWILIO_FROM_NUMBER)." };
+      return { success: false, message: "Número emisor no configurado. Agrega JORKLIF_CALLER_ID al entorno." };
+    }
+
+    if (!sipDomain) {
+      return { success: false, message: "Dominio SIP de Conectabit no configurado. Agrega CONECTABIT_SIP_DOMAIN al entorno." };
     }
 
     const toNumber = lead.telefono;
@@ -606,15 +621,21 @@ export async function triggerJorklifCallAction(leadId: string): Promise<{ succes
           ...systemMetadata,
         },
         medium: {
-          twilio: {
-            fromNumber,
-            toNumber,
-            ...(twilioAccountSid && twilioAuthToken
-              ? { accountSid: twilioAccountSid, authToken: twilioAuthToken }
-              : {}),
+          sip: {
+            outgoing: {
+              // SIP URI destino: sip:+56912345678@sip.conectabit.com
+              to: `sip:${toNumber}@${sipDomain}`,
+              // Caller ID que verá el cliente (número oficial Jorklif)
+              from: fromNumber,
+              // Credenciales de autenticación de la troncal Conectabit
+              ...(sipUsername ? { username: sipUsername } : {}),
+              ...(sipPassword ? { password: sipPassword } : {}),
+            },
           },
         },
-        firstSpeakerSettings: { agent: {} }, // El agente habla primero
+        // El agente ESPERA a que el destinatario conteste y diga "Hola"
+        // antes de hablar (estándar para llamadas salientes SIP)
+        firstSpeakerSettings: { user: {} },
         maxDuration: "600s", // 10 minutos máximo
         recordingEnabled: true,
       },

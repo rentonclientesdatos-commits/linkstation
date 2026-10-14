@@ -17,6 +17,19 @@ export interface UltravoxCallParams {
     twilio?: {
       fromNumber?: string;
       toNumber?: string;
+      accountSid?: string;
+      authToken?: string;
+    };
+    /** SIP trunk outbound (Conectabit / Telnyx / any SIP provider) */
+    sip?: {
+      outgoing?: {
+        /** SIP URI destino: sip:+56912345678@sip.conectabit.com */
+        to: string;
+        /** Caller ID (número emisor) */
+        from: string;
+        username?: string;
+        password?: string;
+      };
     };
     webRTC?: Record<string, unknown>;
   };
