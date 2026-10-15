@@ -302,6 +302,7 @@ function CredentialsTab() {
     accessToken: "",
     displayName: "",
     webhookVerifyToken: "",
+    appSecret: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -315,6 +316,7 @@ function CredentialsTab() {
           phoneNumberId: res.data!.phoneNumberId,
           displayName: res.data!.displayName ?? "",
           webhookVerifyToken: res.data!.webhookVerifyToken ?? "",
+          // appSecret: never pre-fill for security (write-only field)
         }));
       }
       setLoading(false);
@@ -340,7 +342,7 @@ function CredentialsTab() {
         title: "Configuración guardada",
         description: "Credenciales WABA actualizadas correctamente.",
       });
-      setForm((prev) => ({ ...prev, accessToken: "" })); // clear sensitive field
+      setForm((prev) => ({ ...prev, accessToken: "", appSecret: "" })); // clear sensitive fields
     } else {
       toast({ variant: "error", title: "Error al guardar", description: result.error });
     }
@@ -352,17 +354,23 @@ function CredentialsTab() {
   return (
     <form onSubmit={handleSave} className="max-w-lg space-y-5">
       <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-amber-300">
-        <strong>Seguridad:</strong> El Access Token se guarda cifrado en la base de datos. Nunca lo
-        compartas ni lo incluyas en logs.
+        <strong>Seguridad:</strong> El Access Token y App Secret se guardan en la base de datos.
+        Nunca los compartas ni los incluyas en logs.
       </div>
 
       {[
-        { id: "wabaId", label: "WABA ID", placeholder: "123456789", required: true },
-        { id: "phoneNumberId", label: "Phone Number ID", placeholder: "987654321", required: true },
+        { id: "wabaId", label: "WABA ID (Messaging Account ID)", placeholder: "1664890428604716", required: true },
+        { id: "phoneNumberId", label: "Phone Number ID", placeholder: "1348363005028713", required: true },
         {
           id: "accessToken",
           label: "Access Token",
           placeholder: "EAABs... (dejar vacío para mantener el actual)",
+          required: false,
+        },
+        {
+          id: "appSecret",
+          label: "App Secret (Meta) — para verificación HMAC",
+          placeholder: "dejar vacío para mantener el actual",
           required: false,
         },
         {
@@ -387,13 +395,19 @@ function CredentialsTab() {
           </Label>
           <Input
             id={`cred-${id}`}
-            type={id === "accessToken" ? "password" : "text"}
+            type={id === "accessToken" || id === "appSecret" ? "password" : "text"}
             placeholder={placeholder}
             required={required}
             value={form[id as keyof typeof form]}
             onChange={(e) => setForm((prev) => ({ ...prev, [id]: e.target.value }))}
             className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-600"
           />
+          {id === "appSecret" && (
+            <p className="text-[10px] text-slate-500">
+              Encontralo en: Meta for Developers → Tu App → Configuración → Básica → App Secret.
+              Cada cliente con distinta app Meta tiene su propio secret.
+            </p>
+          )}
         </div>
       ))}
 

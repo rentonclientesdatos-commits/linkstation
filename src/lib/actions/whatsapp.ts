@@ -73,6 +73,7 @@ export async function getWABAConfig(): Promise<{
     displayName: string | null;
     isActive: boolean;
     webhookVerifyToken: string | null;
+    appSecret: string | null;
   };
   error?: string;
 }> {
@@ -82,7 +83,7 @@ export async function getWABAConfig(): Promise<{
   const supabase = getServiceClient();
   const { data, error } = await supabase
     .from("waba_configurations")
-    .select("id, waba_id, phone_number_id, display_name, is_active, webhook_verify_token")
+    .select("id, waba_id, phone_number_id, display_name, is_active, webhook_verify_token, app_secret")
     .eq("tenant_id", tenant.id)
     .maybeSingle();
 
@@ -98,6 +99,7 @@ export async function getWABAConfig(): Promise<{
       displayName: data.display_name,
       isActive: data.is_active,
       webhookVerifyToken: data.webhook_verify_token,
+      appSecret: (data as any).app_secret ?? null,
     },
   };
 }
@@ -108,6 +110,7 @@ export async function saveWABAConfig(params: {
   accessToken?: string;
   displayName?: string;
   webhookVerifyToken?: string;
+  appSecret?: string;
 }): Promise<{ success: boolean; error?: string }> {
   const tenant = await getActiveTenantConfig();
   if (!tenant) return { success: false, error: "No tenant found" };
@@ -134,18 +137,24 @@ export async function saveWABAConfig(params: {
     }
   }
 
-  const { error } = await supabase.from("waba_configurations").upsert(
-    {
-      tenant_id: tenant.id,
-      waba_id: params.wabaId,
-      phone_number_id: params.phoneNumberId,
-      access_token: finalAccessToken,
-      display_name: params.displayName ?? null,
-      webhook_verify_token: params.webhookVerifyToken ?? null,
-      is_active: true,
-    },
-    { onConflict: "tenant_id" }
-  );
+  // Build upsert payload — only include app_secret if explicitly provided
+  // (prevents overwriting existing secret with empty string)
+  const upsertPayload: Record<string, unknown> = {
+    tenant_id: tenant.id,
+    waba_id: params.wabaId,
+    phone_number_id: params.phoneNumberId,
+    access_token: finalAccessToken,
+    display_name: params.displayName ?? null,
+    webhook_verify_token: params.webhookVerifyToken ?? null,
+    is_active: true,
+  };
+  if (params.appSecret && params.appSecret.trim()) {
+    upsertPayload.app_secret = params.appSecret.trim();
+  }
+
+  const { error } = await supabase
+    .from("waba_configurations")
+    .upsert(upsertPayload as never, { onConflict: "tenant_id" });
 
   if (error) return { success: false, error: error.message };
 

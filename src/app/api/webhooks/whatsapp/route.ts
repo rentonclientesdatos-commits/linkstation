@@ -65,18 +65,61 @@ export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
     const signature = req.headers.get("x-hub-signature-256");
-    const appSecret = process.env.WHATSAPP_APP_SECRET?.trim();
 
-    const isPlaceholder = !appSecret || appSecret.includes("REPLACE_ME");
+    // --- Multi-tenant HMAC verification ---
+    // Each Meta App has its own App Secret. We look up the specific secret
+    // for the incoming phone_number_id from waba_configurations, then fall
+    // back to the global WHATSAPP_APP_SECRET env var for legacy setups.
+    if (signature) {
+      let resolvedSecret: string | null = null;
 
-    if (!isPlaceholder && signature) {
-      if (!verifyHmacSignature(rawBody, signature, appSecret)) {
-        console.warn("[WHATSAPP WEBHOOK] Invalid signature mismatch.");
-        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      try {
+        // Parse body without consuming it to extract phone_number_id
+        const parsed = JSON.parse(rawBody);
+        const phoneNumberId =
+          parsed?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
+
+        if (phoneNumberId) {
+          const { getAdminSupabaseClient } = await import("@/lib/supabase/server");
+          const supabase = await getAdminSupabaseClient();
+          const { data: wabaRow } = await supabase
+            .from("waba_configurations")
+            .select("app_secret")
+            .eq("phone_number_id", phoneNumberId)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          const rowSecret = (wabaRow as any)?.app_secret as string | undefined;
+          if (rowSecret && !rowSecret.includes("REPLACE_ME")) {
+            resolvedSecret = rowSecret;
+            log.info("Using per-WABA app_secret for HMAC", { phoneNumberId });
+          }
+        }
+      } catch {
+        /* ignore parse errors — will fall back to env */
       }
-    } else if (isPlaceholder) {
-      console.warn(
-        "[WHATSAPP WEBHOOK] WHATSAPP_APP_SECRET es placeholder o no está configurado. Procesando mensaje sin comprobación HMAC."
+
+      // Fall back to global env var
+      if (!resolvedSecret) {
+        const envSecret = process.env.WHATSAPP_APP_SECRET?.trim();
+        if (envSecret && !envSecret.includes("REPLACE_ME")) {
+          resolvedSecret = envSecret;
+        }
+      }
+
+      if (resolvedSecret) {
+        if (!verifyHmacSignature(rawBody, signature, resolvedSecret)) {
+          log.warn("Invalid HMAC signature — rejecting webhook");
+          return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+        }
+      } else {
+        log.warn(
+          "No app_secret configured (DB or env). Processing without HMAC verification."
+        );
+      }
+    } else {
+      log.warn(
+        "No x-hub-signature-256 header received. Processing without HMAC verification."
       );
     }
 
