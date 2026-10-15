@@ -42,20 +42,58 @@ const GUIDE_META: Record<string, { title: string; subtitle: string; badge: strin
     subtitle: "Guía de configuración de la app de HubSpot para sincronizar leads con el dashboard.",
     badge: "Integración · HubSpot",
   },
+  "instagram-setup": {
+    title: "Conectar Instagram",
+    subtitle: "Guía de configuración de Instagram Messaging para sincronizar mensajes con el dashboard.",
+    badge: "Integración · Instagram",
+  },
 };
 
-function resolveGuidePath(slug: string): string | null {
-  // Anti path-traversal: solo kebab-case + dígitos.
-  if (!/^[a-z0-9-]+$/.test(slug)) return null;
-  const candidates = [
-    path.join(process.cwd(), "docs", "integrations", `${slug}.md`),
-    path.join(process.cwd(), "linkstation", "docs", "integrations", `${slug}.md`),
-    path.resolve(__dirname, "..", "..", "..", "..", "docs", "integrations", `${slug}.md`),
-  ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) return candidate;
+function getGuideMarkdown(slug: string): string | null {
+  try {
+    switch (slug) {
+      case "zoho-webhook-manual":
+        return fs.readFileSync(
+          path.join(process.cwd(), "docs", "integrations", "zoho-webhook-manual.md"),
+          "utf8"
+        );
+      case "google-sheets-setup-tenant":
+        return fs.readFileSync(
+          path.join(process.cwd(), "docs", "integrations", "google-sheets-setup-tenant.md"),
+          "utf8"
+        );
+      case "hubspot-app-setup":
+        return fs.readFileSync(
+          path.join(process.cwd(), "docs", "integrations", "hubspot-app-setup.md"),
+          "utf8"
+        );
+      case "instagram-setup":
+        return fs.readFileSync(
+          path.join(process.cwd(), "docs", "integrations", "instagram-setup.md"),
+          "utf8"
+        );
+      default:
+        return null;
+    }
+  } catch {
+    try {
+      const fallbackDir = path.join(process.cwd(), "linkstation", "docs", "integrations");
+      switch (slug) {
+        case "zoho-webhook-manual":
+          return fs.readFileSync(path.join(fallbackDir, "zoho-webhook-manual.md"), "utf8");
+        case "google-sheets-setup-tenant":
+          return fs.readFileSync(path.join(fallbackDir, "google-sheets-setup-tenant.md"), "utf8");
+        case "hubspot-app-setup":
+          return fs.readFileSync(path.join(fallbackDir, "hubspot-app-setup.md"), "utf8");
+        case "instagram-setup":
+          return fs.readFileSync(path.join(fallbackDir, "instagram-setup.md"), "utf8");
+        default:
+          return null;
+      }
+    } catch {
+      return null;
+    }
   }
-  return null;
 }
 
 export function generateStaticParams() {
@@ -63,6 +101,7 @@ export function generateStaticParams() {
     { slug: "zoho-webhook-manual" },
     { slug: "google-sheets-setup-tenant" },
     { slug: "hubspot-app-setup" },
+    { slug: "instagram-setup" },
   ];
 }
 
@@ -87,15 +126,8 @@ export default async function IntegrationGuidePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const filePath = resolveGuidePath(slug);
-  if (!filePath) notFound();
-
-  let raw = "";
-  try {
-    raw = fs.readFileSync(filePath, "utf8");
-  } catch {
-    notFound();
-  }
+  const raw = getGuideMarkdown(slug);
+  if (!raw) notFound();
   const content = stripLeadingH1(raw);
   const meta = GUIDE_META[slug] ?? {
     title: "Guía de integración",

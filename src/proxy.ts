@@ -74,8 +74,24 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Admin-only paths: /settings and /admin (including /dashboard/admin)
-  const isAdminOnlyPath = pathname.includes("/settings") || pathname.includes("/admin");
+  // Integraciones que el cliente debe poder configurar para su negocio:
+  // - Google Sheets (/dashboard/settings/integrations/google-sheets)
+  // - Zoho CRM (/dashboard/settings/integrations/zoho-pull)
+  // - Instagram (/dashboard/settings/integrations/instagram)
+  // - WhatsApp WABA (/dashboard/settings/whatsapp)
+  const isClientIntegrationPath =
+    pathname.startsWith("/dashboard/settings/integrations/") ||
+    pathname.startsWith("/dashboard/settings/whatsapp");
+
+  // Rutas exclusivas de administración:
+  // - /dashboard/admin, /admin y /dashboard/docs-admin (panel admin)
+  // - /dashboard/settings y /settings raíz (gestión, creación y edición de clientes)
+  // Los clientes NO pueden acceder a estas rutas administrativas.
+  const isAdminOnlyPath =
+    pathname.includes("/admin") ||
+    pathname.startsWith("/dashboard/docs-admin") ||
+    (pathname.includes("/settings") && !isClientIntegrationPath);
+
   if (user && isAdminOnlyPath) {
     if (!isAdmin) {
       const url = request.nextUrl.clone();
