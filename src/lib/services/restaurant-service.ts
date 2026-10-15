@@ -108,6 +108,88 @@ export class RestaurantService {
   }
 
   /**
+   * Consulta la disponibilidad de mesas en tiempo real en la sección de mesas del restaurante
+   * Sin importar el porte/capacidad de la mesa
+   */
+  static async checkTableAvailability(
+    tenantId: string,
+    params?: {
+      date?: string;
+      time?: string;
+      guests?: number;
+      zonePreference?: string;
+    }
+  ): Promise<{
+    success: boolean;
+    available: boolean;
+    availableCount: number;
+    totalTables: number;
+    message: string;
+    availableTables: { number: number; name: string; zone: string; capacity: number }[];
+    zones: string[];
+  }> {
+    try {
+      const state = await this.getRestaurantState(tenantId);
+      const allTables = state.tables || [];
+
+      // Mesas disponibles sin importar la capacidad
+      let availableTables = allTables.filter((t) => t.status === "disponible");
+
+      if (params?.zonePreference) {
+        const filteredByZone = availableTables.filter(
+          (t) =>
+            t.zone.toLowerCase().includes(params.zonePreference!.toLowerCase()) ||
+            params.zonePreference!.toLowerCase().includes(t.zone.toLowerCase())
+        );
+        if (filteredByZone.length > 0) {
+          availableTables = filteredByZone;
+        }
+      }
+
+      const zoneNames = (state.zones || []).map((z) => z.name);
+
+      if (availableTables.length === 0) {
+        return {
+          success: true,
+          available: false,
+          availableCount: 0,
+          totalTables: allTables.length,
+          message:
+            "No quedan mesas disponibles en este momento. Todas las mesas se encuentran ocupadas o reservadas.",
+          availableTables: [],
+          zones: zoneNames,
+        };
+      }
+
+      return {
+        success: true,
+        available: true,
+        availableCount: availableTables.length,
+        totalTables: allTables.length,
+        message: `Tenemos ${availableTables.length} mesa(s) disponibles para la reserva.`,
+        availableTables: availableTables.map((t) => ({
+          number: t.number,
+          name: t.name,
+          zone: t.zone,
+          capacity: t.capacity,
+        })),
+        zones: zoneNames,
+      };
+    } catch (e: unknown) {
+      console.error("[RestaurantService] checkTableAvailability error:", e);
+      return {
+        success: false,
+        available: false,
+        availableCount: 0,
+        totalTables: 0,
+        message: "Error al consultar disponibilidad de mesas.",
+        availableTables: [],
+        zones: [],
+      };
+    }
+  }
+
+  /**
    * Realiza una reserva de mesa solicitada vía IA (WhatsApp / Voz / Web)
    */
   static async bookTableReservation(
@@ -135,15 +217,15 @@ export class RestaurantService {
       const state = await this.getRestaurantState(tenantId);
       const guests = Math.max(1, Number(params.guests) || 1);
 
-      // Buscar mesas disponibles con capacidad suficiente
-      const availableTables = state.tables.filter(
-        (t) => t.status === "disponible" && t.capacity >= guests
+      // Buscar mesas disponibles sin importar el porte/capacidad de la mesa
+      const availableTables = (state.tables || []).filter(
+        (t) => t.status === "disponible"
       );
 
       if (availableTables.length === 0) {
         return {
           success: false,
-          message: `No hay mesas disponibles con capacidad para ${guests} personas en este momento.`,
+          message: "No hay mesas disponibles en este momento en el restaurante.",
         };
       }
 
@@ -151,15 +233,11 @@ export class RestaurantService {
       let chosenTable = availableTables[0];
       if (params.zonePreference) {
         const matchingZone = availableTables.find(
-          (t) => t.zone.toLowerCase() === params.zonePreference?.toLowerCase()
+          (t) =>
+            t.zone.toLowerCase().includes(params.zonePreference!.toLowerCase()) ||
+            params.zonePreference!.toLowerCase().includes(t.zone.toLowerCase())
         );
         if (matchingZone) chosenTable = matchingZone;
-      }
-
-      // Ordenar para elegir la mesa más ajustada a la capacidad requerida
-      availableTables.sort((a, b) => a.capacity - b.capacity);
-      if (!params.zonePreference || chosenTable.capacity > guests + 4) {
-        chosenTable = availableTables[0];
       }
 
       const resId = `res-${Date.now().toString().slice(-6)}`;

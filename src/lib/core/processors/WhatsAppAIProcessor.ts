@@ -11,6 +11,11 @@ import { getTimezoneByCountry } from "@/lib/utils/timezones";
 import { resolveCountryFromPhone } from "@/lib/utils/location-client";
 import { ensurePlusPrefix } from "@/lib/utils/phone-helper";
 import { getAuthServiceRoleKey } from "@/lib/auth-config";
+import {
+  isTimeWithinOperatingHours,
+  formatOperatingHoursText,
+  formatDaysText,
+} from "@/lib/utils/operating-hours";
 
 /**
  * WHATSAPP AI PROCESSOR (CEREBRO v3.0)
@@ -317,8 +322,54 @@ export async function generateAIWhatsAppResponse(
       }
     }
 
-    const businessType = tenantConfig?.business_type || "restaurant";
-    const isRestaurant = !tenantConfig?.business_type || businessType === "restaurant";
+    // Detección robusta de restaurante (por config, columna business_type, mesas cargadas o prompt)
+    const rawBusinessType = String(
+      tenantConfig?.business_type ||
+      (tenantData?.data as any)?.business_type ||
+      ""
+    ).toLowerCase();
+    const hasRestaurantTables = Boolean(
+      ((tenantConfig as any)?.restaurant?.tables || []).length > 0
+    );
+    const agentPromptLower = (activeVariant.prompt_text || "").toLowerCase();
+    const isRestaurant =
+      rawBusinessType.includes("restauran") ||
+      rawBusinessType.includes("gastro") ||
+      rawBusinessType.includes("bar") ||
+      rawBusinessType.includes("comida") ||
+      hasRestaurantTables ||
+      agentPromptLower.includes("restobar") ||
+      agentPromptLower.includes("restaurante") ||
+      !tenantConfig?.business_type;
+
+    // Horarios de atención configurados en el constructor
+    const variantRules = (activeVariant as any)?.automation_rules;
+    const variantHours = variantRules?.working_hours;
+    const tenantHours =
+      (tenantConfig as any)?.working_hours ||
+      (tenantConfig as any)?.orchestrator?.timezone_rules;
+
+    // Para restaurante: los restaurantes típicamente abren desde las 3pm hasta las 5am (15:00 a 05:00) si no tienen otro configurado
+    let operatingStart =
+      variantHours?.start || tenantHours?.start || (isRestaurant ? "15:00" : "09:00");
+    let operatingEnd =
+      variantHours?.end || tenantHours?.end || (isRestaurant ? "05:00" : "20:00");
+    let operatingDays: number[] =
+      variantHours?.days ||
+      tenantHours?.days ||
+      tenantHours?.working_days ||
+      [0, 1, 2, 3, 4, 5, 6];
+
+    // Si para restaurante estaba guardado el default de oficina (09:00 a 21:00 o 20:00),
+    // aplicar 15:00 a 05:00 conforme a los requerimientos de restaurantes
+    if (
+      isRestaurant &&
+      operatingStart === "09:00" &&
+      (operatingEnd === "21:00" || operatingEnd === "20:00")
+    ) {
+      operatingStart = "15:00";
+      operatingEnd = "05:00";
+    }
 
     // 🟢 EARLY TYPING INDICATOR: Trigger as soon as credentials are ready to show while AI is thinking
     if (waConfig?.accessToken && waConfig?.phoneNumberId && incomingMessageId) {
@@ -349,7 +400,6 @@ export async function generateAIWhatsAppResponse(
       .map((m) => `${m.role === "user" ? "Usuario" : "Asistente"}: ${m.content}`)
       .join("\n");
 
-    const TZ = "Europe/Madrid";
     const now = new Date();
     const leadPais =
       (
@@ -404,7 +454,46 @@ export async function generateAIWhatsAppResponse(
               }
             ).telefono
           ) || "Desconocido";
+
     const leadTZ = getTimezoneByCountry((leadPais as string) || "");
+
+    // Resolver zona horaria local exacta del negocio / restaurante
+    const tenantCountry =
+      (tenantConfig as any)?.country ||
+      (tenantConfig as any)?.orchestrator?.timezone_rules?.country ||
+      (leadPais === "Chile" || agentPromptLower.includes("chile") || agentPromptLower.includes("iquique")
+        ? "Chile"
+        : leadPais);
+    const localTZ =
+      (tenantConfig as any)?.timezone ||
+      getTimezoneByCountry(tenantCountry) ||
+      leadTZ ||
+      "America/Santiago";
+
+    const yearFormatter = new Intl.DateTimeFormat("es-CL", { timeZone: localTZ, year: "numeric" });
+    const currentYear = yearFormatter.format(now);
+
+    const dateFormatter = new Intl.DateTimeFormat("es-CL", {
+      timeZone: localTZ,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const currentDateFull = dateFormatter.format(now); // ej: "jueves, 15 de octubre de 2026"
+
+    const timeFormatter = new Intl.DateTimeFormat("es-CL", {
+      timeZone: localTZ,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    const currentTimeFull = timeFormatter.format(now); // ej: "15:10"
+
+    const currentDateISO = now.toLocaleDateString("en-CA", { timeZone: localTZ }); // YYYY-MM-DD
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const tomorrowDateISO = tomorrow.toLocaleDateString("en-CA", { timeZone: localTZ });
+
     const variableMap: Record<string, string> = {
       nombre:
         (
@@ -416,7 +505,7 @@ export async function generateAIWhatsAppResponse(
             email?: string;
             metadata?: Record<string, unknown>;
           }
-        ).nombre || "estudiante",
+        ).nombre || "Cliente",
       email:
         (
           lead as unknown as {
@@ -440,17 +529,23 @@ export async function generateAIWhatsAppResponse(
           }
         ).telefono || ""
       ),
-      fecha: now.toLocaleDateString("es-ES", { timeZone: leadTZ }),
-      hora: now.toLocaleTimeString("es-ES", { timeZone: leadTZ }),
-      now: now.toLocaleString("es-ES", { timeZone: leadTZ }),
+      fecha: currentDateISO,
+      hora: currentTimeFull,
+      now: `${currentDateFull} ${currentTimeFull}`,
+      anio: currentYear,
+      ano: currentYear,
       pais: leadPais ?? "",
-      $now: now.toLocaleString("es-ES", { timeZone: leadTZ }),
-      $date: now.toLocaleDateString("es-ES", { timeZone: leadTZ }),
-      $time: now.toLocaleTimeString("es-ES", { timeZone: leadTZ }),
-      $timezone: leadTZ,
+      $now: `${currentDateFull} ${currentTimeFull}`,
+      $date: currentDateISO,
+      $time: currentTimeFull,
+      $year: currentYear,
+      $date_full: currentDateFull,
+      $date_iso: currentDateISO,
+      $tomorrow_iso: tomorrowDateISO,
+      $timezone: localTZ,
       $timezone_lead: leadTZ,
-      $time_madrid: now.toLocaleTimeString("es-ES", { timeZone: TZ }),
-      $date_madrid: now.toLocaleDateString("es-ES", { timeZone: TZ }),
+      $horario_inicio: operatingStart,
+      $horario_fin: operatingEnd,
     };
 
     // 1. Pre-populate all tracked variables from the active variant as "Pendiente..."
@@ -494,18 +589,40 @@ export async function generateAIWhatsAppResponse(
       }
     );
 
-    // Add implicit context about timezones (MASTER RULES)
-    const timezoneContext = `
+    // Reglas maestras según tipo de negocio (Restaurante con Mesas & Reservas vs Servicios Generales)
+    const timezoneContext = isRestaurant
+      ? `
+### CONTEXTO TEMPORAL Y HORARIOS DEL RESTAURANTE (EN VIVO - CRÍTICO):
+- AÑO ACTUAL EXACTO: ${currentYear}
+- FECHA ACTUAL: ${currentDateFull}
+- HORA ACTUAL EXACTA: ${currentTimeFull} (Zona horaria: ${localTZ})
+- FECHA DE HOY (ISO): ${currentDateISO}
+- FECHA DE MAÑANA (ISO): ${tomorrowDateISO}
+- HORARIO DE ATENCIÓN CONFIGURADO EN EL CONSTRUCTOR: Desde las ${operatingStart} hasta las ${operatingEnd} (${formatOperatingHoursText(operatingStart, operatingEnd)})
+- DÍAS DE ATENCIÓN: ${formatDaysText(operatingDays)}
+- REGLA DE AÑO: El año actual es ${currentYear}. Si el cliente dice "hoy", la fecha es ${currentDateISO}. Si dice "mañana", es ${tomorrowDateISO}. NUNCA utilices un año diferente a ${currentYear}.
+
+### REGLAS MAESTRAS DE MESAS Y RESERVAS DEL RESTAURANTE (CRÍTICO):
+1. Este negocio es un RESTAURANTE con sistema de Mesas y Reservas en vivo en la app.
+2. NO es un servicio de citas ni asesorías. NUNCA menciones citas, llamadas, asesores, Google Calendar ni reuniones.
+3. Para consultar si hay mesas disponibles o si el restaurante está abierto en un día/hora específicos, DEBES llamar a la herramienta 'check_table_availability'.
+4. Para confirmar la reserva, solicita los datos indispensables (Día, Hora, Personas, Nombre y Teléfono) y llama OBLIGATORIAMENTE a 'book_restaurant_table'.
+5. La reserva se realiza directamente en la sección de mesas de la app SIN IMPORTAR EL PORTE O CAPACIDAD DE LA MESA (cualquier mesa disponible puede ser asignada).
+6. Si el cliente solicita una hora en la que el local está cerrado (fuera de ${operatingStart} a ${operatingEnd}), indícale amablemente el horario de atención: ${formatOperatingHoursText(operatingStart, operatingEnd)}.
+7. NO PREGUNTES POR DATOS QUE YA TIENES: Si en los datos del prospecto ya está el Nombre o Teléfono, úsalos directamente.
+`
+      : `
 ### REGLAS MAESTRAS DE HORARIO Y ZONAS HORARIAS (CRÍTICO):
 1. Nuestra sede está en MADRID, ESPAÑA. Los horarios de atención son LUNES A VIERNES de 09:00 a 20:00 (hora de Madrid).
 2. El prospecto está en: ${leadPais} (zona horaria: ${leadTZ}).
 3. Los huecos de disponibilidad que recibes de 'check_availability' YA ESTÁN CONVERTIDOS a la hora local del prospecto (${leadTZ}). DEBES mostrarlos TAL CUAL al usuario, sin alterar las horas.
-4. IMPORTANTE: Nunca muestres horas de madrugada (00:00–07:00) al prospecto. Si la lista de slots empieza antes de las 07:00 hora local del prospecto, significa que hay un problema de zona horaria — en ese caso avisa: "Déjame verificar los horarios disponibles", y llama a check_availability pasando la fecha nuevamente.
-5. Si el prospecto pide una hora que NO aparece en la lista, explécale que nuestras oficinas en España estarían cerradas a esa hora.
-6. DOBLE CONFIRMACIÓN: Al agendar, confirma siempre así: "Agendado para las [HORA_LOCAL] hora de ${leadPais} (que son las [HORA_MADRID] en España)".
+4. IMPORTANTE: Nunca muestres horas de madrugada (00:00–07:00) al prospecto.
+5. Si el prospecto pide una hora que NO aparece en la lista, explécale que nuestras oficinas estarían cerradas a esa hora.
+6. DOBLE CONFIRMACIÓN: Al agendar, confirma siempre la hora local del prospecto.
 7. NO PREGUNTES POR DATOS QUE YA TIENES: Si en la sección 'DATOS DEL PROSPECTO' ya aparece el Nombre, País o Teléfono, NO se los preguntes al usuario. Actúa como si ya lo supieras.
-8. CRÍTICO: Para agendar una cita real en el sistema, **SIEMPRE DEBES EJECUTAR LA FUNCIÓN 'book_appointment'**. NUNCA afirmes que has agendado la cita si no has llamado exitosamente a la herramienta.
+8. CRÍTICO: Para agendar una cita real en el sistema, SIEMPRE DEBES EJECUTAR LA FUNCIÓN 'book_appointment'.
 `;
+
     let finalPrompt = timezoneContext + "\n" + activeVariant.prompt_text;
 
     // Replace patterns like {{nombre}} case-insensitively and space-insensitively
@@ -529,125 +646,77 @@ export async function generateAIWhatsAppResponse(
       finalPrompt = finalPrompt.replace(regex, String(variableMap[key] ?? ""));
     });
 
-    // 7. Define Tools
-    const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
-      {
-        type: "function",
-        function: {
-          name: "book_appointment",
-          description:
-            "Agendar una nueva cita con un asesor. IMPORTANTE: El argumento 'date' DEBE ser una fecha en formato ISO (YYYY-MM-DD).",
-          parameters: {
-            type: "object",
-            properties: {
-              date: { type: "string", description: "Fecha de la cita (formato YYYY-MM-DD)" },
-              time: { type: "string", description: "Hora de la cita (formato HH:MM)" },
-              notes: { type: "string", description: "Notas adicionales sobre el interés del lead" },
-            },
-            required: ["date", "time"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "cancel_appointment",
-          description: "Cancelar una cita existente.",
-          parameters: {
-            type: "object",
-            properties: {
-              appointmentId: {
-                type: "string",
-                description:
-                  "ID único (UUID) de la cita a cancelar, obtenido de la lista de CITAS PROGRAMADAS.",
-              },
-            },
-            required: ["appointmentId"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "reschedule_appointment",
-          description: "Cambiar la fecha u hora de una cita existente.",
-          parameters: {
-            type: "object",
-            properties: {
-              appointmentId: {
-                type: "string",
-                description:
-                  "ID único (UUID) de la cita, obtenido de la lista de CITAS PROGRAMADAS.",
-              },
-              newDate: { type: "string", description: "Nueva fecha YYYY-MM-DD" },
-              newTime: { type: "string", description: "Nueva hora HH:MM" },
-            },
-            required: ["appointmentId", "newDate"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "check_availability",
-          description: "Consultar huecos libres para citas.",
-          parameters: {
-            type: "object",
-            properties: {
-              date: { type: "string", description: "Fecha a consultar" },
-            },
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "generar_cotizacion_por_correo",
-          description:
-            "Genera una cotización formal en PDF con formato oficial de Jorklift SPA y la envía automáticamente por correo electrónico al cliente. Úsala cuando el cliente solicite una cotización, precios de repuestos o servicios y confirme su correo electrónico.",
-          parameters: {
-            type: "object",
-            properties: {
-              cliente: { type: "string", description: "Nombre completo del cliente o empresa" },
-              email: { type: "string", description: "Correo electrónico del cliente donde recibirá la cotización en PDF" },
-              repuestos: { type: "string", description: "Detalle de los repuestos o servicios solicitados con sus cantidades (ej: 2 filtros de aceite, 1 alternador)" },
-              maquinaria: { type: "string", description: "Marca, modelo o tipo de grúa horquilla / maquinaria (ej: Toyota 8FD25, Hyster, etc.)" },
-              modelo: { type: "string", description: "Modelo específico o número de serie de la máquina si fue proporcionado" },
-              comuna: { type: "string", description: "Comuna o ciudad de despacho si fue indicada" },
-            },
-            required: ["email", "repuestos"],
-          },
-        },
-      },
-    ];
+    // 7. Define Tools según tipo de negocio
+    let tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [];
 
     if (isRestaurant) {
-      tools.push(
+      // Para restaurantes: SOLO herramientas de mesas, reservas y pedidos de restaurante
+      tools = [
         {
           type: "function",
           function: {
-            name: "book_restaurant_table",
+            name: "check_table_availability",
             description:
-              "Crear y confirmar una reserva de mesa en el restaurante. Úsala cuando el cliente desee reservar. Solicita día, hora, cantidad de comensales, nombre y teléfono.",
+              "Consultar en la sección de mesas y reservas de la app si hay mesas disponibles para una fecha y hora, y verificar si el restaurante está abierto. Usar cuando el cliente pregunte por mesas, disponibilidad, o si tienen lugar.",
             parameters: {
               type: "object",
               properties: {
                 date: {
                   type: "string",
-                  description: "Fecha de la reserva (ej: YYYY-MM-DD o 'Hoy' / 'Mañana')",
+                  description: "Fecha de la reserva en formato YYYY-MM-DD o 'Hoy' / 'Mañana'",
                 },
-                time: { type: "string", description: "Hora de la reserva (ej: 21:00)" },
-                guests: { type: "number", description: "Número de comensales / personas" },
-                customerName: { type: "string", description: "Nombre del cliente para la reserva" },
-                customerPhone: { type: "string", description: "Teléfono de contacto del cliente" },
+                time: {
+                  type: "string",
+                  description: "Hora de la reserva (ej: 21:00 o 01:30)",
+                },
+                guests: {
+                  type: "number",
+                  description: "Número de personas / comensales",
+                },
                 zonePreference: {
                   type: "string",
-                  description:
-                    "Zona preferida opcional: 'terraza', 'salon_principal', 'pub_bar', 'vip'",
+                  description: "Zona preferida opcional: 'terraza', 'salon_principal', 'pub_bar', 'vip'",
+                },
+              },
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "book_restaurant_table",
+            description:
+              "Crear y confirmar una reserva de mesa en la sección de mesas de la app sin importar el porte de la mesa. Úsala cuando el cliente confirme día, hora, comensales, nombre y teléfono. NUNCA uses citas ni calendarios.",
+            parameters: {
+              type: "object",
+              properties: {
+                date: {
+                  type: "string",
+                  description: "Fecha de la reserva (formato YYYY-MM-DD)",
+                },
+                time: {
+                  type: "string",
+                  description: "Hora de la reserva (formato HH:MM, ej: 21:00)",
+                },
+                guests: {
+                  type: "number",
+                  description: "Número de comensales / personas",
+                },
+                customerName: {
+                  type: "string",
+                  description: "Nombre del cliente para la reserva",
+                },
+                customerPhone: {
+                  type: "string",
+                  description: "Teléfono de contacto del cliente",
+                },
+                zonePreference: {
+                  type: "string",
+                  description: "Zona preferida opcional: 'terraza', 'salon_principal', 'pub_bar', 'vip'",
                 },
                 notes: {
                   type: "string",
-                  description: "Notas adicionales, ocasión especial o peticiones",
+                  description: "Notas adicionales o peticiones especiales",
                 },
               },
               required: ["date", "time", "guests", "customerName", "customerPhone"],
@@ -659,38 +728,29 @@ export async function generateAIWhatsAppResponse(
           function: {
             name: "create_delivery_order",
             description:
-              "Registrar un pedido a domicilio / delivery. Requiere los platos pedidos, nombre, teléfono y dirección de entrega. Calcula el total según los precios de la carta en la base de conocimientos.",
+              "Registrar un pedido a domicilio / delivery con los platos y productos de la carta.",
             parameters: {
               type: "object",
               properties: {
                 customerName: { type: "string", description: "Nombre completo del cliente" },
                 customerPhone: { type: "string", description: "Teléfono de contacto" },
-                deliveryAddress: {
-                  type: "string",
-                  description: "Dirección completa de entrega del pedido",
-                },
+                deliveryAddress: { type: "string", description: "Dirección completa de entrega" },
                 items: {
                   type: "array",
                   description: "Lista de platos o productos pedidos",
                   items: {
                     type: "object",
                     properties: {
-                      name: {
-                        type: "string",
-                        description: "Nombre del plato o bebida según la carta",
-                      },
+                      name: { type: "string", description: "Nombre del plato o bebida" },
                       quantity: { type: "number", description: "Cantidad pedida" },
-                      unitPrice: { type: "number", description: "Precio unitario según la carta" },
-                      notes: { type: "string", description: "Modificaciones o notas especiales" },
+                      unitPrice: { type: "number", description: "Precio unitario" },
+                      notes: { type: "string", description: "Notas especiales del plato" },
                     },
                     required: ["name", "quantity", "unitPrice"],
                   },
                 },
-                totalAmount: {
-                  type: "number",
-                  description: "Total a pagar según los precios de la carta",
-                },
-                notes: { type: "string", description: "Notas adicionales de entrega o pago" },
+                totalAmount: { type: "number", description: "Total a pagar" },
+                notes: { type: "string", description: "Notas adicionales de entrega" },
               },
               required: [
                 "customerName",
@@ -701,8 +761,98 @@ export async function generateAIWhatsAppResponse(
               ],
             },
           },
-        }
-      );
+        },
+      ];
+    } else {
+      // Para servicios generales / CRM / Citas con asesores
+      tools = [
+        {
+          type: "function",
+          function: {
+            name: "book_appointment",
+            description:
+              "Agendar una nueva cita con un asesor. IMPORTANTE: El argumento 'date' DEBE ser una fecha en formato ISO (YYYY-MM-DD).",
+            parameters: {
+              type: "object",
+              properties: {
+                date: { type: "string", description: "Fecha de la cita (formato YYYY-MM-DD)" },
+                time: { type: "string", description: "Hora de la cita (formato HH:MM)" },
+                notes: { type: "string", description: "Notas adicionales sobre el interés del lead" },
+              },
+              required: ["date", "time"],
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "cancel_appointment",
+            description: "Cancelar una cita existente.",
+            parameters: {
+              type: "object",
+              properties: {
+                appointmentId: {
+                  type: "string",
+                  description: "ID único (UUID) de la cita a cancelar",
+                },
+              },
+              required: ["appointmentId"],
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "reschedule_appointment",
+            description: "Cambiar la fecha u hora de una cita existente.",
+            parameters: {
+              type: "object",
+              properties: {
+                appointmentId: {
+                  type: "string",
+                  description: "ID único (UUID) de la cita",
+                },
+                newDate: { type: "string", description: "Nueva fecha YYYY-MM-DD" },
+                newTime: { type: "string", description: "Nueva hora HH:MM" },
+              },
+              required: ["appointmentId", "newDate"],
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "check_availability",
+            description: "Consultar huecos libres para citas con asesores.",
+            parameters: {
+              type: "object",
+              properties: {
+                date: { type: "string", description: "Fecha a consultar" },
+              },
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "generar_cotizacion_por_correo",
+            description:
+              "Genera una cotización formal en PDF y la envía automáticamente por correo electrónico al cliente.",
+            parameters: {
+              type: "object",
+              properties: {
+                cliente: { type: "string", description: "Nombre completo del cliente o empresa" },
+                email: { type: "string", description: "Correo electrónico del cliente" },
+                repuestos: { type: "string", description: "Detalle de los repuestos o servicios solicitados" },
+                maquinaria: { type: "string", description: "Marca, modelo o tipo de maquinaria" },
+                modelo: { type: "string", description: "Modelo específico o número de serie" },
+                comuna: { type: "string", description: "Comuna o ciudad de despacho" },
+              },
+              required: ["email", "repuestos"],
+            },
+          },
+        },
+      ];
     }
 
     // 8. Build System Prompt
@@ -711,17 +861,23 @@ export async function generateAIWhatsAppResponse(
 CARTA Y MENÚ OFICIAL DEL RESTAURANTE (PRECIOS Y PRODUCTOS DISPONIBLES):
 ${formattedMenu || "No hay productos cargados en la base de datos de carta actualmente."}
 
-### PROTOCOLO DE ATENCIÓN DE RESTAURANTE (RESERVAS & DELIVERY):
-1. **SI EL CLIENTE DESEA HACER UNA RESERVA DE MESA:**
-   - DEBES solicitar los siguientes 4 datos indispensables:
-     1. **Día y Hora** de la reserva (ej: hoy a las 21:00, sábado 14:00).
+### PROTOCOLO DE ATENCIÓN DE RESTAURANTE (MESAS & RESERVAS):
+1. **SI EL CLIENTE PREGUNTA POR DISPONIBILIDAD O SI ESTÁ ABIERTO:**
+   - Llama a la herramienta **'check_table_availability'** pasando el día y hora indicados.
+   - Si no indicó hora, usa la hora actual o la que mencione.
+   - Responde confirmando amablemente si hay mesas disponibles en la sección de mesas del restaurante.
+
+2. **SI EL CLIENTE DESEA HACER UNA RESERVA DE MESA:**
+   - DEBES recolectar los 4 datos indispensables:
+     1. **Día y Hora** de la reserva (ej: hoy a las 21:00, sábado a las 22:00).
      2. **Cantidad de personas / comensales**.
      3. **Nombre completo** de quien reserva.
      4. **Número de teléfono** de contacto.
    - En cuanto tengas estos datos, llama OBLIGATORIAMENTE a la herramienta **'book_restaurant_table'**.
+   - Recuerda: Se le asignará una mesa automáticamente en la app **sin importar el porte de la mesa**.
    - Confírmale la reserva al cliente indicando la mesa asignada, fecha, hora y comensales.
 
-2. **SI EL CLIENTE DESEA UN PEDIDO DE DELIVERY / A DOMICILIO O CONSULTA LA CARTA:**
+3. **SI EL CLIENTE DESEA UN PEDIDO DE DELIVERY / A DOMICILIO O CONSULTA LA CARTA:**
    - Consulta los productos y precios exactos en la sección 'CARTA Y MENÚ OFICIAL DEL RESTAURANTE'.
    - NUNCA inventes precios ni productos fuera de la carta oficial.
    - DEBES solicitar los siguientes datos indispensables:
@@ -738,8 +894,9 @@ ${formattedMenu || "No hay productos cargados en la base de datos de carta actua
 ${finalPrompt}
 
 ### CONTEXTO TEMPORAL ACTUAL:
-- En ${leadPais} (${leadTZ}): ${variableMap.$time} del ${variableMap.$date}
-- En Madrid (España): ${variableMap.$time_madrid} del ${variableMap.$date_madrid}
+- Fecha actual: ${currentDateFull}
+- Hora exacta: ${currentTimeFull} (${localTZ})
+- Año actual: ${currentYear}
 
 ### DATOS DEL PROSPECTO:
 - Nombre: ${variableMap.nombre}
@@ -931,6 +1088,32 @@ ${restaurantPromptSection}`;
               leadTimezone
             );
             result = JSON.stringify(res);
+          } else if (name === "check_table_availability") {
+            const { RestaurantService } = await import("@/lib/services/restaurant-service");
+            const requestedTime = args.time || currentTimeFull;
+            const isWithinHours = isTimeWithinOperatingHours(requestedTime, operatingStart, operatingEnd);
+
+            if (!isWithinHours) {
+              result = JSON.stringify({
+                success: true,
+                isOpen: false,
+                available: false,
+                availableCount: 0,
+                message: `El restaurante atiende ${formatOperatingHoursText(operatingStart, operatingEnd)}. A las ${requestedTime} se encuentra cerrado.`,
+              });
+            } else {
+              const res = await RestaurantService.checkTableAvailability(tenantId, {
+                date: args.date,
+                time: args.time,
+                guests: Number(args.guests) || 1,
+                zonePreference: args.zonePreference,
+              });
+              result = JSON.stringify({
+                ...res,
+                operatingHours: `${operatingStart} a ${operatingEnd}`,
+                isWithinOperatingHours: true,
+              });
+            }
           } else if (name === "book_restaurant_table") {
             const { RestaurantService } = await import("@/lib/services/restaurant-service");
             const res = await RestaurantService.bookTableReservation(tenantId, {
