@@ -24,7 +24,7 @@ export class ChatMemoryService {
         .from("chat_messages")
         .select("direction, content")
         .eq("lead_id", leadId)
-        .in("message_type", ["TEXT", "TEMPLATE"])
+        .in("message_type", ["TEXT", "TEMPLATE", "DOCUMENT"])
         .order("created_at", { ascending: false })
         .limit(MAX_LINES);
 

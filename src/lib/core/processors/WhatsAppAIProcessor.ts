@@ -161,6 +161,7 @@ export async function generateAIWhatsAppResponse(
       leadProgramsData,
       allProgramsData,
       menuProductsData,
+      kbDocumentsData,
     ] = await Promise.all([
       // 3. Get Recent Context from DB (last 10 messages)
       ChatMemoryService.getRecentContext(leadId).catch((err) => {
@@ -234,6 +235,25 @@ export async function generateAIWhatsAppResponse(
         .eq("tenant_id", tenantId)
         .eq("is_active", true)
         .order("category"),
+      // 10. Get Knowledge Base Documents (PDF files, Carta, etc.)
+      (async () => {
+        try {
+          const { data: docs } = await supabase
+            .from("knowledge_base")
+            .select("id, name, description, file_url, file_key")
+            .eq("tenant_id", tenantId);
+          return (docs || []) as Array<{
+            id: string;
+            name: string;
+            description?: string;
+            file_url?: string;
+            file_key?: string;
+          }>;
+        } catch (kbDocsErr) {
+          console.warn("[AI PROCESSOR] KB Documents fetch skipped:", kbDocsErr);
+          return [];
+        }
+      })(),
     ]);
 
     const leadPrograms =
@@ -287,6 +307,46 @@ export async function generateAIWhatsAppResponse(
           return `### ${catTitle}:\n${itemsStr}`;
         })
         .join("\n\n");
+    }
+
+    const rawKbDocs = (kbDocumentsData as Array<{
+      id: string;
+      name: string;
+      description?: string;
+      file_url?: string;
+      file_key?: string;
+    }>) || [];
+
+    const availableKbDocs = rawKbDocs
+      .map((doc) => {
+        let url = doc.file_url || "";
+        if ((!url || url.startsWith("/")) && doc.file_key) {
+          try {
+            const { data: publicUrlData } = supabase.storage
+              .from("knowledge_base")
+              .getPublicUrl(doc.file_key);
+            if (publicUrlData?.publicUrl) {
+              url = publicUrlData.publicUrl;
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        return {
+          ...doc,
+          file_url: url,
+        };
+      })
+      .filter((d) => Boolean(d.file_url));
+
+    let formattedKbDocs = "";
+    if (availableKbDocs.length > 0) {
+      formattedKbDocs = availableKbDocs
+        .map(
+          (d) =>
+            `- Documento: "${d.name}" | ID: "${d.id}"${d.description ? ` | Descripción: "${d.description}"` : ""} | URL: ${d.file_url}`
+        )
+        .join("\n");
     }
 
     const tenantConfig = (
@@ -855,6 +915,37 @@ export async function generateAIWhatsAppResponse(
       ];
     }
 
+    if (availableKbDocs.length > 0) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "send_knowledge_document",
+          description:
+            "Envía un archivo PDF oficial cargado en la base de conocimiento (por ejemplo, la carta de comida, carta de tragos o menú) directamente al chat de WhatsApp del cliente como documento adjunto.",
+          parameters: {
+            type: "object",
+            properties: {
+              documentId: {
+                type: "string",
+                description:
+                  "ID (UUID) exacto del documento de la lista disponible que deseas enviar.",
+              },
+              documentNameOrType: {
+                type: "string",
+                description:
+                  "Nombre o tipo de documento a enviar: 'comida', 'tragos', 'carta general', o palabras clave del nombre.",
+              },
+              caption: {
+                type: "string",
+                description:
+                  "Texto breve o pie de documento que acompaña al archivo en WhatsApp (ej: 'Carta de Comida - Gaïa Restobar')",
+              },
+            },
+          },
+        },
+      });
+    }
+
     // 8. Build System Prompt
     const restaurantPromptSection = isRestaurant
       ? `
@@ -887,7 +978,32 @@ ${formattedMenu || "No hay productos cargados en la base de datos de carta actua
      4. **Dirección exacta de entrega**.
    - Calcula el total y DEBES informarle al cliente el desglose de productos y el **TOTAL EXACTO a pagar**.
    - Llama OBLIGATORIAMENTE a la herramienta **'create_delivery_order'** para registrar el pedido.
+
+4. **SI EL CLIENTE PIDE LA CARTA O MENÚ EN PDF (O PREGUNTA POR LA CARTA DIGITAL / QUÉ TIENEN PARA COMER O TOMAR):**
+   - TIENES LA CARTA OFICIAL EN FORMATO PDF CARGADA EN TU BASE DE CONOCIMIENTO.
+   - DEBES llamar OBLIGATORIAMENTE a la herramienta **'send_knowledge_document'** para enviarle el archivo PDF directamente a su WhatsApp.
+   - Si el cliente pide la carta de comida o la carta general, envía la carta de comida.
+   - Si pide la carta de tragos, cócteles o barra, envía la carta de tragos.
+   - Si pide ambas o la carta completa, puedes enviar la carta de comida y ofrecer o enviar también la de tragos.
+   - NUNCA digas que no puedes mandar archivos o que no tienes el PDF; la herramienta 'send_knowledge_document' lo envía de forma nativa e inmediata al chat de WhatsApp.
+   - Responde siempre con un mensaje cercano, relajado y con buena onda confirmando que le acabas de adjuntar la carta en PDF para que la mire con calma.
 `
+      : "";
+
+    const documentsPromptSection = availableKbDocs.length > 0
+      ? `
+ARCHIVOS Y DOCUMENTOS PDF OFICIALES DISPONIBLES EN LA BASE DE CONOCIMIENTO:
+${formattedKbDocs}
+
+REGLAS PARA ENVIAR DOCUMENTOS EN PDF:
+1. Si el cliente solicita la carta, el menú, precios en PDF, carta de comidas, carta de tragos o cualquier archivo:
+   - TIENES LA CAPACIDAD DE ENVIAR EL ARCHIVO PDF DIRECTAMENTE AL WHATSAPP DEL CLIENTE.
+   - DEBES llamar OBLIGATORIAMENTE a la herramienta 'send_knowledge_document'.
+   - Si pide comida o general: envía la carta de comida.
+   - Si pide tragos o coctelería: envía la carta de tragos.
+   - Si pide ambas: puedes enviar la carta de comida y ofrecer o enviar también la de tragos.
+2. NUNCA digas que no tienes la carta o que no puedes mandar archivos. Los documentos listados arriba están 100% listos y cargados en tu base de conocimiento.
+3. Responde siempre con un mensaje amigable, natural y con buena onda informando que le acabas de adjuntar el archivo PDF para que lo revise.`
       : "";
 
     const systemPrompt = `
@@ -913,6 +1029,7 @@ ${((activeVariant.tracked_variables as string[]) || []).map((v) => `- ${v}`).joi
 
 INFORMACIÓN ADICIONAL (CEREBRO / BASE DE CONOCIMIENTO):
 ${localKnowledge || "No hay información adicional específica en la base de conocimiento para este mensaje."}
+${documentsPromptSection}
 
 RESUMEN DE CONVERSACIÓN PREVIA:
 ${chatSummary || "Primera interacción con este lead."}
@@ -1189,6 +1306,143 @@ ${restaurantPromptSection}`;
                 destinatario: customerEmail,
                 pdf_url: cotResult.pdfUrl,
                 mensaje: `Cotización PDF oficial generada con éxito y enviada al correo ${customerEmail}.`,
+              });
+            }
+          } else if (name === "send_knowledge_document") {
+            const docId = args.documentId;
+            const docQuery = String(args.documentNameOrType || "").toLowerCase();
+            const caption = args.caption || "Carta Gaïa Restobar";
+
+            let targetDoc = null;
+            // 1. Try finding by documentId
+            if (docId) {
+              targetDoc = availableKbDocs.find((d) => d.id === docId);
+            }
+
+            // 2. Try matching by type/name query
+            if (!targetDoc && docQuery) {
+              if (
+                docQuery.includes("trago") ||
+                docQuery.includes("bebida") ||
+                docQuery.includes("coctel") ||
+                docQuery.includes("bar")
+              ) {
+                targetDoc = availableKbDocs.find(
+                  (d) =>
+                    d.name.toLowerCase().includes("trago") ||
+                    d.name.toLowerCase().includes("bebida") ||
+                    d.name.toLowerCase().includes("bar") ||
+                    (d.description && d.description.toLowerCase().includes("trago"))
+                );
+              } else if (
+                docQuery.includes("comida") ||
+                docQuery.includes("plato") ||
+                docQuery.includes("alimento") ||
+                docQuery.includes("carta")
+              ) {
+                targetDoc = availableKbDocs.find(
+                  (d) =>
+                    d.name.toLowerCase().includes("comida") ||
+                    d.name.toLowerCase().includes("plato") ||
+                    (d.description && d.description.toLowerCase().includes("comida"))
+                );
+              }
+
+              if (!targetDoc) {
+                targetDoc = availableKbDocs.find(
+                  (d) =>
+                    d.name.toLowerCase().includes(docQuery) ||
+                    (d.description && d.description.toLowerCase().includes(docQuery))
+                );
+              }
+            }
+
+            // 3. Fallback: find any doc containing "carta" or the first available PDF
+            if (!targetDoc) {
+              targetDoc =
+                availableKbDocs.find((d) => d.name.toLowerCase().includes("carta")) ||
+                availableKbDocs[0];
+            }
+
+            if (!targetDoc || !targetDoc.file_url) {
+              result = JSON.stringify({
+                success: false,
+                error: "No se encontró ningún archivo PDF en la base de conocimiento para enviar.",
+              });
+            } else {
+              // Generate clean filename
+              let cleanFilename = targetDoc.name
+                .replace(/[^a-zA-Z0-9_\-\s]/g, "")
+                .trim()
+                .replace(/\s+/g, "_");
+              if (!cleanFilename.toLowerCase().endsWith(".pdf")) cleanFilename += ".pdf";
+
+              const customerPhone = ensurePlusPrefix(
+                (
+                  lead as unknown as {
+                    telefono?: string;
+                  }
+                ).telefono || ""
+              );
+              let docSent = false;
+              let sendError: string | null = null;
+
+              if (waConfig?.accessToken && waConfig?.phoneNumberId && customerPhone) {
+                try {
+                  await whatsappBridge.sendDocumentMessage(
+                    customerPhone,
+                    targetDoc.file_url,
+                    cleanFilename,
+                    caption,
+                    waConfig as { accessToken: string; phoneNumberId: string }
+                  );
+                  docSent = true;
+                  console.log(
+                    `[AI PROCESSOR] ✅ PDF Document '${targetDoc.name}' delivered via WhatsApp to ${customerPhone}`
+                  );
+                } catch (waErr: any) {
+                  sendError = waErr?.message || String(waErr);
+                  console.error("[AI PROCESSOR] ❌ Error delivering WhatsApp document:", waErr);
+                }
+              } else {
+                console.warn(
+                  "[AI PROCESSOR] ⚠️ Skipping native WhatsApp document: missing credentials or phone"
+                );
+              }
+
+              // Log document in chat_messages so it appears in Dashboard and history
+              try {
+                await (supabase.from("chat_messages") as any).insert({
+                  tenant_id: tenantId,
+                  lead_id: leadId,
+                  direction: "OUTBOUND",
+                  message_type: "DOCUMENT",
+                  content: `📄 [Documento PDF]: ${targetDoc.name} - ${targetDoc.file_url}`,
+                  sent_by: "AI_AGENT",
+                  status: docSent ? "DELIVERED" : "SENT",
+                  metadata: {
+                    pdf_url: targetDoc.file_url,
+                    filename: cleanFilename,
+                    document_id: targetDoc.id,
+                    document_name: targetDoc.name,
+                    caption: caption,
+                    channel: "whatsapp",
+                  },
+                });
+              } catch (saveErr) {
+                console.warn("[AI PROCESSOR] Error logging document to chat_messages:", saveErr);
+              }
+
+              result = JSON.stringify({
+                success: true,
+                document_sent: docSent,
+                document_name: targetDoc.name,
+                pdf_url: targetDoc.file_url,
+                filename: cleanFilename,
+                caption: caption,
+                message: `El archivo PDF '${targetDoc.name}' ha sido enviado directamente al WhatsApp del cliente (${customerPhone}).`,
+                instruction_for_assistant:
+                  "Confírmale de forma cálida, cercana y con buena onda al cliente que le acabas de adjuntar la carta en PDF aquí en el chat para que la revise con calma.",
               });
             }
           }

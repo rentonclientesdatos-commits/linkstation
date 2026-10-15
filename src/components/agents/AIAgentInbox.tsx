@@ -2299,6 +2299,31 @@ function ChatMessageBubble({
           )}
           <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{displayContent}</p>
 
+          {(message.message_type === "DOCUMENT" || (message.metadata as any)?.pdf_url) && (
+            <a
+              href={
+                (message.metadata as any)?.pdf_url ||
+                (displayContent.includes("http") ? displayContent.slice(displayContent.indexOf("http")).trim() : "#")
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "mt-3 flex items-center gap-3 rounded-xl border px-4 py-2.5 text-xs font-semibold transition-all",
+                isOut
+                  ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  : "border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
+              )}
+            >
+              <Paperclip className="h-4 w-4 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="truncate font-bold">
+                  {(message.metadata as any)?.filename || (message.metadata as any)?.document_name || "Documento PDF"}
+                </span>
+                <span className="text-[10px] opacity-70">Clic para abrir o descargar PDF</span>
+              </div>
+            </a>
+          )}
+
           {/* Status Icons */}
           <div
             className={cn(

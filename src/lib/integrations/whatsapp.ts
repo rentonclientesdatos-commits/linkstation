@@ -203,9 +203,12 @@ export class WhatsAppBridge {
       // Resilient Fallback: send as text message with direct download link
       try {
         console.log(`[WHATSAPP BRIDGE] 🔄 Attempting fallback: text message with PDF link`);
+        const label = filename
+          ? filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ")
+          : "documento";
         const fallbackText = caption
-          ? `${caption}\n\n📄 *Descargar Cotización (PDF):*\n${documentUrl}`
-          : `📄 *Aquí tienes tu cotización en PDF:*\n${documentUrl}`;
+          ? `${caption}\n\n📄 *Descargar ${label} (PDF):*\n${documentUrl}`
+          : `📄 *Aquí tienes el archivo en PDF (${label}):*\n${documentUrl}`;
         return await this.sendTextMessage(to, fallbackText, config);
       } catch (fallbackError) {
         throw error;
