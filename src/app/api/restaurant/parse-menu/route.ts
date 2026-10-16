@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { MenuProductsRepository } from "@/lib/repositories/inventory-repository";
 import { getAuthServiceRoleKey } from "@/lib/auth-config";
 import { createClient } from "@supabase/supabase-js";
+import { extractTextFromPdf } from "@/lib/services/knowledge-upload-service";
 
 const menuRepo = new MenuProductsRepository();
 
@@ -28,22 +29,19 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Extract raw text from PDF using pdf-parse
+    // 2. Extract raw text from PDF using multi-strategy extractor
     let rawText = "";
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
-      const pdfData = await pdfParse(buffer);
-      rawText = pdfData.text || "";
+      rawText = await extractTextFromPdf(buffer);
     } catch (pdfErr) {
-      console.error("[parse-menu] pdf-parse error:", pdfErr);
+      console.error("[parse-menu] PDF extraction error:", pdfErr);
       return NextResponse.json(
         { error: "No se pudo leer el PDF. Asegúrate de que el archivo no esté protegido." },
         { status: 422 }
       );
     }
 
-    if (!rawText.trim()) {
+    if (!rawText || !rawText.trim()) {
       return NextResponse.json(
         { error: "El PDF no contiene texto legible (puede ser una imagen escaneada)." },
         { status: 422 }
@@ -180,7 +178,7 @@ REGLAS:
       const res = await menuRepo.create(tenantId, {
         tenantId,
         name: String(item.name || "").trim().substring(0, 200),
-        description: item.description ? String(item.description).substring(0, 500) : undefined,
+        description: item.description ? String(item.description).substring(0, 500) : "",
         category,
         price: Math.max(0, Math.round(Number(item.price) || 0)),
         isActive: true,

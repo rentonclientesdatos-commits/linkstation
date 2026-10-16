@@ -32,7 +32,7 @@ async function resolveTenantId(explicitTenantId?: string): Promise<string | null
 // ---------------------------------------------------------------------------
 // PDF text extraction (3 strategies + raw fallback)
 // ---------------------------------------------------------------------------
-async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   // Strategy 1: PDFParse v2 class
   try {
     const pdfModule = await import("pdf-parse");
