@@ -5,45 +5,76 @@ import { getAuthServiceRoleKey } from "@/lib/auth-config";
 import { createClient } from "@supabase/supabase-js";
 import { extractTextFromPdf } from "@/lib/services/knowledge-upload-service";
 
-// Route Segment Config — amplía límites para uploads de PDFs pesados (hasta ~25MB)
-export const maxDuration = 60; // segundos (para procesamiento con OpenAI)
+// Route Segment Config
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 const menuRepo = new MenuProductsRepository();
 
 /**
  * POST /api/restaurant/parse-menu
- * Receives a PDF file (multipart/form-data), extracts menu items using
- * OpenAI gpt-4o-mini, and inserts them into restaurant_menu_items for the tenant.
+ *
+ * Nuevo flujo (sin límite de body en Vercel):
+ *  1. El cliente sube el PDF directo a Supabase Storage → recibimos solo storagePath
+ *  2. El servidor descarga el PDF desde Storage (server-side, sin límite de Vercel)
+ *  3. Extrae texto con extractTextFromPdf
+ *  4. Llama a OpenAI gpt-4o-mini para estructurar los ítems
+ *  5. Inserta en restaurant_menu_items
+ *  6. Limpia el archivo temporal del bucket
  */
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const tenantId = formData.get("tenantId") as string;
-    const file = formData.get("file") as File | null;
+    const body = await request.json();
+    const { tenantId, storagePath } = body as {
+      tenantId?: string;
+      storagePath?: string;
+    };
 
     if (!tenantId) {
       return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
     }
-    if (!file) {
-      return NextResponse.json({ error: "Missing PDF file" }, { status: 400 });
+    if (!storagePath) {
+      return NextResponse.json({ error: "Missing storagePath" }, { status: 400 });
     }
 
-    // 1. Convert file to buffer
-    const arrayBuffer = await file.arrayBuffer();
+    // 1. Descargar PDF desde Supabase Storage (server-side, sin límite de body)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      getAuthServiceRoleKey()
+    );
+
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from("knowledge_base")
+      .download(storagePath);
+
+    if (downloadError || !fileData) {
+      return NextResponse.json(
+        { error: `No se pudo descargar el PDF desde Storage: ${downloadError?.message}` },
+        { status: 422 }
+      );
+    }
+
+    // Convertir Blob → Buffer
+    const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Extract raw text from PDF using multi-strategy extractor
+    // 2. Extraer texto del PDF
     let rawText = "";
     try {
       rawText = await extractTextFromPdf(buffer);
     } catch (pdfErr) {
       console.error("[parse-menu] PDF extraction error:", pdfErr);
+      await supabase.storage.from("knowledge_base").remove([storagePath]);
       return NextResponse.json(
         { error: "No se pudo leer el PDF. Asegúrate de que el archivo no esté protegido." },
         { status: 422 }
       );
     }
+
+    // Limpieza del archivo temporal (fire-and-forget)
+    supabase.storage.from("knowledge_base").remove([storagePath]).catch(() => {
+      console.warn("[parse-menu] No se pudo limpiar el archivo temporal:", storagePath);
+    });
 
     if (!rawText || !rawText.trim()) {
       return NextResponse.json(
@@ -52,13 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Get tenant's OpenAI API key
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      getAuthServiceRoleKey()
-    );
-
-    // Two-step query: first get agent IDs for tenant, then get API key
+    // 3. Obtener API key de OpenAI del tenant
     const { data: tenantAgents } = await supabase
       .from("ai_agents")
       .select("id")
@@ -87,7 +112,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Call OpenAI gpt-4o-mini to extract structured menu items
+    // 4. Llamar a OpenAI gpt-4o-mini para estructurar los ítems
     const openai = new OpenAI({ apiKey });
 
     const extraction = await openai.chat.completions.create({
@@ -135,7 +160,7 @@ REGLAS:
 
     const rawJson = extraction.choices[0]?.message?.content || "[]";
 
-    // 5. Parse the extracted JSON
+    // 5. Parsear el JSON extraído
     let parsedItems: Array<{
       name: string;
       description?: string;
@@ -146,7 +171,6 @@ REGLAS:
     }> = [];
 
     try {
-      // Strip markdown code blocks if present
       const cleanJson = rawJson
         .replace(/^```json\s*/i, "")
         .replace(/^```\s*/i, "")
@@ -168,7 +192,7 @@ REGLAS:
       );
     }
 
-    // 6. Insert items into DB
+    // 6. Insertar ítems en la base de datos
     const validCategories = ["entrante", "principal", "postre", "bebida", "especial"];
     const inserted: string[] = [];
     const errors: string[] = [];

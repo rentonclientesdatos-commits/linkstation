@@ -29,6 +29,7 @@ import {
   Loader2,
   CheckCircle,
 } from "lucide-react";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 interface InventoryPanelProps {
   tenantId: string;
@@ -107,6 +108,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
   };
 
   // ─── PDF PARSER: Cargar carta desde PDF con AI ───────────────────────────
+  // Flujo: PDF → Supabase Storage directo (sin pasar por Vercel) → API recibe path
   const handleLoadFromPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !tenantId) return;
@@ -118,13 +120,31 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
     setParseResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append("tenantId", tenantId);
-      formData.append("file", file);
+      // ── PASO 1: Subir PDF directo a Supabase Storage (evita límite 4.5MB de Vercel) ──
+      const supabase = getSupabaseClient();
+      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const storagePath = `menu-uploads/${tenantId}/${Date.now()}_${safeFileName}`;
 
+      const { error: uploadError } = await supabase.storage
+        .from("knowledge_base")
+        .upload(storagePath, file, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        setParseResult({
+          count: 0,
+          error: `Error al subir el PDF: ${uploadError.message}`,
+        });
+        return;
+      }
+
+      // ── PASO 2: Llamar al API con solo el path (request liviano) ──
       const res = await fetch("/api/restaurant/parse-menu", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, storagePath }),
       });
 
       const data = await res.json();
