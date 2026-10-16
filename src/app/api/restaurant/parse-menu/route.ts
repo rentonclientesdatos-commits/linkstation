@@ -5,6 +5,10 @@ import { getAuthServiceRoleKey } from "@/lib/auth-config";
 import { createClient } from "@supabase/supabase-js";
 import { extractTextFromPdf } from "@/lib/services/knowledge-upload-service";
 
+// Route Segment Config — amplía límites para uploads de PDFs pesados (hasta ~25MB)
+export const maxDuration = 60; // segundos (para procesamiento con OpenAI)
+export const dynamic = "force-dynamic";
+
 const menuRepo = new MenuProductsRepository();
 
 /**
