@@ -31,6 +31,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PDFMenuModal } from "./PDFMenuModal";
 
 import { formatCLP } from "@/lib/mock-pedidos-data";
 
@@ -68,6 +69,7 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
   );
   const [items, setItems] = useState<OrderItem[]>(reservation?.items || []);
   const [showPresetMenu, setShowPresetMenu] = useState(false);
+  const [isPDFMenuModalOpen, setIsPDFMenuModalOpen] = useState(false);
   const [liveMenu, setLiveMenu] = useState<MenuProduct[]>([]);
   const [isDeductingStock, setIsDeductingStock] = useState(false);
   const [stockFeedback, setStockFeedback] = useState<{
@@ -92,20 +94,66 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
     return currentItems.reduce((acc, i) => acc + i.unitPrice * i.quantity, 0);
   };
 
+  const handleUpdateItemsFromPDF = (newItems: OrderItem[]) => {
+    setItems(newItems);
+    const activeRes: Reservation = reservation || {
+      id: `res-${Math.floor(100000 + Math.random() * 900000)}`,
+      tableId: table.id,
+      tableNumber: table.number,
+      customer: { name: `Mesa ${table.number} (Salón)`, phone: "" },
+      dateTime: new Date().toISOString(),
+      guestsCount: table.capacity || 2,
+      status: "ocupada",
+      orderStatus: "pendiente",
+      iaSummary: {
+        channel: "manual",
+        summary: `Pedido cargado desde carta PDF para Mesa ${table.number}`,
+        keyTopics: ["Pedido en Mesa", "Carta PDF"],
+        timestamp: new Date().toISOString(),
+        aiAgentName: "Mesero",
+        confidenceScore: 1,
+        guestsCount: table.capacity || 2,
+      },
+      items: newItems,
+      totalAmount: calculateTotal(newItems),
+      createdVia: "manual",
+    };
+
+    onSaveReservation({
+      ...activeRes,
+      orderStatus,
+      items: newItems,
+      totalAmount: calculateTotal(newItems),
+    });
+  };
+
   const handleAddItem = (preset: {
     name: string;
     category: string;
     price: number;
     id?: string;
   }) => {
-    const newItem: OrderItem = {
-      id: preset.id || `item-${Date.now()}`,
-      name: preset.name,
-      category: preset.category as OrderItem["category"],
-      quantity: 1,
-      unitPrice: preset.price,
-    };
-    const updated = [...items, newItem];
+    const cleanName = preset.name.trim();
+    const existingIndex = items.findIndex(
+      (i) => i.name.toLowerCase().trim() === cleanName.toLowerCase()
+    );
+
+    let updated: OrderItem[];
+    if (existingIndex >= 0) {
+      updated = items.map((item, idx) =>
+        idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item
+      );
+    } else {
+      const newItem: OrderItem = {
+        id: preset.id || `item-${Date.now()}`,
+        name: cleanName,
+        category: preset.category as OrderItem["category"],
+        quantity: 1,
+        unitPrice: preset.price,
+      };
+      updated = [...items, newItem];
+    }
+
     setItems(updated);
     if (reservation) {
       onSaveReservation({
@@ -526,42 +574,13 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
                 </h3>
 
                 <button
-                  onClick={() => setShowPresetMenu(!showPresetMenu)}
-                  className="flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-600/20 px-2.5 py-1 text-xs font-medium text-indigo-300 transition-colors hover:bg-indigo-600/30"
+                  onClick={() => setIsPDFMenuModalOpen(true)}
+                  className="flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-gradient-to-r from-indigo-600/30 to-violet-600/30 px-3.5 py-1.5 text-xs font-bold text-indigo-200 shadow-md shadow-indigo-600/10 transition-all hover:border-indigo-400 hover:from-indigo-600/40 hover:to-violet-600/40 hover:text-white"
                 >
-                  <Plus className="h-3.5 w-3.5" /> Agregar Plato
+                  <Plus className="h-3.5 w-3.5 text-indigo-400" />
+                  <span>Agregar Plato</span>
                 </button>
               </div>
-
-              {/* Preset Menu Selector from Live Menu */}
-              {showPresetMenu && (
-                <div className="animate-in fade-in max-h-56 space-y-2 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900 p-3">
-                  <span className="block text-[11px] font-semibold text-slate-300">
-                    Selecciona un plato de la carta:
-                  </span>
-                  <div className="grid grid-cols-2 gap-1.5 text-xs">
-                    {(liveMenu.length > 0 ? liveMenu : MENU_PRESETS).map((dish, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() =>
-                          handleAddItem({
-                            name: dish.name,
-                            category: dish.category,
-                            price: dish.price,
-                            id: (dish as MenuProduct).id,
-                          })
-                        }
-                        className="flex items-center justify-between rounded border border-slate-700 bg-slate-800 p-2 text-left text-slate-200 transition-colors hover:bg-slate-700"
-                      >
-                        <span className="mr-1 truncate font-medium">{dish.name}</span>
-                        <span className="flex-shrink-0 font-bold text-emerald-400">
-                          {formatCLP(dish.price)}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Items List */}
               {items.length > 0 ? (
@@ -645,6 +664,16 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* PDF Menu Picker Modal */}
+      <PDFMenuModal
+        isOpen={isPDFMenuModalOpen}
+        onClose={() => setIsPDFMenuModalOpen(false)}
+        tenantId={tenantId || ""}
+        tableNumber={table.number}
+        currentItems={items}
+        onUpdateItems={handleUpdateItemsFromPDF}
+      />
     </div>
   );
 };
