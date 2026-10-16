@@ -22,9 +22,16 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
       - REDIS_URL=redis://redis:6379
+    labels:
+      # Traefik: aumentar límite de body a 30MB para permitir uploads de PDFs (parse-menu)
+      - "traefik.http.middlewares.dashboard-bodylimit.buffering.maxRequestBodyBytes=31457280"
+      - "traefik.http.middlewares.dashboard-bodylimit.buffering.maxResponseBodyBytes=31457280"
+      - "traefik.http.middlewares.dashboard-bodylimit.buffering.memRequestBodyBytes=31457280"
+      - "traefik.http.routers.af-dashboard.middlewares=dashboard-bodylimit"
     depends_on:
       redis:
         condition: service_healthy
+
 
   # ── BullMQ Worker (Separate process for queue processing) ──────────
   worker:
