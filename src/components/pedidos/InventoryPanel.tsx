@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   MenuProduct,
   Ingredient,
@@ -25,6 +25,9 @@ import {
   ChefHat,
   Database,
   Filter,
+  FileUp,
+  Loader2,
+  CheckCircle,
 } from "lucide-react";
 
 interface InventoryPanelProps {
@@ -41,6 +44,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
   >([]);
   const [_isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [isParsing, setIsParsing] = useState<boolean>(false);
+  const [parseResult, setParseResult] = useState<{ count: number; error?: string } | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   // Filters for Menu
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -98,6 +104,48 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
     if (!kbId) return undefined;
     const item = knowledgeItems.find((k) => k.id === kbId);
     return item?.file_url || undefined;
+  };
+
+  // ─── PDF PARSER: Cargar carta desde PDF con AI ───────────────────────────
+  const handleLoadFromPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !tenantId) return;
+
+    // Reset input so the same file can be re-uploaded if needed
+    e.target.value = "";
+
+    setIsParsing(true);
+    setParseResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("tenantId", tenantId);
+      formData.append("file", file);
+
+      const res = await fetch("/api/restaurant/parse-menu", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setParseResult({ count: 0, error: data.error || "Error al procesar el PDF" });
+        return;
+      }
+
+      setParseResult({ count: data.inserted });
+      await loadData();
+    } catch (err) {
+      setParseResult({
+        count: 0,
+        error: err instanceof Error ? err.message : "Error inesperado",
+      });
+    } finally {
+      setIsParsing(false);
+      // Auto-clear result after 6 seconds
+      setTimeout(() => setParseResult(null), 6000);
+    }
   };
 
   // Seed data si no hay nada cargado aún
@@ -455,12 +503,59 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {totalProducts === 0 && ingredients.length === 0 && (
+          {/* Resultado del parsing */}
+          {parseResult && (
+            <span
+              className={`flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                parseResult.error
+                  ? "border border-rose-500/30 bg-rose-500/10 text-rose-300"
+                  : "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+              }`}
+            >
+              <CheckCircle className="h-3.5 w-3.5" />
+              {parseResult.error ? parseResult.error : `${parseResult.count} platos cargados ✓`}
+            </span>
+          )}
+
+          {/* Botón Cargar Carta desde PDF (siempre visible en tab menu) */}
+          {activeTab === "menu" && (
+            <>
+              <input
+                ref={pdfInputRef}
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={handleLoadFromPdf}
+              />
+              <button
+                onClick={() => pdfInputRef.current?.click()}
+                disabled={isParsing}
+                className="flex items-center gap-1.5 rounded-xl border border-violet-500/40 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-300 transition-colors hover:bg-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Subí el PDF de tu carta y la IA extrae todos los platos automáticamente"
+              >
+                {isParsing ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Procesando carta...
+                  </>
+                ) : (
+                  <>
+                    <FileUp className="h-3.5 w-3.5" />
+                    Cargar Carta desde PDF
+                  </>
+                )}
+              </button>
+            </>
+          )}
+
+          {/* Demo fallback solo cuando está vacío */}
+          {totalProducts === 0 && ingredients.length === 0 && !isParsing && (
             <button
               onClick={handleSeedDemoData}
               className="flex items-center gap-1 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-500/20"
+              title="Carga datos de ejemplo para ver cómo funciona el panel"
             >
-              <Database className="h-3.5 w-3.5" /> Cargar Carta Demo Fudo
+              <Database className="h-3.5 w-3.5" /> Demo
             </button>
           )}
 
