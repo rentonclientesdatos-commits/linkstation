@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import { MenuProductsRepository } from "@/lib/repositories/inventory-repository";
 import { getAuthServiceRoleKey } from "@/lib/auth-config";
 import { createClient } from "@supabase/supabase-js";
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing storagePath" }, { status: 400 });
     }
 
-    // 1. Descargar PDF desde Supabase Storage (server-side, sin límite de body)
+    // 1. Descargar PDF desde Supabase Storage con Service Role Key
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       getAuthServiceRoleKey()
@@ -104,32 +104,12 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Extraer texto del PDF
-    let rawText = "";
-    try {
-      rawText = await extractTextFromPdf(buffer);
-    } catch (pdfErr) {
-      console.error("[parse-menu] PDF extraction error:", pdfErr);
-      await supabase.storage.from("knowledge_base").remove([storagePath]);
-      return NextResponse.json(
-        { error: "No se pudo leer el PDF. Asegúrate de que el archivo no esté protegido." },
-        { status: 422 }
-      );
-    }
-
-    // Limpieza del archivo temporal (fire-and-forget)
+    // Limpieza del archivo temporal en Supabase Storage (fire-and-forget)
     supabase.storage.from("knowledge_base").remove([storagePath]).catch(() => {
-      console.warn("[parse-menu] No se pudo limpiar el archivo temporal:", storagePath);
+      console.warn("[parse-menu] No se pudo limpiar archivo temporal:", storagePath);
     });
 
-    if (!rawText || !rawText.trim()) {
-      return NextResponse.json(
-        { error: "El PDF no contiene texto legible (puede ser una imagen escaneada)." },
-        { status: 422 }
-      );
-    }
-
-    // 3. Obtener API key de OpenAI del tenant
+    // 2. Obtener API key de OpenAI del tenant
     const { data: tenantAgents } = await supabase
       .from("ai_agents")
       .select("id")
@@ -158,63 +138,103 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Llamar a OpenAI gpt-4o-mini para estructurar los ítems
     const openai = new OpenAI({ apiKey });
 
-    const extraction = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      max_tokens: 4000,
-      messages: [
-        {
-          role: "system",
-          content: `Eres un extractor de cartas de restaurante. 
-Recibirás el texto extraído de un PDF de carta/menú de un restaurante.
-Tu trabajo es identificar TODOS los platos, bebidas y productos con sus precios y categorías.
+    const systemPrompt = `Eres un extractor experto de cartas y menús de restaurantes, bares y cafeterías.
+Tu trabajo es identificar TODOS los productos, platos, cócteles, vinos, cervezas, postres y bebidas que aparecen en el documento, junto con sus precios y categorías.
 
-Responde ÚNICAMENTE con un JSON array válido con este formato exacto:
+Responde ÚNICAMENTE con un JSON array válido con este formato:
 [
   {
-    "name": "Nombre del plato",
-    "description": "Descripción breve o null",
+    "name": "Nombre exacto del producto",
+    "description": "Ingredientes o descripción breve si existe, o null",
     "category": "entrante|principal|postre|bebida|especial",
     "price": 9900,
     "preparationTime": 15,
-    "allergens": ["Gluten", "Lácteos"]
+    "allergens": []
   }
 ]
 
-REGLAS:
-- category SOLO puede ser: "entrante", "principal", "postre", "bebida", "especial"
-- price en número entero (sin símbolo $, sin puntos de miles). Si no hay precio claro, usa 0.
-- preparationTime estimado en minutos según el tipo de plato (bebidas: 3, entrantes: 10, principales: 20, postres: 12)
-- allergens: array vacío [] si no se mencionan alérgenos
-- Si un ítem es bebida alcohólica o cóctel → category: "bebida"
-- Si un ítem es postre, helado o dulce → category: "postre"
-- Si un ítem parece ser de entrada, tapa o para compartir → category: "entrante"
-- Si un ítem es plato de fondo, principal o de fuerza → category: "principal"
-- Si es una especialidad del chef o fuera de categoría clara → category: "especial"
-- NO incluyas categorías, secciones, títulos ni descripciones generales, SOLO productos individuales
-- NO inventes precios: si no ves un número asociado al producto, usa 0`,
-        },
-        {
-          role: "user",
-          content: `Extrae todos los productos de este menú:\n\n${rawText.substring(0, 12000)}`,
-        },
-      ],
-    });
+REGLAS CRÍTICAS:
+- category DEBE ser una de: "entrante", "principal", "postre", "bebida", "especial"
+- price DEBE ser un número entero (ej: 8900 para $8.900 CLP o 12 para $12 USD). Si no hay precio explícito, coloca 0.
+- Si un ítem es trago, cóctel, pisco, cerveza, vino, jugo, café, té o gaseosa -> category: "bebida"
+- Si un ítem es postre, torta, pastel, helado o dulce -> category: "postre"
+- Si es entrada, sopa, ensalada, picoteo o tabla -> category: "entrante"
+- Si es plato de fondo, hamburguesa, sandwich, pizza, pasta o carne -> category: "principal"
+- Si no encaja en las anteriores -> category: "especial"
+- No omitas ningún producto; extrae absolutamente todos los que encuentres en la carta.`;
 
-    const rawJson = extraction.choices[0]?.message?.content || "[]";
+    // 3. Procesar el PDF con OpenAI: Intentar primero subida nativa de documento (visión + texto)
+    let rawJson = "[]";
+    let openAiFileId: string | null = null;
 
-    // 5. Parsear el JSON extraído
-    let parsedItems: Array<{
-      name: string;
-      description?: string;
-      category: string;
-      price: number;
-      preparationTime?: number;
-      allergens?: string[];
-    }> = [];
+    try {
+      const safeName = storagePath.split("/").pop() || "carta.pdf";
+      const fileToUpload = await toFile(buffer, safeName, { type: "application/pdf" });
+      const uploadedFile = await openai.files.create({
+        file: fileToUpload,
+        purpose: "user_data",
+      });
+      openAiFileId = uploadedFile.id;
+
+      const extraction = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        max_tokens: 4000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: [
+              {
+                type: "file" as any,
+                file: { file_id: uploadedFile.id },
+              } as any,
+              {
+                type: "text",
+                text: "Extrae todos los productos, platos, bebidas y cócteles de esta carta en el JSON array especificado.",
+              },
+            ],
+          },
+        ],
+      });
+
+      rawJson = extraction.choices[0]?.message?.content || "[]";
+    } catch (nativeErr) {
+      console.warn("[parse-menu] Fallback a extracción de texto tradicional:", nativeErr);
+
+      // Fallback: extraer texto plano del PDF si la subida nativa falla
+      const rawText = await extractTextFromPdf(buffer);
+      if (!rawText || rawText.trim().length < 15) {
+        return NextResponse.json(
+          { error: "No se pudo extraer texto del PDF ni procesarlo como imagen. Asegúrate de que sea un archivo PDF legible." },
+          { status: 422 }
+        );
+      }
+
+      const textExtraction = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        max_tokens: 4000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `Extrae todos los productos de este menú:\n\n${rawText.substring(0, 45000)}`,
+          },
+        ],
+      });
+
+      rawJson = textExtraction.choices[0]?.message?.content || "[]";
+    } finally {
+      if (openAiFileId) {
+        openai.files.delete(openAiFileId).catch(() => {});
+      }
+    }
+
+    // 4. Parsear el JSON extraído (tolerante a arrays directos u objetos { menu: [...] })
+    let parsedItems: Array<Record<string, any>> = [];
 
     try {
       const cleanJson = rawJson
@@ -222,49 +242,83 @@ REGLAS:
         .replace(/^```\s*/i, "")
         .replace(/\s*```$/i, "")
         .trim();
-      parsedItems = JSON.parse(cleanJson);
+
+      const parsedData = JSON.parse(cleanJson);
+      if (Array.isArray(parsedData)) {
+        parsedItems = parsedData;
+      } else if (typeof parsedData === "object" && parsedData !== null) {
+        for (const k of ["menu", "items", "products", "productos", "platos", "dishes", "carta"]) {
+          if (Array.isArray((parsedData as any)[k])) {
+            parsedItems = (parsedData as any)[k];
+            break;
+          }
+        }
+        if (parsedItems.length === 0) {
+          const firstArr = Object.values(parsedData).find((v) => Array.isArray(v));
+          if (Array.isArray(firstArr)) {
+            parsedItems = firstArr as any[];
+          }
+        }
+      }
     } catch {
       console.error("[parse-menu] Failed to parse OpenAI JSON:", rawJson.substring(0, 500));
       return NextResponse.json(
-        { error: "No se pudo estructurar la carta. Intenta con otro PDF o con menos páginas." },
+        { error: "No se pudo estructurar el formato de la carta. Intenta nuevamente." },
         { status: 422 }
       );
     }
 
     if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
+      console.warn("[parse-menu] Raw response from OpenAI was:", rawJson.substring(0, 500));
       return NextResponse.json(
-        { error: "No se encontraron productos en el PDF. Verifica que sea una carta de restaurante." },
+        { error: "No se encontraron productos en el documento. Verifica que el archivo corresponda a una carta con platos o bebidas." },
         { status: 422 }
       );
     }
 
-    // 6. Insertar ítems en la base de datos
+    // 5. Insertar ítems en la base de datos con mapeo de campos flexible
     const validCategories = ["entrante", "principal", "postre", "bebida", "especial"];
     const inserted: string[] = [];
     const errors: string[] = [];
 
     type ValidCategory = "entrante" | "principal" | "postre" | "bebida" | "especial";
+
     for (const item of parsedItems) {
-      const category: ValidCategory = validCategories.includes(item.category)
-        ? (item.category as ValidCategory)
+      const rawName = item.name || item.item || item.nombre || item.title || "";
+      if (!rawName || typeof rawName !== "string" || !rawName.trim()) continue;
+
+      const rawCategory = String(item.category || item.categoria || "").toLowerCase();
+      const category: ValidCategory = validCategories.includes(rawCategory)
+        ? (rawCategory as ValidCategory)
         : "especial";
+
+      const rawPrice = item.price ?? item.precio ?? 0;
+      const cleanPrice = typeof rawPrice === "number"
+        ? rawPrice
+        : parseInt(String(rawPrice).replace(/[^0-9]/g, ""), 10) || 0;
+
+      const rawDesc = item.description || item.descripcion || "";
+      const description = rawDesc ? String(rawDesc).substring(0, 500) : "";
+
+      const rawPrepTime = Number(item.preparationTime || item.tiempoPreparacion) || 15;
+      const rawAllergens = item.allergens || item.alergenos;
 
       const res = await menuRepo.create(tenantId, {
         tenantId,
-        name: String(item.name || "").trim().substring(0, 200),
-        description: item.description ? String(item.description).substring(0, 500) : "",
+        name: rawName.trim().substring(0, 200),
+        description,
         category,
-        price: Math.max(0, Math.round(Number(item.price) || 0)),
+        price: Math.max(0, Math.round(cleanPrice)),
         isActive: true,
-        preparationTime: Math.max(1, Number(item.preparationTime) || 15),
-        allergens: Array.isArray(item.allergens) ? item.allergens : [],
+        preparationTime: Math.max(1, rawPrepTime),
+        allergens: Array.isArray(rawAllergens) ? rawAllergens : [],
         recipe: [],
       });
 
       if (res.error) {
-        errors.push(`${item.name}: ${res.error}`);
+        errors.push(`${rawName}: ${res.error}`);
       } else {
-        inserted.push(item.name);
+        inserted.push(rawName);
       }
     }
 
@@ -273,7 +327,7 @@ REGLAS:
       inserted: inserted.length,
       errors: errors.length,
       items: inserted,
-      message: `Se cargaron ${inserted.length} productos de la carta.${errors.length > 0 ? ` ${errors.length} no pudieron insertarse.` : ""}`,
+      message: `Se cargaron exitosamente ${inserted.length} productos de la carta.${errors.length > 0 ? ` (${errors.length} no pudieron insertarse)` : ""}`,
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Internal error";
@@ -281,3 +335,4 @@ REGLAS:
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
+
