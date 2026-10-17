@@ -12,15 +12,61 @@ export const dynamic = "force-dynamic";
 const menuRepo = new MenuProductsRepository();
 
 /**
+ * GET /api/restaurant/parse-menu?tenantId=...&fileName=...
+ * Genera una URL/token de subida firmada en Supabase Storage usando Service Role Key.
+ * Permite al navegador subir directamente el PDF a Storage sin topar el límite
+ * de 4.5MB de Vercel y sin violar las políticas de RLS de Supabase.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const tenantId = searchParams.get("tenantId");
+    const fileName = searchParams.get("fileName") || "carta.pdf";
+
+    if (!tenantId) {
+      return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      getAuthServiceRoleKey()
+    );
+
+    const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storagePath = `menu-uploads/${tenantId}/${Date.now()}_${safeFileName}`;
+
+    const { data, error } = await supabase.storage
+      .from("knowledge_base")
+      .createSignedUploadUrl(storagePath, { upsert: true });
+
+    if (error || !data) {
+      console.error("[parse-menu] Error generating signed upload URL:", error);
+      return NextResponse.json(
+        { error: error?.message || "No se pudo autorizar la subida a Storage." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      storagePath,
+      token: data.token,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Internal error";
+    console.error("[parse-menu] GET error:", err);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+/**
  * POST /api/restaurant/parse-menu
  *
- * Nuevo flujo (sin límite de body en Vercel):
- *  1. El cliente sube el PDF directo a Supabase Storage → recibimos solo storagePath
- *  2. El servidor descarga el PDF desde Storage (server-side, sin límite de Vercel)
- *  3. Extrae texto con extractTextFromPdf
- *  4. Llama a OpenAI gpt-4o-mini para estructurar los ítems
- *  5. Inserta en restaurant_menu_items
- *  6. Limpia el archivo temporal del bucket
+ * Nuevo flujo (sin límite de body en Vercel ni problemas de RLS):
+ *  1. El cliente obtiene un token firmado con GET
+ *  2. El cliente sube el PDF con uploadToSignedUrl directo a Supabase Storage
+ *  3. El cliente llama a este POST con { tenantId, storagePath }
+ *  4. El servidor descarga el PDF, extrae el menú con IA e inserta los platos
+ *  5. Limpia el archivo temporal del bucket
  */
 export async function POST(request: NextRequest) {
   try {

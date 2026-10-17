@@ -120,17 +120,27 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
     setParseResult(null);
 
     try {
-      // ── PASO 1: Subir PDF directo a Supabase Storage (evita límite 4.5MB de Vercel) ──
-      const supabase = getSupabaseClient();
-      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const storagePath = `menu-uploads/${tenantId}/${Date.now()}_${safeFileName}`;
+      // ── PASO 1: Obtener token firmado de Supabase Storage (evita RLS y límite de Vercel) ──
+      const signRes = await fetch(
+        `/api/restaurant/parse-menu?tenantId=${encodeURIComponent(tenantId)}&fileName=${encodeURIComponent(file.name)}`
+      );
+      const signData = await signRes.json();
 
+      if (!signRes.ok || signData.error) {
+        setParseResult({
+          count: 0,
+          error: signData.error || "No se pudo autorizar la subida del PDF.",
+        });
+        return;
+      }
+
+      const { storagePath, token } = signData;
+
+      // ── PASO 2: Subir PDF directo a Supabase Storage con token firmado ──
+      const supabase = getSupabaseClient();
       const { error: uploadError } = await supabase.storage
         .from("knowledge_base")
-        .upload(storagePath, file, {
-          contentType: "application/pdf",
-          upsert: true,
-        });
+        .uploadToSignedUrl(storagePath, token, file);
 
       if (uploadError) {
         setParseResult({
