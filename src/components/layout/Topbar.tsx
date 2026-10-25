@@ -11,7 +11,14 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, onMenuClick }: TopbarProps) {
-  const { tenantName, config } = useTenantStore();
+  const { tenantName, config, businessType: storeBusinessType, restaurantRole, setRestaurantRole } = useTenantStore();
+  const businessType =
+    ((config as Record<string, unknown>)?.business_type as string | undefined) ||
+    storeBusinessType;
+  const isRestaurant =
+    !businessType || businessType === "restaurant" || businessType === "restaurante";
+
+  const currentRole = restaurantRole || ((config as Record<string, unknown>)?.restaurant_role as "admin" | "mesero" | "cajero") || "admin";
 
   async function handleLogout() {
     try {
@@ -54,6 +61,63 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
 
       {/* Right controls */}
       <div className="flex items-center gap-2">
+        {/* Restaurant Role Quick Switcher */}
+        {isRestaurant && (
+          <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-inner">
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 px-2 uppercase tracking-wider hidden md:inline">
+              Turno:
+            </span>
+            <button
+              type="button"
+              onClick={() => setRestaurantRole("admin")}
+              title="Vista Dueño / Administrador (Todo habilitado)"
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                currentRole === "admin"
+                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/80 dark:border-slate-700"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              👑 Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => setRestaurantRole("mesero")}
+              title="Vista Mesero (Solo Mesas y Carta interactiva)"
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                currentRole === "mesero"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              🍽️ Mesero
+            </button>
+            <button
+              type="button"
+              onClick={() => setRestaurantRole("cajero")}
+              title="Vista Caja (WhatsApp, Cobros, Tickets e Inventario)"
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                currentRole === "cajero"
+                  ? "bg-amber-600 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              💼 Caja
+            </button>
+            <button
+              type="button"
+              onClick={() => setRestaurantRole("cocina")}
+              title="Vista Cocina / KDS (Pantalla táctil de preparación de pedidos)"
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                currentRole === "cocina"
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              }`}
+            >
+              👨‍🍳 Cocina
+            </button>
+          </div>
+        )}
+
         <ThemeToggle />
         <div className="bg-border mx-1 h-6 w-px" />
         <button

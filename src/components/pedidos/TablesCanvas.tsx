@@ -27,6 +27,7 @@ interface TablesCanvasProps {
   onDeleteTable: (tableId: string) => void;
   onDuplicateTable?: (table: Table) => void;
   onUpdateTablePosition: (tableId: string, position: { x: number; y: number }) => void;
+  onAutoArrange?: () => void;
 }
 
 const STATUS_CONFIG: Record<
@@ -81,14 +82,14 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
   onDeleteTable,
   onDuplicateTable,
   onUpdateTablePosition,
+  onAutoArrange,
 }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [draggingTableId, setDraggingTableId] = useState<string | null>(null);
 
-  const filteredTables =
-    selectedZone === "all" ? tables : tables.filter((t) => t.zone === selectedZone);
+  const filteredTables = tables.filter((t) => t.zone === selectedZone);
 
-  // Handle Dragging in Edit Mode
+  // Handle Dragging in Edit Mode with 4% magnetic snap to grid
   const handleMouseDown = (tableId: string, e: React.MouseEvent) => {
     if (!isEditMode) return;
     e.stopPropagation();
@@ -102,9 +103,12 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
     const rawX = ((e.clientX - rect.left) / rect.width) * 100;
     const rawY = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // Clamp coordinates within 5% to 95%
-    const clampedX = Math.max(5, Math.min(95, Math.round(rawX)));
-    const clampedY = Math.max(5, Math.min(95, Math.round(rawY)));
+    // Snap to 4% grid so tables align cleanly to rows and columns
+    const snappedX = Math.round(rawX / 4) * 4;
+    const snappedY = Math.round(rawY / 4) * 4;
+
+    const clampedX = Math.max(6, Math.min(94, snappedX));
+    const clampedY = Math.max(8, Math.min(92, snappedY));
 
     onUpdateTablePosition(draggingTableId, { x: clampedX, y: clampedY });
   };
@@ -120,7 +124,7 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
   return (
     <div
       className={cn(
-        "relative flex min-h-[600px] w-full flex-col justify-between overflow-hidden rounded-2xl border bg-slate-950/90 p-6 shadow-2xl backdrop-blur-md transition-colors select-none",
+        "relative flex min-h-[640px] w-full flex-col justify-between overflow-hidden rounded-2xl border bg-slate-950/90 p-6 shadow-2xl backdrop-blur-md transition-colors select-none",
         isEditMode ? "border-amber-500/50 bg-slate-950/95" : "border-slate-800"
       )}
       onMouseMove={handleMouseMove}
@@ -142,9 +146,7 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-bold tracking-wide text-white">
-              {selectedZone === "all"
-                ? "Plano General del Local"
-                : activeZoneObj?.name || "Espacio"}
+              {activeZoneObj?.name || "Espacio"}
             </h3>
             {isEditMode ? (
               <span className="flex animate-pulse items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300">
@@ -155,10 +157,20 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
                 Canvas Interactivo
               </span>
             )}
+            {onAutoArrange && (
+              <button
+                onClick={onAutoArrange}
+                className="flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-gradient-to-r from-indigo-600/30 to-purple-600/30 px-3 py-1 text-xs font-bold text-indigo-200 shadow-md transition-all hover:border-indigo-400 hover:text-white active:scale-95"
+                title="Alinear y ordenar todas las mesas automáticamente en una cuadrícula simétrica sin superposiciones"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                <span>Auto-Organizar Plano</span>
+              </button>
+            )}
           </div>
           <p className="mt-0.5 text-xs text-slate-400">
             {isEditMode
-              ? "Arrastra cualquier mesa para cambiar su posición en el mapa o utiliza los iconos para editar capacidad y forma."
+              ? "Arrastra cualquier mesa para cambiar su posición (se alinea automáticamente a la cuadrícula) o pulsa en 'Auto-Organizar Plano'."
               : activeZoneObj?.description || "Vista interactiva en tiempo real"}
           </p>
         </div>
@@ -186,23 +198,12 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
       <div
         ref={canvasRef}
         className={cn(
-          "relative z-10 min-h-[480px] w-full flex-1 overflow-hidden rounded-xl border p-4 transition-all",
+          "relative z-10 min-h-[500px] w-full flex-1 overflow-hidden rounded-xl border p-4 transition-all",
           isEditMode
             ? "cursor-crosshair border-amber-500/30 bg-slate-900/70"
             : "border-slate-800/60 bg-slate-900/40"
         )}
       >
-        {/* Render Decorative Zone Labels when displaying all zones */}
-        {selectedZone === "all" &&
-          zones.map((zone, idx) => (
-            <div
-              key={zone.id}
-              style={{ top: `${idx * 24 + 4}%` }}
-              className="pointer-events-none absolute left-4 text-[10px] font-bold tracking-widest text-indigo-400/30 uppercase select-none"
-            >
-              {zone.name}
-            </div>
-          ))}
 
         {/* Interactive Tables */}
         {filteredTables.map((table) => {
@@ -263,18 +264,18 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
                 </div>
               )}
 
-              {/* Edit Mode Quick Action Overlays */}
+              {/* Edit Mode Quick Action Overlays (contained cleanly inside card) */}
               {isEditMode && (
-                <div className="absolute -top-3 -right-3 z-30 flex items-center gap-1">
+                <div className="absolute top-1 right-1 z-30 flex items-center gap-0.5 rounded-lg border border-slate-700 bg-slate-950/95 p-0.5 shadow-md">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onEditTable(table);
                     }}
-                    className="rounded-full bg-indigo-600 p-1.5 text-white shadow transition-colors hover:bg-indigo-500"
+                    className="rounded p-1 text-slate-300 hover:bg-indigo-600 hover:text-white transition-colors"
                     title="Editar mesa"
                   >
-                    <Edit2 className="h-3 w-3" />
+                    <Edit2 className="h-2.5 w-2.5" />
                   </button>
                   {onDuplicateTable && (
                     <button
@@ -282,10 +283,10 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
                         e.stopPropagation();
                         onDuplicateTable(table);
                       }}
-                      className="rounded-full bg-emerald-600 p-1.5 text-white shadow transition-colors hover:bg-emerald-500"
+                      className="rounded p-1 text-slate-300 hover:bg-emerald-600 hover:text-white transition-colors"
                       title="Copiar / Duplicar mesa"
                     >
-                      <Copy className="h-3 w-3" />
+                      <Copy className="h-2.5 w-2.5" />
                     </button>
                   )}
                   <button
@@ -293,10 +294,10 @@ export const TablesCanvas: React.FC<TablesCanvasProps> = ({
                       e.stopPropagation();
                       onDeleteTable(table.id);
                     }}
-                    className="rounded-full bg-rose-600 p-1.5 text-white shadow transition-colors hover:bg-rose-500"
+                    className="rounded p-1 text-slate-300 hover:bg-rose-600 hover:text-white transition-colors"
                     title="Eliminar mesa"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-2.5 w-2.5" />
                   </button>
                 </div>
               )}

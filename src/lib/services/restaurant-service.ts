@@ -53,6 +53,7 @@ export class RestaurantService {
           tables: INITIAL_TABLES,
           reservations: {},
           orders: [],
+          closedSales: [],
         };
       }
 
@@ -61,6 +62,7 @@ export class RestaurantService {
         tables: restConfig.tables || INITIAL_TABLES,
         reservations: restConfig.reservations || {},
         orders: restConfig.orders || [],
+        closedSales: restConfig.closedSales || [],
       };
     } catch (e) {
       console.error("[RestaurantService] Error fetching state:", e);
@@ -69,6 +71,7 @@ export class RestaurantService {
         tables: INITIAL_TABLES,
         reservations: {},
         orders: [],
+        closedSales: [],
       };
     }
   }

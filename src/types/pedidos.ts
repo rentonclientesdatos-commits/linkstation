@@ -77,11 +77,31 @@ export interface DeliveryOrder {
   notes?: string;
 }
 
+export interface ClosedSale {
+  id: string;
+  ticketNumber: string;
+  tableId: string;
+  tableNumber: number;
+  tableName: string;
+  customerName: string;
+  items: OrderItem[];
+  subtotal: number;
+  tipAmount: number;
+  totalAmount: number;
+  netAmount: number;
+  ivaAmount: number;
+  paymentMethod: "efectivo" | "tarjeta" | "transferencia";
+  closedAt: string;
+  closedBy?: string;
+  zone?: string;
+}
+
 export interface RestaurantState {
   zones: Zone[];
   tables: Table[];
   reservations: Record<string, Reservation>;
   orders: DeliveryOrder[];
+  closedSales?: ClosedSale[];
 }
 
 // -------------------------------------------------------------

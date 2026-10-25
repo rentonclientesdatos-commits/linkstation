@@ -5,6 +5,7 @@ import { TenantConfig } from "@/types/tenant";
 interface TenantState extends TenantConfig {
   isConfigured: boolean;
   setTenant: (config: TenantConfig) => void;
+  setRestaurantRole: (role: "admin" | "mesero" | "cajero" | "cocina") => void;
   clearTenant: () => void;
 }
 
@@ -13,6 +14,7 @@ const DEFAULT_STATE: TenantConfig = {
   tenantName: "",
   config: {},
   isAdmin: false,
+  restaurantRole: "admin",
 };
 
 /**
@@ -30,8 +32,22 @@ export const useTenantStore = create<TenantState>()(
       setTenant: (config) =>
         set({
           ...config,
+          restaurantRole:
+            config.restaurantRole ||
+            ((config.config as Record<string, unknown>)?.restaurant_role as "admin" | "mesero" | "cajero" | "cocina") ||
+            "admin",
           isConfigured: !!config.tenantId,
         }),
+
+      setRestaurantRole: (role) =>
+        set((state) => ({
+          ...state,
+          restaurantRole: role,
+          config: {
+            ...((state.config as Record<string, unknown>) || {}),
+            restaurant_role: role,
+          },
+        })),
 
       clearTenant: () => set({ ...DEFAULT_STATE, isConfigured: false }),
     }),

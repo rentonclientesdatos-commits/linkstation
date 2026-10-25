@@ -427,7 +427,56 @@ export default function SettingsPage() {
                             </p>
                           </div>
 
+                          {/* Rol de restaurante en nuevo cliente */}
+                          {editForm.business_type === "restaurant" && (
+                            <div className="space-y-2 md:col-span-2">
+                              <Label className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                                Rol en el Restaurante
+                              </Label>
+                              <div className="grid grid-cols-3 gap-2">
+                                {[
+                                  { id: "admin", label: "👑 Admin / Dueño", desc: "Acceso total: mesas, agentes, métricas, caja y ajustes." },
+                                  { id: "mesero", label: "🍽️ Mesero", desc: "Solo vista de mesas y carta para tomar pedidos." },
+                                  { id: "cajero", label: "💼 Cajero / Caja", desc: "Mesas, WhatsApp, cobros, tickets y control de stock." },
+                                ].map((role) => {
+                                  const currentRole = (() => {
+                                    const conf = typeof editForm.config === "string"
+                                      ? JSON.parse(editForm.config || "{}")
+                                      : editForm.config || {};
+                                    return (conf as Record<string, unknown>).restaurant_role || "admin";
+                                  })();
+                                  const isActive = currentRole === role.id;
+                                  return (
+                                    <button
+                                      key={role.id}
+                                      type="button"
+                                      onClick={() => {
+                                        const current = typeof editForm.config === "string"
+                                          ? JSON.parse(editForm.config || "{}")
+                                          : editForm.config || {};
+                                        setEditForm({
+                                          ...editForm,
+                                          config: { ...current, restaurant_role: role.id },
+                                        });
+                                      }}
+                                      className={cn(
+                                        "flex flex-col gap-1 rounded-xl border p-3 text-left transition-all",
+                                        isActive
+                                          ? "border-blue-400 bg-blue-50 dark:border-blue-700/60 dark:bg-blue-900/20"
+                                          : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 opacity-60 hover:opacity-100"
+                                      )}
+                                    >
+                                      <span className="text-xs font-black text-slate-800 dark:text-slate-100">{role.label}</span>
+                                      <span className="text-[9px] text-slate-400 leading-tight">{role.desc}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Custom Logo Uploader */}
+
                           <div className="rounded-2xl border border-blue-100 bg-white/80 p-5 shadow-sm md:col-span-2 dark:border-slate-800 dark:bg-slate-900">
                             <LogoUploader
                               value={(() => {
@@ -945,6 +994,54 @@ export default function SettingsPage() {
                               : "Oculta la sección de Pedidos & Mesas para este cliente."}
                           </p>
                         </div>
+
+                        {/* Rol de restaurante - solo para tipo restaurante */}
+                        {editForm.business_type === "restaurant" && (
+                          <div className="space-y-2 md:col-span-2">
+                            <Label className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                              Rol en el Restaurante
+                            </Label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { id: "admin", label: "👑 Admin / Dueño", desc: "Acceso total: mesas, agentes, métricas, caja y ajustes." },
+                                { id: "mesero", label: "🍽️ Mesero", desc: "Solo vista de mesas y carta para tomar pedidos." },
+                                { id: "cajero", label: "💼 Cajero / Caja", desc: "Mesas, WhatsApp, cobros, tickets y control de stock." },
+                              ].map((role) => {
+                                const currentRole = (() => {
+                                  const conf = typeof editForm.config === "string"
+                                    ? JSON.parse(editForm.config || "{}")
+                                    : editForm.config || {};
+                                  return (conf as Record<string, unknown>).restaurant_role || "admin";
+                                })();
+                                const isActive = currentRole === role.id;
+                                return (
+                                  <button
+                                    key={role.id}
+                                    type="button"
+                                    onClick={() => {
+                                      const current = typeof editForm.config === "string"
+                                        ? JSON.parse(editForm.config || "{}")
+                                        : editForm.config || {};
+                                      setEditForm({
+                                        ...editForm,
+                                        config: { ...current, restaurant_role: role.id },
+                                      });
+                                    }}
+                                    className={cn(
+                                      "flex flex-col gap-1 rounded-xl border p-3 text-left transition-all",
+                                      isActive
+                                        ? "border-emerald-400 bg-emerald-50 dark:border-emerald-700/60 dark:bg-emerald-900/20"
+                                        : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 opacity-60 hover:opacity-100"
+                                    )}
+                                  >
+                                    <span className="text-xs font-black text-slate-800 dark:text-slate-100">{role.label}</span>
+                                    <span className="text-[9px] text-slate-400 leading-tight">{role.desc}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Custom Logo Uploader for Edit */}
                         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:col-span-2 dark:border-slate-800 dark:bg-slate-900">

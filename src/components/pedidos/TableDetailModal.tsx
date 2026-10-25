@@ -29,9 +29,11 @@ import {
   Tag,
   CheckCircle2,
   AlertTriangle,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PDFMenuModal } from "./PDFMenuModal";
+import { TicketModal, PaymentConfirmationData } from "./TicketModal";
 
 import { formatCLP } from "@/lib/mock-pedidos-data";
 
@@ -41,6 +43,7 @@ interface TableDetailModalProps {
   onClose: () => void;
   onUpdateStatus: (tableId: string, status: TableStatus) => void;
   onSaveReservation: (reservation: Reservation) => void;
+  onCloseTableSale?: (table: Table, saleData: PaymentConfirmationData) => void;
 }
 
 const MENU_PRESETS = [
@@ -60,9 +63,10 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
   onClose,
   onUpdateStatus,
   onSaveReservation,
+  onCloseTableSale,
 }) => {
   // ── All hooks MUST be declared before any conditional return ──
-  const { tenantId } = useTenantStore();
+  const { tenantId, tenantName, restaurantRole } = useTenantStore();
   const [currentStatus, setCurrentStatus] = useState<TableStatus>(table?.status ?? "disponible");
   const [orderStatus, setOrderStatus] = useState<OrderStatus>(
     reservation?.orderStatus || "pendiente"
@@ -70,6 +74,7 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
   const [items, setItems] = useState<OrderItem[]>(reservation?.items || []);
   const [showPresetMenu, setShowPresetMenu] = useState(false);
   const [isPDFMenuModalOpen, setIsPDFMenuModalOpen] = useState(false);
+  const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [liveMenu, setLiveMenu] = useState<MenuProduct[]>([]);
   const [isDeductingStock, setIsDeductingStock] = useState(false);
   const [stockFeedback, setStockFeedback] = useState<{
@@ -644,24 +649,37 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
             Cerrar
           </button>
 
-          <button
-            onClick={() => {
-              handleStatusChange(currentStatus);
-              if (reservation) {
-                onSaveReservation({
-                  ...reservation,
-                  status: currentStatus,
-                  orderStatus,
-                  items,
-                  totalAmount: calculateTotal(items),
-                });
-              }
-              onClose();
-            }}
-            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 transition-all hover:bg-indigo-500"
-          >
-            <Check className="h-4 w-4" /> Guardar Cambios
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Botón de cobro - visible para admin y cajero */}
+            {(restaurantRole === "admin" || restaurantRole === "cajero") && items.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsTicketOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-slate-900 shadow-lg shadow-amber-500/30 transition-all hover:bg-amber-400"
+              >
+                <Receipt className="h-4 w-4" /> Cobrar
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                handleStatusChange(currentStatus);
+                if (reservation) {
+                  onSaveReservation({
+                    ...reservation,
+                    status: currentStatus,
+                    orderStatus,
+                    items,
+                    totalAmount: calculateTotal(items),
+                  });
+                }
+                onClose();
+              }}
+              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 transition-all hover:bg-indigo-500"
+            >
+              <Check className="h-4 w-4" /> Guardar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -673,6 +691,34 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
         tableNumber={table.number}
         currentItems={items}
         onUpdateItems={handleUpdateItemsFromPDF}
+      />
+
+      {/* Ticket / Cobrar Modal */}
+      <TicketModal
+        isOpen={isTicketOpen}
+        onClose={() => setIsTicketOpen(false)}
+        table={table}
+        reservation={reservation}
+        items={items}
+        tenantName={tenantName || "Restaurante"}
+        onConfirmPayment={(saleData) => {
+          if (onCloseTableSale) {
+            onCloseTableSale(table, saleData);
+          } else {
+            handleStatusChange("disponible");
+            if (reservation) {
+              onSaveReservation({
+                ...reservation,
+                status: "disponible",
+                orderStatus: "pagado",
+                items,
+                totalAmount: calculateTotal(items),
+              });
+            }
+          }
+          setIsTicketOpen(false);
+          onClose();
+        }}
       />
     </div>
   );

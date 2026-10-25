@@ -35,6 +35,7 @@ import {
   Utensils,
   PhoneCall,
   Instagram,
+  Flame,
 } from "lucide-react";
 import { TenantSelector } from "./TenantSelector";
 
@@ -131,6 +132,18 @@ const NAV_ITEMS: NavItem[] = [
     icon: <Utensils className="h-5 w-5" strokeWidth={1.8} />,
     restaurantOnly: true,
     moduleId: "restaurant",
+    subItems: [
+      {
+        label: "Plano & Mesas",
+        href: "/dashboard/pedidos",
+        icon: <Utensils className="h-4 w-4" strokeWidth={1.8} />,
+      },
+      {
+        label: "Cocina / KDS",
+        href: "/dashboard/pedidos/kds",
+        icon: <Flame className="h-4 w-4 text-rose-500" strokeWidth={1.8} />,
+      },
+    ],
   },
   {
     label: "Campañas",
@@ -317,6 +330,11 @@ export function Sidebar({
   const isRestaurant =
     !businessType || businessType === "restaurant" || businessType === "restaurante";
 
+  const restaurantRole =
+    useTenantStore((s) => s.restaurantRole) ||
+    ((tenantConfig as Record<string, unknown>)?.restaurant_role as "admin" | "mesero" | "cajero" | undefined) ||
+    "admin";
+
   const visibleModules = (tenantConfig as Record<string, unknown>)?.visible_modules as
     string[] | undefined;
 
@@ -330,7 +348,28 @@ export function Sidebar({
     // 3. Negocio tipo restaurante
     if (item.restaurantOnly && !isRestaurant) return null;
 
-    // 4. Tenant específico (ej: exclusivo para Jorklif)
+    // 4. Filtrado específico por ROL DE RESTAURANTE (Mesero vs Cajero vs Admin)
+    if (isRestaurant && !isSuperAdmin) {
+      if (restaurantRole === "mesero") {
+        // El mesero solo tiene acceso a Pedidos y Mesas
+        if (item.moduleId !== "restaurant" && item.href !== "/dashboard/pedidos") {
+          return null;
+        }
+      } else if (restaurantRole === "cocina") {
+        // La cocina solo ve Pedidos / Pantalla KDS
+        if (item.moduleId !== "restaurant" && !item.href.startsWith("/dashboard/pedidos")) {
+          return null;
+        }
+      } else if (restaurantRole === "cajero") {
+        // El cajero ve Pedidos & Mesas (cobros/tickets), WhatsApp y Métricas de caja
+        const allowedCajeroModules = ["restaurant", "whatsapp", "dashboard"];
+        if (item.moduleId && !allowedCajeroModules.includes(item.moduleId)) {
+          return null;
+        }
+      }
+    }
+
+    // 5. Tenant específico (ej: exclusivo para Jorklif)
     if (item.tenantOnly) {
       const currentName = (tenantName || "").toLowerCase().trim();
       const currentId = (tenantId || "").toLowerCase().trim();
@@ -342,7 +381,7 @@ export function Sidebar({
       if (!matches) return null;
     }
 
-    // 5. Módulos asignados por el Super Admin
+    // 6. Módulos asignados por el Super Admin
     if (!isSuperAdmin && item.moduleId && visibleModules && Array.isArray(visibleModules)) {
       if (!visibleModules.includes(item.moduleId)) {
         return null;

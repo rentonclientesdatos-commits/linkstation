@@ -122,6 +122,7 @@ export interface TenantConfigData {
   logo_url?: string;
   headers?: string[];
   business_type?: "restaurant" | "sales" | "other" | string;
+  restaurant_role?: "admin" | "mesero" | "cajero" | "cocina";
   kpis?: KpiConfig[];
   visible_modules?: string[];
   [key: string]: unknown;
@@ -134,5 +135,6 @@ export interface TenantConfig {
   isAdmin?: boolean;
   isSuperAdmin?: boolean;
   businessType?: string;
+  restaurantRole?: "admin" | "mesero" | "cajero" | "cocina";
   logoUrl?: string;
 }

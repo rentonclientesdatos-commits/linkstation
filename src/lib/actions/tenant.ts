@@ -373,8 +373,19 @@ export async function createTenant(tenant: Partial<Tenant> & { password?: string
       ((tenantData.config as Record<string, unknown>)?.business_type as string) ||
       "general";
 
+    // Módulos visibles por defecto según tipo de negocio
+    const defaultVisibleModules =
+      finalBusinessType === "restaurant"
+        ? ["dashboard", "restaurant", "whatsapp", "calendar", "simulator", "docs"]
+        : ["dashboard", "ai_agents", "whatsapp", "leads", "calendar", "campaigns", "docs"];
+
+    const incomingConfig = (tenantData.config || {}) as Record<string, unknown>;
     const config = {
-      ...(tenantData.config || {}),
+      visible_modules: Array.isArray(incomingConfig.visible_modules) && incomingConfig.visible_modules.length > 0
+        ? incomingConfig.visible_modules
+        : defaultVisibleModules,
+      restaurant_role: incomingConfig.restaurant_role || "admin",
+      ...incomingConfig,
       is_admin: !!is_admin,
       username: username || "",
       api_type: api_type || "internal",
@@ -527,7 +538,21 @@ export async function updateTenant(id: string, updates: Partial<Tenant> & { pass
       ...cleanUpdates
     } = updates;
 
-    const newConfig = { ...((cleanUpdates.config as Record<string, unknown>) || {}) };
+    // Obtener la configuración existente para hacer un merge limpio y no borrar claves previas
+    const { data: existingTenant } = await serviceSupabase
+      .from("tenants")
+      .select("config")
+      .eq("id", id)
+      .single();
+
+    const existingConfig = (existingTenant?.config as Record<string, unknown>) || {};
+    const incomingConfig = (cleanUpdates.config as Record<string, unknown>) || {};
+
+    const newConfig = {
+      ...existingConfig,
+      ...incomingConfig,
+    };
+
     if (is_admin !== undefined) newConfig.is_admin = !!is_admin;
     if (username !== undefined) newConfig.username = username;
     if (api_type !== undefined) newConfig.api_type = api_type;
