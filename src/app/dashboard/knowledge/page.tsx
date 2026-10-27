@@ -245,29 +245,30 @@ export default function KnowledgeBasePage() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return (
-    <div className="bg-background text-foreground selection:bg-primary/30 flex h-[calc(100vh-80px)] flex-col overflow-hidden transition-colors duration-500">
+    <div className="bg-[#030712] text-white selection:bg-[#00e5ff]/30 flex h-[calc(100vh-80px)] flex-col overflow-hidden transition-colors duration-500">
       {/* Header Area */}
-      <div className="bg-card/20 border-border flex items-center justify-between border-b px-8 py-6">
+      <div className="relative z-10 flex items-center justify-between border-b border-[rgba(0,229,255,0.1)] bg-[rgba(4,8,20,0.85)] px-8 py-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10">
-            <Database className="h-6 w-6 text-emerald-400" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+            <Database className="h-6 w-6 text-[#00e5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight uppercase">Base de Conocimiento</h1>
-            <p className="text-muted-foreground mt-1 text-xs leading-none font-bold tracking-widest uppercase">
+            <h1 className="text-2xl font-black tracking-tight text-white uppercase">Base de Conocimiento</h1>
+            <p className="mt-1 text-xs leading-none font-bold tracking-widest text-[#00e5ff]/70 uppercase">
               Gestiona PDFs, cartas y textos de entrenamiento indexados en PGVector.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="group relative">
-            <Search className="text-muted-foreground/40 group-focus-within:text-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+            <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#00e5ff]" />
             <input
               type="text"
               placeholder="Buscar conocimientos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-card/40 border-border focus:border-primary/40 focus:ring-primary/10 text-foreground h-11 w-64 rounded-xl border pr-6 pl-12 text-sm transition-all outline-none focus:ring-4"
+              className="h-11 w-64 rounded-xl border border-[rgba(0,229,255,0.18)] bg-[rgba(4,8,20,0.8)] pr-6 pl-12 text-sm text-white placeholder-slate-500 outline-none backdrop-blur-md transition-all focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
             />
           </div>
           <button
@@ -275,7 +276,7 @@ export default function KnowledgeBasePage() {
               resetForm();
               setIsUploadModalOpen(true);
             }}
-            className="flex h-11 items-center gap-2 rounded-xl bg-emerald-500 px-6 text-[11px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex h-11 items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.15)] px-6 text-[11px] font-black tracking-widest text-[#00e5ff] uppercase shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all hover:bg-[rgba(0,229,255,0.25)] hover:shadow-[0_0_20px_rgba(0,229,255,0.3)] active:scale-95"
           >
             <Plus className="h-4 w-4" />
             Añadir Conocimiento
@@ -286,8 +287,8 @@ export default function KnowledgeBasePage() {
       <div className="flex-1 overflow-y-auto p-8">
         {loading ? (
           <div className="flex h-full flex-col items-center justify-center space-y-4 opacity-50">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="text-[10px] font-black tracking-tighter uppercase">
+            <Loader2 className="h-8 w-8 animate-spin text-[#00e5ff]" />
+            <p className="text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
               Cargando biblioteca...
             </p>
           </div>
@@ -296,23 +297,25 @@ export default function KnowledgeBasePage() {
             {searchQuery ? (
               <EmptyState
                 size="lg"
-                icon={<Search className="h-12 w-12" />}
+                icon={<Search className="h-12 w-12 text-[#00e5ff]" />}
                 title="Sin coincidencias"
                 description="No encontramos documentos que coincidan con tu búsqueda. Prueba con otro término."
+                className="border-[rgba(0,229,255,0.1)] bg-[rgba(6,10,25,0.6)]"
               />
             ) : (
               <EmptyState
                 size="lg"
-                icon={<Database className="h-12 w-12" />}
+                icon={<Database className="h-12 w-12 text-[#00e5ff]" />}
                 title="Sin conocimientos cargados"
                 description="Sube documentos o pega texto/cartas para alimentar el cerebro de tu agente."
+                className="border-[rgba(0,229,255,0.1)] bg-[rgba(6,10,25,0.6)]"
                 action={
                   <button
                     onClick={() => {
                       resetForm();
                       setIsUploadModalOpen(true);
                     }}
-                    className="flex h-10 items-center gap-2 rounded-xl bg-emerald-500 px-5 text-xs font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+                    className="flex h-10 items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.15)] px-5 text-xs font-black tracking-widest text-[#00e5ff] uppercase shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all hover:bg-[rgba(0,229,255,0.25)]"
                   >
                     <Plus className="h-4 w-4" /> Añadir primer conocimiento
                   </button>
@@ -327,10 +330,11 @@ export default function KnowledgeBasePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={group.name}
-                className="group bg-card/40 border-border hover:bg-card/60 relative rounded-[32px] border p-6 transition-all hover:border-emerald-500/20"
+                className="group relative overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.12)] bg-[rgba(6,10,25,0.8)] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all hover:border-[rgba(0,229,255,0.3)] hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]"
               >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
                 <div className="mb-4 flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.25)] bg-[rgba(0,229,255,0.08)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.15)]">
                     {group.isText ? (
                       <AlignLeft className="h-6 w-6" />
                     ) : (
@@ -352,7 +356,7 @@ export default function KnowledgeBasePage() {
                           await loadItems();
                         }
                       }}
-                      className="text-muted-foreground/40 rounded-xl p-2 transition-all hover:bg-red-500/10 hover:text-red-400"
+                      className="rounded-xl border border-transparent p-2 text-slate-400 transition-all hover:border-[rgba(255,0,85,0.3)] hover:bg-[rgba(255,0,85,0.1)] hover:text-[#ff0055]"
                       title={`Eliminar toda la base ${group.name}`}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -360,21 +364,21 @@ export default function KnowledgeBasePage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-foreground/90 group-hover:text-foreground line-clamp-1 text-base font-bold transition-colors">
+                  <h3 className="line-clamp-1 text-base font-bold text-white transition-colors group-hover:text-[#00e5ff]">
                     {group.name}
                   </h3>
-                  <p className="text-muted-foreground line-clamp-2 h-8 text-xs leading-snug">
+                  <p className="line-clamp-2 h-8 text-xs leading-snug text-slate-400">
                     {group.description || "Sin descripción proporcionada."}
                   </p>
                 </div>
-                <div className="border-border mt-6 flex items-center justify-between border-t pt-6">
-                  <span className="rounded-full border border-emerald-500/10 bg-emerald-500/5 px-3 py-1 text-[10px] font-black tracking-widest text-emerald-500/60 uppercase">
+                <div className="mt-6 flex items-center justify-between border-t border-[rgba(0,229,255,0.08)] pt-4">
+                  <span className="rounded-full border border-[rgba(0,229,255,0.25)] bg-[rgba(0,229,255,0.08)] px-3 py-1 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                     {group.isText
                       ? "Texto Directo"
                       : `${group.count} ${group.count === 1 ? "Archivo" : "Archivos"}`}
                   </span>
-                  <span className="text-muted-foreground/40 flex items-center gap-1.5 text-[10px] font-bold">
-                    <ShieldCheck className="h-3 w-3 text-emerald-400" />
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#34d399]">
+                    <ShieldCheck className="h-3.5 w-3.5 text-[#34d399]" />
                     Vectorizado
                   </span>
                 </div>
@@ -392,38 +396,39 @@ export default function KnowledgeBasePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="bg-background/80 absolute inset-0 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
               onClick={() => !uploading && setIsUploadModalOpen(false)}
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-card border-border relative max-h-[90vh] w-full max-w-lg space-y-6 overflow-y-auto rounded-[40px] border p-8 shadow-2xl"
+              className="relative max-h-[90vh] w-full max-w-lg space-y-6 overflow-y-auto rounded-[32px] border border-[rgba(0,229,255,0.25)] bg-[rgba(4,8,20,0.95)] p-8 shadow-[0_16px_64px_rgba(0,0,0,0.8),0_0_30px_rgba(0,229,255,0.15)] backdrop-blur-2xl"
             >
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.4)] to-transparent" />
               <div className="space-y-3 text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-3xl border border-emerald-500/20 bg-emerald-500/10">
-                  <BookOpen className="h-7 w-7 text-emerald-500" />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+                  <BookOpen className="h-7 w-7 text-[#00e5ff]" />
                 </div>
-                <h3 className="text-2xl font-black tracking-tight uppercase">
+                <h3 className="text-2xl font-black tracking-tight text-white uppercase">
                   Añadir Base de Conocimiento
                 </h3>
-                <p className="text-muted-foreground px-4 text-xs leading-relaxed font-medium">
+                <p className="px-4 text-xs leading-relaxed font-medium text-slate-400">
                   Alimenta la IA con documentos o texto directo que se fragmentan e indexan en
                   PGVector.
                 </p>
               </div>
 
               {/* Selector de Pestañas */}
-              <div className="bg-card/40 border-border flex rounded-2xl border p-1">
+              <div className="flex rounded-2xl border border-[rgba(0,229,255,0.15)] bg-[rgba(6,10,25,0.8)] p-1 backdrop-blur-md">
                 <button
                   type="button"
                   onClick={() => setActiveTab("file")}
                   className={cn(
                     "flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all",
                     activeTab === "file"
-                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.18)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)]"
+                      : "text-slate-400 hover:text-white"
                   )}
                 >
                   <FileUp className="h-4 w-4" />
@@ -435,8 +440,8 @@ export default function KnowledgeBasePage() {
                   className={cn(
                     "flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all",
                     activeTab === "text"
-                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.18)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)]"
+                      : "text-slate-400 hover:text-white"
                   )}
                 >
                   <AlignLeft className="h-4 w-4" />

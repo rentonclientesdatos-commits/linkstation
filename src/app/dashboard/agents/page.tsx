@@ -350,16 +350,17 @@ export default function AgentsPage() {
   };
 
   return (
-    <div className="bg-background text-foreground selection:bg-primary/30 flex h-[calc(100vh-80px)] flex-col overflow-hidden transition-colors duration-500">
+    <div className="bg-[#030712] text-white selection:bg-[#00e5ff]/30 flex h-[calc(100vh-80px)] flex-col overflow-hidden transition-colors duration-500">
       {/* Header */}
-      <div className="bg-card/40 border-border relative z-10 flex items-center justify-between border-b px-8 py-6 backdrop-blur-xl">
+      <div className="relative z-10 flex items-center justify-between border-b border-[rgba(0,229,255,0.1)] bg-[rgba(4,8,20,0.85)] px-8 py-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
         <div className="flex items-center gap-4">
-          <div className="bg-primary/10 border-primary/20 shadow-primary/5 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-lg">
-            <Bot className="text-primary h-6 w-6" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+            <Bot className="h-6 w-6 text-[#00e5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]" />
           </div>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-black tracking-tight uppercase">
+              <h1 className="text-2xl font-black tracking-tight text-white uppercase">
                 {selectedAgent?.name || "Agente Maestro"}
               </h1>
               {selectedAgent && (
@@ -370,13 +371,13 @@ export default function AgentsPage() {
                     setNewAgentDescription(selectedAgent.description || "");
                     setIsEditModalOpen(true);
                   }}
-                  className="rounded-lg bg-slate-100 p-1 text-slate-400 transition-all hover:bg-slate-200 hover:text-slate-900 dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-white"
+                  className="rounded-lg border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] p-1 text-[#00e5ff] transition-all hover:bg-[rgba(0,229,255,0.15)] hover:shadow-[0_0_10px_rgba(0,229,255,0.2)]"
                 >
                   <Edit3 className="h-4 w-4" />
                 </button>
               )}
             </div>
-            <p className="mt-1 text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase dark:text-white/40">
+            <p className="mt-1 text-[10px] font-black tracking-[0.2em] text-[#00e5ff]/70 uppercase">
               Single-Prompt Orchestration Console
             </p>
           </div>
@@ -385,16 +386,16 @@ export default function AgentsPage() {
           <button
             title="Abrir Simulador Vivo"
             onClick={() => setIsSimulatorOpen(true)}
-            className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 text-[10px] font-black tracking-widest uppercase shadow-sm transition-all hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+            className="flex h-11 items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.08)] px-6 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase shadow-[0_0_12px_rgba(0,229,255,0.15)] transition-all hover:bg-[rgba(0,229,255,0.18)]"
           >
-            <Terminal className="text-primary h-4 w-4" />
+            <Terminal className="h-4 w-4 text-[#00e5ff]" />
             Abrir Simulador
           </button>
           <button
             title="Guardar cambios en el agente"
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-primary text-primary-foreground shadow-primary/20 flex h-11 items-center gap-2 rounded-xl px-8 text-[10px] font-black tracking-widest uppercase shadow-2xl transition-all hover:scale-105 active:scale-95"
+            className="flex h-11 items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.18)] px-8 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase shadow-[0_0_20px_rgba(0,229,255,0.25)] transition-all hover:scale-105 hover:bg-[rgba(0,229,255,0.28)] active:scale-95"
           >
             <Save className="h-4 w-4" />
             {isSaving ? "Guardando..." : "Publicar Cambios"}
@@ -404,24 +405,24 @@ export default function AgentsPage() {
 
       <div className="relative flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <div className="border-border bg-card/40 flex w-80 flex-col border-r backdrop-blur-xl">
+        <div className="flex w-80 flex-col border-r border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.7)] backdrop-blur-xl">
           <div className="p-6">
             <button
               title="Crear nuevo Agente Maestro"
               onClick={() => setIsCreateModalOpen(true)}
-              className="border-primary/40 text-primary hover:bg-primary/5 shadow-primary/5 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed text-[10px] font-black tracking-widest uppercase shadow-lg transition-all"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.05)] text-[10px] font-black tracking-widest text-[#00e5ff] uppercase shadow-[0_0_12px_rgba(0,229,255,0.15)] transition-all hover:bg-[rgba(0,229,255,0.12)]"
             >
               <PlusCircle className="h-4 w-4" /> Nuevo Maestro
             </button>
           </div>
-          <div className="scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/5 flex-1 space-y-3 overflow-y-auto px-4 pb-10">
+          <div className="scrollbar-thin scrollbar-thumb-white/5 flex-1 space-y-3 overflow-y-auto px-4 pb-10">
             {agents.length === 0 && (
               <EmptyState
                 size="sm"
-                icon={<Bot className="h-10 w-10" />}
+                icon={<Bot className="h-10 w-10 text-[#00e5ff]" />}
                 title="Sin agentes configurados"
                 description="Crea tu primer Agente Maestro para empezar a automatizar conversaciones."
-                className="mx-2 mt-2"
+                className="mx-2 mt-2 border-[rgba(0,229,255,0.1)] bg-[rgba(6,10,25,0.6)]"
               />
             )}
             {agents.map((agent) => (
@@ -431,14 +432,14 @@ export default function AgentsPage() {
                 className={cn(
                   "group relative w-full cursor-pointer overflow-hidden rounded-[24px] border p-5 text-left transition-all",
                   selectedAgent?.id === agent.id
-                    ? "bg-primary/10 border-primary/20 shadow-xl"
-                    : "bg-card border-border hover:bg-card/80"
+                    ? "border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.1)] shadow-[0_0_18px_rgba(0,229,255,0.15)]"
+                    : "border-[rgba(255,255,255,0.06)] bg-[rgba(10,15,30,0.5)] hover:border-[rgba(0,229,255,0.2)] hover:bg-[rgba(0,229,255,0.04)]"
                 )}
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    <span className="text-[9px] font-black tracking-widest text-emerald-500 uppercase">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+                    <span className="text-[9px] font-black tracking-widest text-emerald-400 uppercase">
                       Activo
                     </span>
                   </div>
@@ -449,7 +450,7 @@ export default function AgentsPage() {
                       setAgentToDelete(agent);
                       setIsDeleteModalOpen(true);
                     }}
-                    className="text-muted-foreground/20 rounded-lg p-1.5 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-500"
+                    className="rounded-lg p-1.5 text-slate-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-400"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -457,18 +458,18 @@ export default function AgentsPage() {
                 <h3
                   className={cn(
                     "truncate text-sm font-black tracking-tight",
-                    selectedAgent?.id === agent.id ? "text-primary" : "text-foreground"
+                    selectedAgent?.id === agent.id ? "text-[#00e5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.4)]" : "text-white"
                   )}
                 >
                   {agent.name}
                 </h3>
-                <p className="text-muted-foreground mt-1 line-clamp-1 text-[10px] font-bold">
+                <p className="mt-1 line-clamp-1 text-[10px] font-bold text-slate-400">
                   {agent.description || "Sin descripción"}
                 </p>
                 {selectedAgent?.id === agent.id && (
                   <motion.div
                     layoutId="activeAgent"
-                    className="bg-primary absolute top-0 bottom-0 left-0 w-1"
+                    className="absolute top-0 bottom-0 left-0 w-1 bg-[#00e5ff] shadow-[0_0_10px_rgba(0,229,255,0.8)]"
                   />
                 )}
               </div>
@@ -2266,21 +2267,21 @@ function TabButton({
       title={label}
       onClick={onClick}
       className={cn(
-        "group relative flex items-center gap-3 px-8 py-6 text-[10px] font-black tracking-[0.2em] uppercase transition-all",
-        active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+        "group relative flex items-center gap-3 px-8 py-5 text-[10px] font-black tracking-[0.2em] uppercase transition-all",
+        active ? "text-[#00e5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]" : "text-slate-400 hover:text-slate-200"
       )}
     >
       <Icon
         className={cn(
           "h-4 w-4 transition-all",
-          active ? "text-primary scale-110" : "text-muted-foreground"
+          active ? "text-[#00e5ff] scale-110 drop-shadow-[0_0_6px_rgba(0,229,255,0.8)]" : "text-slate-400"
         )}
       />{" "}
       {label}
       {active && (
         <motion.div
           layoutId="tabUnderline"
-          className="bg-primary absolute right-4 bottom-0 left-4 h-1 rounded-t-full shadow-[0_-4px_12px_rgba(var(--primary-rgb),0.5)]"
+          className="absolute right-4 bottom-0 left-4 h-0.5 rounded-t-full bg-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.9)]"
         />
       )}
     </button>
@@ -2306,8 +2307,8 @@ function ModelCard({
         className={cn(
           "relative flex h-14 w-full items-center overflow-hidden rounded-2xl border px-6 text-left shadow-sm transition-all",
           active
-            ? "bg-primary/10 border-primary shadow-primary/10 shadow-lg"
-            : "border-slate-200 bg-white hover:bg-slate-50 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
+            ? "border-[rgba(0,229,255,0.45)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_18px_rgba(0,229,255,0.2)]"
+            : "border-[rgba(255,255,255,0.06)] bg-[rgba(6,10,25,0.6)] text-slate-400 hover:border-[rgba(0,229,255,0.2)] hover:bg-[rgba(0,229,255,0.04)] hover:text-slate-200 backdrop-blur-md"
         )}
       >
         <div className="flex w-full items-center gap-3">
@@ -2315,29 +2316,29 @@ function ModelCard({
             className={cn(
               "h-2 w-2 shrink-0 rounded-full transition-all",
               active
-                ? "bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.6)]"
-                : "bg-slate-300 dark:bg-white/10"
+                ? "bg-[#00e5ff] shadow-[0_0_8px_rgba(0,229,255,0.9)]"
+                : "bg-slate-600"
             )}
           />
           <span
             className={cn(
               "truncate text-[10px] font-black tracking-tight uppercase",
               active
-                ? "text-primary"
-                : "text-slate-500 group-hover:text-slate-900 dark:text-white/40 dark:group-hover:text-white"
+                ? "text-[#00e5ff]"
+                : "text-slate-400 group-hover:text-slate-200"
             )}
           >
             {label}
           </span>
         </div>
-        {active && <div className="bg-primary absolute top-0 bottom-0 left-0 w-1" />}
+        {active && <div className="absolute top-0 bottom-0 left-0 w-1 bg-[#00e5ff] shadow-[0_0_8px_rgba(0,229,255,0.8)]" />}
       </button>
       {/* Floating Tooltip */}
-      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 w-48 -translate-x-1/2 translate-y-2 rounded-2xl border border-white/10 bg-slate-900/95 p-4 opacity-0 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-        <p className="text-center text-[10px] leading-relaxed font-bold tracking-wider text-white/90 uppercase">
+      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 w-48 -translate-x-1/2 translate-y-2 rounded-2xl border border-[rgba(0,229,255,0.2)] bg-[rgba(4,8,20,0.95)] p-4 opacity-0 shadow-[0_8px_32px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <p className="text-center text-[10px] leading-relaxed font-bold tracking-wider text-white uppercase">
           {desc}
         </p>
-        <div className="absolute top-full left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-r border-b border-white/10 bg-slate-900/95" />
+        <div className="absolute top-full left-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-r border-b border-[rgba(0,229,255,0.2)] bg-[rgba(4,8,20,0.95)]" />
       </div>
     </div>
   );

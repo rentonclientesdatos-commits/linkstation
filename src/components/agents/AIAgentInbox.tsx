@@ -785,15 +785,15 @@ export default function AIAgentInbox() {
     now - new Date(lastMessage.created_at).getTime() < 15000;
 
   return (
-    <div className="text-foreground selection:bg-primary/30 flex h-full overflow-hidden font-sans">
-      {/* â”€â”€â”€ COLUMN 1: CONVERSATION LIST (Standard 320px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="border-border bg-card/40 z-20 flex w-80 flex-shrink-0 flex-col border-r backdrop-blur-3xl">
-        <div className="border-border bg-card/20 flex h-16 items-center justify-between border-b px-6">
+    <div className="flex h-full overflow-hidden font-sans bg-[#030712] text-white selection:bg-[#00e5ff]/30">
+      {/* ─── COLUMN 1: CONVERSATION LIST (Standard 320px) ───────────────────────── */}
+      <div className="z-20 flex w-80 flex-shrink-0 flex-col border-r border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.7)] backdrop-blur-3xl">
+        <div className="flex h-16 items-center justify-between border-b border-[rgba(0,229,255,0.08)] bg-[rgba(3,7,18,0.7)] px-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-foreground dark:text-primary text-sm font-black tracking-widest uppercase">
+            <h2 className="text-sm font-black tracking-widest text-white uppercase">
               Conversaciones
             </h2>
-            <div className="bg-background/80 text-foreground/60 dark:text-primary border-border dark:border-primary/20 rounded-full border px-2 py-0.5 text-[10px] font-black">
+            <div className="rounded-full border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] px-2 py-0.5 text-[10px] font-black text-[#00e5ff] shadow-[0_0_8px_rgba(0,229,255,0.2)]">
               {leads.length}
             </div>
           </div>
@@ -889,21 +889,21 @@ export default function AIAgentInbox() {
             <button
               title="Nuevo Prospecto"
               onClick={() => setIsCreateLeadModalOpen(true)}
-              className="bg-primary/10 border-primary/20 hover:bg-primary/20 flex h-8 w-8 items-center justify-center rounded-lg border transition-all"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_8px_rgba(0,229,255,0.2)] transition-all hover:bg-[rgba(0,229,255,0.2)]"
             >
-              <PlusCircle className="text-primary h-3.5 w-3.5" />
+              <PlusCircle className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
 
-        <div className="bg-card border-border border-b p-4">
+        <div className="border-b border-[rgba(0,229,255,0.08)] bg-[rgba(6,10,25,0.8)] p-4">
           <div className="group relative">
-            <Search className="text-muted-foreground/20 group-focus-within:text-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+            <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#00e5ff]" />
             <input
               placeholder="Buscar prospectos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-background/50 border-border focus:ring-primary/20 placeholder:text-muted-foreground/40 text-foreground h-10 w-full rounded-xl border pr-4 pl-11 text-[13px] font-medium transition-all focus:ring-2 focus:outline-none"
+              className="h-10 w-full rounded-xl border border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] pr-4 pl-11 text-[13px] font-medium text-white placeholder-slate-500 transition-all outline-none focus:border-[rgba(0,229,255,0.4)] focus:shadow-[0_0_10px_rgba(0,229,255,0.2)]"
             />
           </div>
         </div>

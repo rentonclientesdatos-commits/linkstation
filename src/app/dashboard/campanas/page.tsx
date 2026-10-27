@@ -26,13 +26,29 @@ export const dynamic = "force-dynamic";
 
 // ─── HERO STAT ────────────────────────────────────────────────────────────────
 
-function HeroStat({ label, value, color }: { label: string; value: string; color: string }) {
+function HeroStat({
+  label,
+  value,
+  color,
+  glowColor,
+}: {
+  label: string;
+  value: string;
+  color: string;
+  glowColor?: string;
+}) {
   return (
-    <div>
-      <p className="text-muted-foreground mb-1 text-[10px] font-black tracking-widest uppercase">
+    <div className="relative overflow-hidden rounded-2xl border border-[rgba(0,229,255,0.12)] bg-[rgba(6,10,25,0.7)] px-5 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
+      <p className="mb-1 text-[10px] font-black tracking-widest uppercase text-slate-400">
         {label}
       </p>
-      <p className={`text-3xl leading-none font-black tracking-tighter ${color}`}>{value}</p>
+      <p
+        className={`text-3xl leading-none font-black tracking-tighter ${color}`}
+        style={glowColor ? { textShadow: `0 0 12px ${glowColor}` } : undefined}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -114,45 +130,54 @@ async function CampanasKpis({
       filters={filters}
       title={
         <div className="mb-2">
-          <h1 className="text-foreground mb-1 text-3xl font-black tracking-tight">
-            Campañas <span className="text-blue-600">IA</span>
+          <h1 className="mb-1 text-3xl font-black tracking-tight text-white">
+            Campañas <span className="text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.5)]">IA</span>
           </h1>
-          <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+          <p className="text-xs font-bold tracking-widest uppercase text-[#00e5ff]/70">
             Rendimiento y conversión por campaña en el período seleccionado
           </p>
           <CampaignSelector campaigns={availableCampaigns} currentCampaign={filters.campana} />
           {/* Hero metrics */}
-          <div className="mt-6 flex flex-wrap gap-8">
+          <div className="mt-6 flex flex-wrap gap-4">
             <HeroStat
               label="Total Leads"
               value={kpi.total_leads.toLocaleString("es-ES")}
-              color="text-foreground"
+              color="text-white"
             />
             <HeroStat
               label="Llamadas"
               value={kpi.total_llamadas.toLocaleString("es-ES")}
-              color="text-blue-600"
+              color="text-[#00e5ff]"
+              glowColor="rgba(0,229,255,0.4)"
             />
             <HeroStat
               label="Contactados"
               value={kpi.total_contactados.toLocaleString("es-ES")}
-              color="text-emerald-600"
+              color="text-[#34d399]"
+              glowColor="rgba(52,211,153,0.4)"
             />
             <HeroStat
               label="Agendados"
               value={kpi.total_agendados.toLocaleString("es-ES")}
-              color="text-teal-600"
+              color="text-[#2dd4bf]"
+              glowColor="rgba(45,212,191,0.4)"
             />
             <HeroStat
               label="Cualificados"
               value={kpi.total_cualificados.toLocaleString("es-ES")}
-              color="text-violet-600"
+              color="text-[#c084fc]"
+              glowColor="rgba(192,132,252,0.4)"
             />
-            <HeroStat label="Minutos IA" value={formattedMinutos} color="text-amber-600" />
+            <HeroStat
+              label="Minutos IA"
+              value={formattedMinutos}
+              color="text-[#fbbf24]"
+              glowColor="rgba(251,191,36,0.4)"
+            />
             <HeroStat
               label="Campañas"
               value={kpi.campanas.length.toString()}
-              color="text-muted-foreground/60"
+              color="text-slate-400"
             />
           </div>
         </div>
@@ -238,14 +263,14 @@ async function CampanasFunnel({
   return (
     <div className="mt-12 mb-8">
       <div className="mb-8 flex items-center gap-4">
-        <div className="rounded-[20px] border border-blue-500/20 bg-blue-500/10 p-3">
-          <Target className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] p-3 text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+          <Target className="h-8 w-8 text-[#00e5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]" />
         </div>
         <div>
-          <h2 className="text-foreground text-[32px] leading-tight font-bold tracking-tight">
-            Embudo de <span className="text-blue-600 dark:text-blue-400">Conversión</span>
+          <h2 className="text-[32px] leading-tight font-bold tracking-tight text-white">
+            Embudo de <span className="text-[#00e5ff] drop-shadow-[0_0_12px_rgba(0,229,255,0.4)]">Conversión</span>
           </h2>
-          <p className="text-muted-foreground text-[15px] font-medium">
+          <p className="text-[15px] font-medium text-slate-400">
             Tasa de conversión y progreso por etapa de campaña
           </p>
         </div>
