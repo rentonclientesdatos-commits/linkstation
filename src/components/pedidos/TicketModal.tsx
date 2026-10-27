@@ -144,7 +144,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         {/* Scrollable Area */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Opciones de pago (Cajero) */}
-          <div className="space-y-2 rounded-xl bg-slate-950 p-3.5 border border-slate-800">
+          <div className="space-y-2 rounded-xl bg-[rgba(4,8,20,0.8)] p-3.5 border border-[rgba(0,229,255,0.1)] backdrop-blur-md">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
               {readOnly ? "Medio de Pago Registrado" : "Medio de Pago"}
             </span>
@@ -169,8 +169,8 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     onClick={() => setPaymentMethod("tarjeta")}
                     className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border text-xs font-bold transition-all ${
                       paymentMethod === "tarjeta"
-                        ? "bg-blue-600/20 border-blue-500 text-blue-300"
-                        : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                        ? "bg-[rgba(59,130,246,0.15)] border-blue-500/60 text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
+                        : "bg-[rgba(4,8,20,0.6)] border-[rgba(0,229,255,0.1)] text-slate-400 hover:text-white hover:border-[rgba(0,229,255,0.25)]"
                     }`}
                   >
                     <CreditCard className="h-4 w-4" />
@@ -181,8 +181,8 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     onClick={() => setPaymentMethod("efectivo")}
                     className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border text-xs font-bold transition-all ${
                       paymentMethod === "efectivo"
-                        ? "bg-emerald-600/20 border-emerald-500 text-emerald-300"
-                        : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                        ? "bg-[rgba(16,185,129,0.15)] border-emerald-500/60 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                        : "bg-[rgba(4,8,20,0.6)] border-[rgba(0,229,255,0.1)] text-slate-400 hover:text-white hover:border-[rgba(0,229,255,0.25)]"
                     }`}
                   >
                     <Banknote className="h-4 w-4" />
@@ -193,8 +193,8 @@ export const TicketModal: React.FC<TicketModalProps> = ({
                     onClick={() => setPaymentMethod("transferencia")}
                     className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border text-xs font-bold transition-all ${
                       paymentMethod === "transferencia"
-                        ? "bg-purple-600/20 border-purple-500 text-purple-300"
-                        : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                        ? "bg-[rgba(139,92,246,0.15)] border-purple-500/60 text-purple-300 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+                        : "bg-[rgba(4,8,20,0.6)] border-[rgba(0,229,255,0.1)] text-slate-400 hover:text-white hover:border-[rgba(0,229,255,0.25)]"
                     }`}
                   >
                     <DollarSign className="h-4 w-4" />
@@ -298,11 +298,11 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between border-t border-slate-800 bg-slate-950 px-5 py-4 gap-3">
+        <div className="flex items-center justify-between border-t border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.9)] px-5 py-4 gap-3">
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-all"
+            className="flex items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] px-4 py-2.5 text-xs font-bold text-[#00e5ff] hover:bg-[rgba(0,229,255,0.12)] hover:shadow-[0_0_10px_rgba(0,229,255,0.15)] transition-all"
           >
             <Printer className="h-4 w-4 text-amber-400" />
             <span>Imprimir Ticket</span>
@@ -312,7 +312,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-2.5 text-xs font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-all"
+              className="flex items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] px-5 py-2.5 text-xs font-bold text-[#00e5ff] hover:bg-[rgba(0,229,255,0.12)] transition-all"
             >
               <X className="h-4 w-4" />
               <span>Cerrar</span>

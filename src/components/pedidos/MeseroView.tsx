@@ -153,13 +153,15 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white pb-20 select-none">
+    <div className="min-h-screen bg-[#030712] text-white pb-20 select-none">
       {/* TOP HEADER */}
-      <header className="sticky top-0 z-30 border-b border-slate-800/90 bg-slate-900/95 backdrop-blur-xl px-4 py-3 shadow-lg">
+      <header className="sticky top-0 z-30 border-b border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.92)] backdrop-blur-2xl px-4 py-3 shadow-2xl">
+        {/* Top glow line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.4)] to-transparent" />
         <div className="flex items-center justify-between gap-3">
           {/* Logo & Waiter Badge */}
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 font-black text-white shadow-md shadow-indigo-600/30">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.2)]">
               <Utensils className="h-5 w-5" />
             </div>
             <div>
@@ -180,8 +182,8 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
 
           {/* Right Info: Clock, Sync & Switcher */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950/70 px-2.5 py-1 text-xs font-semibold text-slate-300">
-              <Clock className="h-3.5 w-3.5 text-indigo-400" />
+            <div className="flex items-center gap-1.5 rounded-xl border border-[rgba(0,229,255,0.15)] bg-[rgba(0,229,255,0.05)] px-2.5 py-1 text-xs font-semibold text-[#00e5ff]">
+              <Clock className="h-3.5 w-3.5" />
               <span>{currentTime}</span>
               {isSyncing && (
                 <RefreshCw className="h-3 w-3 animate-spin text-emerald-400 ml-0.5" />
@@ -191,8 +193,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
             {onExitMeseroView && (
               <button
                 onClick={onExitMeseroView}
-                className="rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white"
-              >
+                className="rounded-xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] px-2.5 py-1 text-xs font-semibold text-[#00e5ff] hover:bg-[rgba(0,229,255,0.12)] transition-all">
                 Plano Admin
               </button>
             )}
@@ -200,7 +201,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
         </div>
 
         {/* QUICK METRICS BAR */}
-        <div className="mt-3 flex items-center justify-between gap-2 overflow-x-auto rounded-xl border border-slate-800/80 bg-slate-950/60 p-2 text-xs">
+        <div className="mt-3 flex items-center justify-between gap-2 overflow-x-auto rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(0,229,255,0.03)] p-2 text-xs backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400">Total:</span>
@@ -226,7 +227,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
       </header>
 
       {/* ZONE SELECTOR TABS (HORIZONTAL SCROLL) */}
-      <div className="sticky top-[108px] z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md px-4 py-2.5">
+      <div className="sticky top-[108px] z-20 border-b border-[rgba(0,229,255,0.06)] bg-[rgba(3,7,18,0.95)] backdrop-blur-xl px-4 py-2.5">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar text-xs">
           {zones.map((zone) => {
             const countInZone = tables.filter((t) => t.zone === zone.id).length;
@@ -237,8 +238,8 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
                 className={cn(
                   "whitespace-nowrap rounded-xl px-3.5 py-2 font-bold capitalize transition-all active:scale-95",
                   selectedZone === zone.id
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                    : "border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white"
+                    ? "border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)]"
+                    : "border border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.6)] text-slate-400 hover:text-white"
                 )}
               >
                 {zone.name} ({countInZone})
@@ -259,7 +260,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar mesa (#1, #5, Terraza)..."
-              className="w-full rounded-xl border border-slate-800 bg-slate-900/90 py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] focus:outline-none backdrop-blur-md"
             />
           </div>
 
@@ -268,10 +269,10 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
             <button
               onClick={() => setStatusFilter("all")}
               className={cn(
-                "rounded-xl px-2.5 py-2 font-bold transition-all",
+                "rounded-xl px-2.5 py-2 font-bold transition-all border",
                 statusFilter === "all"
-                  ? "bg-slate-700 text-white"
-                  : "bg-slate-900 text-slate-400 hover:text-white"
+                  ? "border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff]"
+                  : "border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.6)] text-slate-400 hover:text-white"
               )}
             >
               Todas
@@ -279,10 +280,10 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
             <button
               onClick={() => setStatusFilter("disponible")}
               className={cn(
-                "rounded-xl px-2.5 py-2 font-bold transition-all",
+                "rounded-xl px-2.5 py-2 font-bold transition-all border",
                 statusFilter === "disponible"
-                  ? "bg-emerald-600 text-white"
-                  : "bg-slate-900 text-emerald-400 hover:bg-slate-800"
+                  ? "border-emerald-500/50 bg-[rgba(16,185,129,0.15)] text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                  : "border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.6)] text-emerald-400 hover:bg-[rgba(16,185,129,0.08)]"
               )}
             >
               Libres
@@ -290,10 +291,10 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
             <button
               onClick={() => setStatusFilter("ocupada")}
               className={cn(
-                "rounded-xl px-2.5 py-2 font-bold transition-all",
+                "rounded-xl px-2.5 py-2 font-bold transition-all border",
                 statusFilter === "ocupada"
-                  ? "bg-amber-600 text-white"
-                  : "bg-slate-900 text-amber-400 hover:bg-slate-800"
+                  ? "border-amber-500/50 bg-[rgba(245,158,11,0.15)] text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                  : "border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.6)] text-amber-400 hover:bg-[rgba(245,158,11,0.08)]"
               )}
             >
               Ocupadas
@@ -303,7 +304,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
 
         {/* TABLES GRID (MOBILE 2-COL, TABLET 3-4 COL) */}
         {filteredTables.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-800 p-10 text-center">
+          <div className="rounded-2xl border border-dashed border-[rgba(0,229,255,0.12)] p-10 text-center">
             <Utensils className="mx-auto h-8 w-8 text-slate-600 mb-2" />
             <p className="text-sm font-bold text-slate-300">
               No se encontraron mesas
@@ -332,12 +333,12 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
                   key={table.id}
                   onClick={() => handleTableTap(table)}
                   className={cn(
-                    "group relative flex flex-col justify-between rounded-2xl border p-3.5 transition-all cursor-pointer active:scale-95 select-none",
+                    "group relative flex flex-col justify-between rounded-2xl border p-3.5 transition-all cursor-pointer active:scale-95 select-none backdrop-blur-md overflow-hidden",
                     isAvailable
-                      ? "border-emerald-500/40 bg-gradient-to-b from-slate-900/90 to-emerald-950/30 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-900/30 shadow-sm"
+                      ? "border-emerald-500/35 bg-[rgba(16,185,129,0.04)] hover:border-emerald-400/70 hover:shadow-[0_0_18px_rgba(16,185,129,0.2)]"
                       : isOccupied
-                      ? "border-amber-500/60 bg-gradient-to-b from-slate-900/90 to-amber-950/40 hover:border-amber-400 shadow-md ring-1 ring-amber-500/20 hover:shadow-lg hover:shadow-amber-900/30"
-                      : "border-blue-500/40 bg-gradient-to-b from-slate-900/90 to-blue-950/20 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-900/30"
+                      ? "border-amber-500/55 bg-[rgba(245,158,11,0.05)] hover:border-amber-400 hover:shadow-[0_0_18px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/20"
+                      : "border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.03)] hover:border-[rgba(0,229,255,0.55)] hover:shadow-[0_0_18px_rgba(0,229,255,0.18)]"
                   )}
                 >
                   {/* Card Top: Number & Status Badge */}
@@ -367,7 +368,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
                       </div>
 
                       {/* Capacity Pill */}
-                      <span className="flex items-center gap-0.5 rounded-md bg-slate-800/80 px-1.5 py-0.5 text-[10px] font-medium text-slate-300">
+                      <span className="flex items-center gap-0.5 rounded-md border border-[rgba(0,229,255,0.1)] bg-[rgba(0,229,255,0.05)] px-1.5 py-0.5 text-[10px] font-medium text-slate-300">
                         <Users className="h-2.5 w-2.5 text-slate-400" />
                         {table.capacity}
                       </span>
@@ -406,7 +407,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
                             )}
                           </div>
 
-                          <div className="flex items-baseline justify-between rounded-lg bg-slate-950/80 px-2 py-1">
+                          <div className="flex items-baseline justify-between rounded-lg bg-[rgba(4,8,20,0.8)] px-2 py-1">
                             <span className="text-[10px] text-slate-400">
                               {itemsCount} {itemsCount === 1 ? "ítem" : "ítems"}
                             </span>
@@ -431,7 +432,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({
                   </div>
 
                   {/* Card Bottom: Quick Action Hint */}
-                  <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="mt-3 pt-2 border-t border-[rgba(0,229,255,0.07)] flex items-center justify-between text-[10px] text-slate-400">
                     <span className={cn(
                       "font-medium",
                       isAvailable ? "text-emerald-400/80" : isOccupied ? "text-amber-400/80" : "text-blue-400/80"

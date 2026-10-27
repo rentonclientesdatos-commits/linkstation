@@ -73,12 +73,14 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
         return (
           <div
             key={zone.id}
-            className="rounded-2xl border border-slate-800/90 bg-slate-950/70 p-5 shadow-xl backdrop-blur-md"
+            className="relative rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(6,10,25,0.7)] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl"
           >
+            {/* Top glow line */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px rounded-t-2xl bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
             {/* ZONE HEADER */}
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(0,229,255,0.08)] pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[rgba(0,229,255,0.25)] bg-[rgba(0,229,255,0.08)] text-[#00e5ff] shadow-[0_0_10px_rgba(0,229,255,0.15)]">
                   <Layers className="h-4 w-4" />
                 </div>
                 <div>
@@ -108,7 +110,7 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
                 {isEditMode && onAddTableInZone && (
                   <button
                     onClick={() => onAddTableInZone(zone.id)}
-                    className="flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-1 text-xs font-bold text-white shadow-md shadow-indigo-600/30 hover:bg-indigo-500 active:scale-95 transition-all ml-2"
+                    className="flex items-center gap-1 rounded-xl border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.12)] px-3 py-1 text-xs font-bold text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)] hover:bg-[rgba(0,229,255,0.2)] active:scale-95 transition-all ml-2"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Mesa</span>
@@ -119,7 +121,7 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
 
             {/* UNIFORM GRID OF TABLES (NO OVERLAPS GUARANTEED) */}
             {zoneTables.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-800/80 p-6 text-center text-xs text-slate-500">
+              <div className="rounded-xl border border-dashed border-[rgba(0,229,255,0.15)] p-6 text-center text-xs text-slate-500">
                 No hay mesas registradas en este espacio. Pulsa en &quot;Añadir Mesa&quot; para crear la primera.
               </div>
             ) : (
@@ -143,15 +145,15 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
                         if (!isEditMode) onSelectTable(table);
                       }}
                       className={cn(
-                        "group relative flex flex-col justify-between rounded-xl border p-3.5 transition-all select-none shadow-md",
+                        "group relative flex flex-col justify-between rounded-xl border p-3.5 transition-all select-none backdrop-blur-md overflow-hidden",
                         isEditMode
-                          ? "border-amber-500/40 bg-slate-900/90"
+                          ? "border-amber-500/40 bg-[rgba(10,15,30,0.8)]"
                           : "cursor-pointer active:scale-95",
                         isAvailable
-                          ? "border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-emerald-950/20 hover:border-emerald-400"
+                          ? "border-emerald-500/35 bg-[rgba(16,185,129,0.05)] hover:border-emerald-400/70 hover:shadow-[0_0_16px_rgba(16,185,129,0.2)]"
                           : isOccupied
-                          ? "border-amber-500/50 bg-gradient-to-b from-slate-900/90 to-amber-950/30 hover:border-amber-400 ring-1 ring-amber-500/20"
-                          : "border-blue-500/40 bg-gradient-to-b from-slate-900/90 to-blue-950/20 hover:border-blue-400"
+                          ? "border-amber-500/55 bg-[rgba(245,158,11,0.06)] hover:border-amber-400 hover:shadow-[0_0_16px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/20"
+                          : "border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.04)] hover:border-[rgba(0,229,255,0.6)] hover:shadow-[0_0_16px_rgba(0,229,255,0.2)]"
                       )}
                     >
                       {/* CARD TOP: NUMBER & EDIT ACTIONS */}
@@ -183,7 +185,7 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
 
                           {/* EDIT ACTIONS EMBEDDED CLEANLY INSIDE CARD */}
                           {isEditMode ? (
-                            <div className="flex items-center gap-0.5 rounded-lg border border-slate-700 bg-slate-950/90 p-0.5">
+                            <div className="flex items-center gap-0.5 rounded-lg border border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.9)] p-0.5">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -245,7 +247,7 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
                           )}
 
                           {isOccupied && (
-                            <div className="space-y-1 rounded-lg bg-slate-950/70 p-2">
+                            <div className="space-y-1 rounded-lg bg-[rgba(4,8,20,0.8)] p-2">
                               <div className="flex items-center justify-between text-[11px]">
                                 <span className="font-bold text-amber-300">
                                   {orderStatus === "en_preparacion"
@@ -258,7 +260,7 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
                                   {itemsCount} {itemsCount === 1 ? "ítem" : "ítems"}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between pt-0.5 border-t border-slate-800">
+                              <div className="flex items-center justify-between pt-0.5 border-t border-[rgba(0,229,255,0.08)]">
                                 <span className="text-[10px] text-slate-400">Total:</span>
                                 <span className="text-xs font-black text-emerald-400">
                                   {formatCLP(orderTotal)}
@@ -282,7 +284,7 @@ export const TablesGrid: React.FC<TablesGridProps> = ({
 
                       {/* CARD BOTTOM: INTERACTIVE HINT */}
                       {!isEditMode && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400 group-hover:text-slate-200">
+                        <div className="mt-2.5 pt-2 border-t border-[rgba(0,229,255,0.08)] flex items-center justify-between text-[10px] text-slate-500 group-hover:text-[#00e5ff] transition-colors">
                           <span>{isAvailable ? "Abrir Mesa" : "Ver Detalle"}</span>
                           <ArrowRight className="h-3 w-3 text-slate-500 group-hover:translate-x-0.5 transition-transform" />
                         </div>

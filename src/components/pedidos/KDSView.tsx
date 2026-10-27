@@ -592,7 +592,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
         </div>
 
         {/* ── SUBSTRIP: STATUS FILTER & METRICS COUNTER ── */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80 pt-2.5 text-xs">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[rgba(0,229,255,0.08)] pt-2.5 text-xs">
           {/* Counters & Filter Tabs */}
           <div className="flex items-center gap-2">
             <button
@@ -600,7 +600,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               className={cn(
                 "flex items-center gap-2 rounded-xl px-3 py-1.5 font-bold transition-all",
                 statusFilter === "activas"
-                  ? "bg-slate-800 text-white shadow-md border border-slate-700"
+                  ? "bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_10px_rgba(0,229,255,0.2)] border border-[rgba(0,229,255,0.3)]"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -615,7 +615,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               className={cn(
                 "flex items-center gap-2 rounded-xl px-3 py-1.5 font-bold transition-all",
                 statusFilter === "listas"
-                  ? "bg-emerald-600/30 text-emerald-200 shadow-md border border-emerald-500/40"
+                  ? "bg-[rgba(16,185,129,0.15)] text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)] border border-emerald-500/50"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -630,7 +630,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               className={cn(
                 "flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all",
                 statusFilter === "todas"
-                  ? "bg-slate-800 text-white shadow-md border border-slate-700"
+                  ? "bg-[rgba(0,229,255,0.08)] text-slate-200 border border-[rgba(0,229,255,0.2)]"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -647,7 +647,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar plato, mesa o cliente..."
-                className="h-8 w-52 rounded-xl border border-slate-800 bg-slate-950 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:border-rose-500 focus:outline-none"
+                className="h-8 w-52 rounded-xl border border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] focus:outline-none backdrop-blur-md"
               />
               {searchQuery && (
                 <button
@@ -662,7 +662,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
             <button
               type="button"
               onClick={playKitchenChime}
-              className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[11px] font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+              className="flex items-center gap-1 rounded-xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] px-2.5 py-1.5 text-[11px] font-bold text-[#00e5ff] hover:bg-[rgba(0,229,255,0.12)] hover:shadow-[0_0_10px_rgba(0,229,255,0.2)] transition-all"
               title="Probar sonido de campana de cocina"
             >
               <Sparkles className="h-3 w-3 text-amber-400" />
@@ -675,9 +675,9 @@ export const KDSView: React.FC<KDSViewProps> = ({
       {/* ── KDS TICKETS GRID (MAIN STAGE) ── */}
       <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
         {filteredTickets.length === 0 ? (
-          <div className="flex h-96 flex-col items-center justify-center rounded-3xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center animate-in fade-in">
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-900 border border-slate-800 text-slate-600 mb-4">
-              <ChefHat className="h-10 w-10 text-slate-500" />
+          <div className="flex h-96 flex-col items-center justify-center rounded-3xl border border-dashed border-[rgba(0,229,255,0.12)] bg-[rgba(0,229,255,0.02)] p-8 text-center animate-in fade-in">
+            <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] text-[#00e5ff] shadow-[0_0_20px_rgba(0,229,255,0.15)] mb-4">
+              <ChefHat className="h-10 w-10" />
             </div>
             <h3 className="text-lg font-black text-white">Cocina al día • Sin comandas pendientes</h3>
             <p className="mt-1 max-w-sm text-xs text-slate-400">
@@ -687,7 +687,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               <button
                 onClick={loadKDSData}
                 disabled={isSyncing}
-                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-bold text-white hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-2 rounded-xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] px-4 py-2 text-xs font-bold text-[#00e5ff] hover:bg-[rgba(0,229,255,0.12)] hover:shadow-[0_0_12px_rgba(0,229,255,0.2)] transition-all"
               >
                 <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin text-rose-400")} />
                 <span>Actualizar Ahora</span>
@@ -771,7 +771,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                           ? "bg-red-500 text-white animate-bounce"
                           : isWarning
                           ? "bg-amber-500/30 text-amber-300 border border-amber-500/40"
-                          : "bg-slate-800 text-slate-300 border border-slate-700"
+                          : "bg-[rgba(0,229,255,0.08)] text-[#00e5ff] border border-[rgba(0,229,255,0.2)]"
                       )}
                     >
                       <Clock className="h-3.5 w-3.5" />
@@ -780,7 +780,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                   </div>
 
                   {/* METADATA STRIP (CUSTOMER / DINERS / CHANNEL) */}
-                  <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/40 px-4 py-2 text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.06)] bg-[rgba(4,8,20,0.7)] px-4 py-2 text-[11px] text-slate-400">
                     <span className="font-semibold text-slate-200 truncate max-w-[150px]">
                       👤 {ticket.customerName}
                     </span>
@@ -791,7 +791,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                           {ticket.guestsCount}p
                         </span>
                       )}
-                      <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-slate-300 capitalize">
+                      <span className="rounded border border-[rgba(0,229,255,0.15)] bg-[rgba(0,229,255,0.06)] px-1.5 py-0.5 text-[10px] font-bold text-[#00e5ff] capitalize">
                         {ticket.source}
                       </span>
                     </div>
@@ -821,8 +821,8 @@ export const KDSView: React.FC<KDSViewProps> = ({
                             className={cn(
                               "w-full flex items-start justify-between rounded-xl p-2 text-left transition-all border",
                               isChecked
-                                ? "border-slate-800/60 bg-slate-950/40 opacity-50 line-through text-slate-500"
-                                : "border-slate-800 bg-slate-900/80 hover:border-slate-700 text-slate-100"
+                                ? "border-[rgba(0,229,255,0.05)] bg-[rgba(4,8,20,0.5)] opacity-50 line-through text-slate-500"
+                                : "border-[rgba(0,229,255,0.1)] bg-[rgba(6,10,25,0.8)] hover:border-[rgba(0,229,255,0.25)] text-slate-100 hover:shadow-[0_0_8px_rgba(0,229,255,0.1)]"
                             )}
                           >
                             <div className="flex items-start gap-2">
@@ -852,7 +852,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                                 "h-4 w-4 shrink-0 rounded-md border flex items-center justify-center mt-0.5",
                                 isChecked
                                   ? "border-emerald-500 bg-emerald-500 text-slate-950"
-                                  : "border-slate-700 bg-slate-800"
+                                  : "border-[rgba(0,229,255,0.25)] bg-[rgba(0,229,255,0.05)]"
                               )}
                             >
                               {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
@@ -864,7 +864,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                   </div>
 
                   {/* BOTTOM ACTION BUTTONS */}
-                  <div className="border-t border-slate-800/80 bg-slate-950/70 p-3 space-y-2">
+                  <div className="border-t border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.8)] p-3 space-y-2">
                     {/* Status badge */}
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-400 font-medium">Estado:</span>
@@ -910,7 +910,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                         <button
                           type="button"
                           onClick={() => updateTicketStatus(ticket, "en_preparacion")}
-                          className="flex-1 rounded-xl border border-slate-700 bg-slate-800 py-2 text-[11px] font-bold text-slate-300 hover:text-white"
+                          className="flex-1 rounded-xl border border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.06)] py-2 text-[11px] font-bold text-[#00e5ff] hover:bg-[rgba(0,229,255,0.12)] transition-all"
                           title="Volver a poner en preparación si hubo algún cambio"
                         >
                           ← Reabrir
@@ -918,7 +918,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
                         <button
                           type="button"
                           onClick={() => updateTicketStatus(ticket, "pagado")}
-                          className="flex-2 flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 py-2 px-3 text-[11px] font-bold text-emerald-400"
+                          className="flex-2 flex items-center justify-center gap-1.5 rounded-xl bg-[rgba(16,185,129,0.15)] hover:bg-[rgba(16,185,129,0.25)] border border-emerald-500/40 py-2 px-3 text-[11px] font-bold text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)] transition-all"
                         >
                           <Check className="h-3.5 w-3.5" />
                           <span>Despachado</span>
