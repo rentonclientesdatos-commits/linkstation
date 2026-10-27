@@ -84,7 +84,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in fade-in duration-200">
       <style jsx global>{`
         @media print {
           body * {
@@ -110,19 +110,22 @@ export const TicketModal: React.FC<TicketModalProps> = ({
         }
       `}</style>
 
-      <div className="relative flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
+      <div className="relative flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.15)] bg-[rgba(10,15,30,0.88)] shadow-[0_16px_50px_rgba(0,0,0,0.7),0_0_30px_rgba(0,229,255,0.1)] backdrop-blur-2xl">
+        {/* Top subtle glow line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.35)] to-transparent" />
+
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.8)] px-5 py-4">
           <div className="flex items-center gap-2.5">
             <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
               readOnly
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+                : "bg-[#00e5ff]/10 text-[#00e5ff] border-[rgba(0,229,255,0.3)] shadow-[0_0_12px_rgba(0,229,255,0.2)]"
             }`}>
               <Receipt className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">
+              <h3 className="text-sm font-extrabold text-white">
                 {readOnly ? "Ticket de Venta (Pagada)" : "Comanda / Pre-cuenta"}
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -132,7 +135,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.08)] bg-white/[0.04] text-slate-400 hover:text-white hover:border-[rgba(0,229,255,0.3)]"
           >
             <X className="h-4 w-4" />
           </button>

@@ -34,13 +34,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             __html: `
               try {
                 const theme = localStorage.getItem('ui-theme');
-                const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (theme === 'dark' || (theme !== 'light' && supportDarkMode)) {
-                  document.documentElement.classList.add('dark');
-                } else {
+                // Default to dark (neon) — only go light if explicitly saved
+                if (theme === 'light') {
                   document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
                 }
-              } catch (e) {}
+              } catch (e) {
+                document.documentElement.classList.add('dark');
+              }
             `,
           }}
         />

@@ -443,63 +443,63 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
 
       {/* KPI Stats Bar */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-950/80 p-4 backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-[20px] border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:border-[rgba(0,229,255,0.25)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
               Platos en Carta
             </span>
-            <UtensilsCrossed className="h-4 w-4 text-indigo-400" />
+            <UtensilsCrossed className="h-4 w-4 text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]" />
           </div>
-          <p className="mt-1 font-mono text-2xl font-extrabold text-white">{totalProducts}</p>
-          <span className="text-[11px] font-medium text-emerald-400">
+          <p className="mt-1 font-mono text-2xl font-black text-white">{totalProducts}</p>
+          <span className="text-[11px] font-semibold text-[#10b981]">
             {availableProducts} disponibles para IA
           </span>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-950/80 p-4 backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-[20px] border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:border-[rgba(0,229,255,0.25)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
               Insumos Registrados
             </span>
-            <Boxes className="h-4 w-4 text-blue-400" />
+            <Boxes className="h-4 w-4 text-[#8b5cf6] drop-shadow-[0_0_6px_rgba(139,92,246,0.6)]" />
           </div>
-          <p className="mt-1 font-mono text-2xl font-extrabold text-white">{ingredients.length}</p>
+          <p className="mt-1 font-mono text-2xl font-black text-white">{ingredients.length}</p>
           <span className="text-[11px] text-slate-400">Control de recetas BOM</span>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-950/80 p-4 backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-[20px] border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:border-[rgba(0,229,255,0.25)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
               Insumos Críticos
             </span>
-            <AlertTriangle className="h-4 w-4 text-amber-400" />
+            <AlertTriangle className="h-4 w-4 text-[#f59e0b] drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
           </div>
-          <p className="mt-1 font-mono text-2xl font-extrabold text-amber-400">
+          <p className="mt-1 font-mono text-2xl font-black text-[#f59e0b] drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">
             {lowStockIngredients.length}
           </p>
           <span className="text-[11px] text-slate-400">Bajo umbral de alerta</span>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-950/80 p-4 backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-[20px] border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:border-[rgba(0,229,255,0.25)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">
               Movimientos Stock
             </span>
-            <History className="h-4 w-4 text-emerald-400" />
+            <History className="h-4 w-4 text-[#10b981] drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
           </div>
-          <p className="mt-1 font-mono text-2xl font-extrabold text-white">{movements.length}</p>
+          <p className="mt-1 font-mono text-2xl font-black text-white">{movements.length}</p>
           <span className="text-[11px] text-slate-400">Auditoría inmutable</span>
         </div>
       </div>
 
       {/* Main Container Header: Tab Switcher & Global Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-        <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 p-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(0,229,255,0.08)] pb-4">
+        <div className="flex items-center gap-1 rounded-2xl border border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.7)] p-1">
           <button
             onClick={() => setActiveTab("menu")}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
               activeTab === "menu"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                ? "border border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.25)]"
                 : "text-slate-400 hover:text-white"
             }`}
           >
@@ -509,9 +509,9 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
 
           <button
             onClick={() => setActiveTab("ingredients")}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
               activeTab === "ingredients"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                ? "border border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.25)]"
                 : "text-slate-400 hover:text-white"
             }`}
           >
@@ -521,14 +521,14 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ tenantId }) => {
 
           <button
             onClick={() => setActiveTab("movements")}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
               activeTab === "movements"
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                ? "border border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.25)]"
                 : "text-slate-400 hover:text-white"
             }`}
           >
             <History className="h-3.5 w-3.5" />
-            Historial de Stock
+            Movimientos ({movements.length})
           </button>
         </div>
 

@@ -22,16 +22,16 @@ import {
 import type { ChartRow } from "@/lib/actions/analytics";
 import { cn } from "@/lib/utils";
 
-// Premium color palette (Blue & Indigo focused)
+// Vibrant Neon Futuristic color palette
 const PALETTE = [
-  "#2563eb",
-  "#f97316",
-  "#10b981",
-  "#8b5cf6",
-  "#51a2b1",
-  "#3b82f6",
-  "#ef4444",
-  "#ec4899",
+  "#00e5ff", // Neon Cyan
+  "#8b5cf6", // Neon Purple
+  "#10b981", // Neon Emerald
+  "#f59e0b", // Neon Amber
+  "#ff2d55", // Neon Rose
+  "#06b6d4", // Electric Teal
+  "#ec4899", // Neon Pink
+  "#3b82f6", // Electric Blue
 ];
 
 import type { TooltipProps } from "recharts";
@@ -40,9 +40,9 @@ import type { TooltipProps } from "recharts";
 const CustomTooltipBar = ({ active, payload, label }: TooltipProps<number, string> | any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="border-border bg-card rounded-xl border px-4 py-3 text-xs shadow-xl">
-      <p className="text-card-foreground mb-1 font-bold">{label}</p>
-      <p className="font-black text-blue-600 dark:text-blue-400">
+    <div className="rounded-xl border border-[rgba(0,229,255,0.25)] bg-[rgba(6,11,26,0.92)] px-4 py-3 text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_15px_rgba(0,229,255,0.15)] backdrop-blur-xl">
+      <p className="mb-1 font-bold text-slate-200">{label}</p>
+      <p className="font-black text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]">
         {payload[0].value?.toLocaleString()} llamadas
       </p>
     </div>
@@ -53,9 +53,9 @@ const CustomTooltipBar = ({ active, payload, label }: TooltipProps<number, strin
 const CustomTooltipPie = ({ active, payload }: TooltipProps<number, string> | any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="border-border bg-card rounded-xl border px-4 py-3 text-xs shadow-xl">
-      <p className="text-card-foreground font-bold">{payload[0].name}</p>
-      <p className="font-black text-blue-600 dark:text-blue-400">
+    <div className="rounded-xl border border-[rgba(0,229,255,0.25)] bg-[rgba(6,11,26,0.92)] px-4 py-3 text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_15px_rgba(0,229,255,0.15)] backdrop-blur-xl">
+      <p className="font-bold text-slate-200">{payload[0].name}</p>
+      <p className="font-black text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]">
         {payload[0].value?.toLocaleString()} ({payload[0].payload?.pct}%)
       </p>
     </div>
@@ -79,14 +79,14 @@ interface KpiCardProps {
   color?: string;
 }
 
-export function KpiCard({ label, value, sub, color = "text-card-foreground" }: KpiCardProps) {
+export function KpiCard({ label, value, sub, color = "text-slate-100" }: KpiCardProps) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6 shadow-sm">
-      <p className="text-muted-foreground text-[10px] font-black tracking-[0.15em] uppercase">
+    <div className="relative overflow-hidden rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.6)] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.25)] hover:shadow-[0_0_20px_rgba(0,229,255,0.1)]">
+      <p className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400">
         {label}
       </p>
       <p className={cn("mt-2 text-3xl font-black tracking-tight", color)}>{value}</p>
-      {sub && <p className="text-muted-foreground mt-1.5 text-xs font-semibold">{sub}</p>}
+      {sub && <p className="mt-1.5 text-xs font-semibold text-slate-500">{sub}</p>}
     </div>
   );
 }
@@ -101,11 +101,11 @@ interface DarkScoreCardProps {
 export function DarkScoreCard({
   label,
   value,
-  valueColor = "text-card-foreground",
+  valueColor = "text-slate-100",
 }: DarkScoreCardProps) {
   return (
-    <div className="border-border bg-card flex min-h-[105px] flex-col justify-center rounded-2xl border p-6 shadow-sm">
-      <div className="mb-2 text-[10px] font-black tracking-[0.2em] text-blue-600 uppercase dark:text-blue-400">
+    <div className="flex min-h-[105px] flex-col justify-center rounded-2xl border border-[rgba(0,229,255,0.12)] bg-[rgba(10,15,30,0.6)] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:border-[rgba(0,229,255,0.3)]">
+      <div className="mb-2 text-[10px] font-black tracking-[0.2em] uppercase text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]">
         {label}
       </div>
       <div className={`text-2xl font-black tracking-tighter ${valueColor}`}>{value}</div>
@@ -123,15 +123,18 @@ interface SummaryCardProps {
 
 export function SummaryCard({ label, value, sub, icon }: SummaryCardProps) {
   return (
-    <div className="group flex h-full items-center gap-5 rounded-[28px] border border-slate-100/60 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:border-slate-800/40 dark:bg-slate-900">
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sky-50/50 transition-colors group-hover:bg-sky-100/50 dark:bg-sky-900/10 dark:group-hover:bg-sky-900/20">
+    <div className="group relative flex h-full items-center gap-5 overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.25)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_24px_rgba(0,229,255,0.12)]">
+      {/* Top subtle glow line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
+
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.15)] bg-[rgba(0,229,255,0.06)] shadow-[0_0_15px_rgba(0,229,255,0.15)] transition-all duration-300 group-hover:border-[rgba(0,229,255,0.35)] group-hover:bg-[rgba(0,229,255,0.12)] group-hover:shadow-[0_0_20px_rgba(0,229,255,0.3)]">
         {/* Clone the icon to ensure it has the right size and maintains its own colors/bg */}
         {isValidElement(icon) ? (
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center text-[#00e5ff]">
             {cloneElement(icon as React.ReactElement<{ className?: string }>, {
               className: cn(
                 (icon as React.ReactElement<{ className?: string }>).props?.className,
-                "h-7 w-7"
+                "h-7 w-7 text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.7)]"
               ),
             })}
           </div>
@@ -140,14 +143,14 @@ export function SummaryCard({ label, value, sub, icon }: SummaryCardProps) {
         )}
       </div>
       <div className="flex min-w-0 flex-col">
-        <p className="mb-1 truncate text-[14px] leading-tight font-semibold text-slate-500 dark:text-slate-400">
+        <p className="mb-1 truncate text-[13px] leading-tight font-semibold tracking-wide text-slate-400">
           {label}
         </p>
-        <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <div className="text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
           {value}
         </div>
         {sub && (
-          <p className="mt-1 text-xs font-medium text-slate-400 dark:text-slate-500">{sub}</p>
+          <p className="mt-1 text-xs font-medium text-slate-500">{sub}</p>
         )}
       </div>
     </div>
@@ -491,14 +494,13 @@ export function HeatmapChartComponent({
 }
 
 /* ── Chart Card wrapper ────────────────────── */
-// Sprint 2B mejora UX (Bloque A feedback 2 25-05): h-full + flex-col para que
-// cada card ocupe la altura completa de su cell del grid (auto-rows-fr alinea
-// todas las cards de la misma fila). El chart interno usa flex-1 + ResponsiveContainer
-// height="100%" para llenar el espacio restante tras el <h3>.
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="border-border bg-card flex h-full flex-col rounded-3xl border p-7 shadow-sm">
-      <h3 className="text-muted-foreground mb-6 text-sm font-black tracking-widest uppercase">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(0,229,255,0.08)]">
+      {/* Top subtle glow line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
+
+      <h3 className="mb-6 text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
         {title}
       </h3>
       <div className="min-h-[260px] flex-1">{children}</div>
@@ -509,19 +511,19 @@ function ChartCard({ title, children }: { title: string; children: ReactNode }) 
 /* ── Skeleton ──────────────────────────────── */
 export function ChartSkeleton() {
   return (
-    <div className="border-border bg-card animate-pulse rounded-3xl border p-7 shadow-sm">
-      <div className="bg-muted mb-6 h-4 w-40 rounded" />
-      <div className="bg-muted/50 h-[220px] rounded" />
+    <div className="animate-pulse rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.4)] p-7 shadow-sm">
+      <div className="mb-6 h-4 w-40 rounded-lg bg-[rgba(0,229,255,0.08)]" />
+      <div className="h-[220px] rounded-xl bg-[rgba(255,255,255,0.03)]" />
     </div>
   );
 }
 
 export function KpiSkeleton() {
   return (
-    <div className="border-border bg-card animate-pulse rounded-2xl border p-6 shadow-sm">
-      <div className="bg-muted h-3 w-24 rounded" />
-      <div className="bg-muted mt-4 h-10 w-20 rounded" />
-      <div className="bg-muted/50 mt-3 h-3 w-32 rounded" />
+    <div className="animate-pulse rounded-2xl border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.4)] p-6 shadow-sm">
+      <div className="h-3 w-24 rounded-lg bg-[rgba(0,229,255,0.08)]" />
+      <div className="mt-4 h-10 w-20 rounded-xl bg-[rgba(255,255,255,0.05)]" />
+      <div className="mt-3 h-3 w-32 rounded-lg bg-[rgba(255,255,255,0.03)]" />
     </div>
   );
 }

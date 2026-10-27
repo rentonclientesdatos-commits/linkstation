@@ -59,8 +59,9 @@ function TooltipBar({ active, payload, label }: TooltipProps) {
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-border bg-card rounded-3xl border p-7 shadow-sm">
-      <h3 className="text-muted-foreground mb-6 text-sm font-black tracking-widest uppercase">
+    <div className="relative overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.2)]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
+      <h3 className="mb-6 text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
         {title}
       </h3>
       {children}

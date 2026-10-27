@@ -449,21 +449,24 @@ export const KDSView: React.FC<KDSViewProps> = ({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 font-sans text-slate-100 select-none">
+    <div className="flex min-h-screen flex-col bg-[#030712] font-sans text-slate-100 select-none">
       {/* ── TOP CONTROL BAR ── */}
-      <header className="sticky top-0 z-40 border-b border-slate-800/90 bg-slate-900/95 backdrop-blur-xl px-4 py-3 shadow-2xl">
+      <header className="sticky top-0 z-40 border-b border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.85)] px-4 py-3 shadow-2xl backdrop-blur-2xl">
+        {/* Top subtle glow line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.35)] to-transparent" />
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Branding & Role */}
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-600 shadow-lg shadow-rose-600/30">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(255,45,85,0.4)] bg-gradient-to-tr from-rose-600 to-amber-500 shadow-[0_0_15px_rgba(255,45,85,0.35)]">
               <Flame className="h-6 w-6 text-white animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-black tracking-tight text-white uppercase">
+                <h1 className="text-base font-extrabold tracking-tight text-white uppercase">
                   Pantalla de Cocina & Bar (KDS)
                 </h1>
-                <span className="flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-black text-rose-400">
+                <span className="flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-400 shadow-[0_0_10px_rgba(255,45,85,0.2)]">
                   <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
                   En Vivo
                 </span>
@@ -475,13 +478,13 @@ export const KDSView: React.FC<KDSViewProps> = ({
           </div>
 
           {/* Center: Station Selector Tabs */}
-          <div className="flex items-center rounded-2xl border border-slate-800 bg-slate-950/80 p-1 text-xs">
+          <div className="flex items-center rounded-2xl border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.8)] p-1 text-xs shadow-inner">
             <button
               onClick={() => setStationFilter("todas")}
               className={cn(
                 "flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all",
                 stationFilter === "todas"
-                  ? "bg-gradient-to-r from-rose-600 to-orange-600 text-white shadow-md shadow-rose-600/30"
+                  ? "bg-gradient-to-r from-[#00e5ff] to-[#8b5cf6] text-[#000d14] font-black shadow-[0_0_15px_rgba(0,229,255,0.4)]"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -493,7 +496,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               className={cn(
                 "flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all",
                 stationFilter === "caliente"
-                  ? "bg-rose-600 text-white shadow-md shadow-rose-600/30"
+                  ? "border border-rose-500/50 bg-rose-500/20 text-rose-300 shadow-[0_0_12px_rgba(255,45,85,0.3)]"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -505,7 +508,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               className={cn(
                 "flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all",
                 stationFilter === "fria"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                  ? "border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -517,7 +520,7 @@ export const KDSView: React.FC<KDSViewProps> = ({
               className={cn(
                 "flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all",
                 stationFilter === "bar"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                  ? "border border-purple-500/50 bg-purple-500/20 text-purple-300 shadow-[0_0_12px_rgba(139,92,246,0.3)]"
                   : "text-slate-400 hover:text-white"
               )}
             >
@@ -529,11 +532,11 @@ export const KDSView: React.FC<KDSViewProps> = ({
           {/* Right: Sound, Clock, Fullscreen & Exit */}
           <div className="flex items-center gap-2">
             {/* Live Clock */}
-            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-sm font-black text-amber-400 shadow-inner">
+            <div className="flex items-center gap-2 rounded-xl border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.08)] px-3 py-1.5 font-mono text-sm font-black text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]">
               <Clock className="h-4 w-4 text-amber-400" />
               <span>{currentTime}</span>
               {isSyncing && (
-                <RefreshCw className="h-3 w-3 animate-spin text-slate-500 ml-1" />
+                <RefreshCw className="h-3 w-3 animate-spin text-[#00e5ff] ml-1" />
               )}
             </div>
 
@@ -718,41 +721,41 @@ export const KDSView: React.FC<KDSViewProps> = ({
                 <div
                   key={ticket.id}
                   className={cn(
-                    "flex flex-col justify-between rounded-2xl border transition-all duration-300 shadow-xl overflow-hidden",
-                    // Border color by urgency and status
+                    "flex flex-col justify-between rounded-[22px] border transition-all duration-300 shadow-xl overflow-hidden backdrop-blur-xl",
+                    // Border color by urgency and status with futuristic neon glow
                     ticket.orderStatus === "servido"
-                      ? "border-emerald-500/40 bg-slate-900/90 shadow-emerald-950/20"
+                      ? "border-emerald-500/50 bg-[rgba(16,185,129,0.06)] shadow-[0_0_15px_rgba(16,185,129,0.2)]"
                       : isUrgent
-                      ? "border-red-500/80 bg-red-950/20 shadow-red-950/50 ring-2 ring-red-500/50 animate-pulse"
+                      ? "border-red-500 bg-[rgba(255,45,85,0.12)] shadow-[0_0_24px_rgba(255,45,85,0.4)] ring-2 ring-red-500/60 animate-pulse"
                       : isWarning
-                      ? "border-amber-500/60 bg-amber-950/15 shadow-amber-950/30"
+                      ? "border-amber-400/80 bg-[rgba(245,158,11,0.08)] shadow-[0_0_20px_rgba(245,158,11,0.25)]"
                       : ticket.orderStatus === "en_preparacion"
-                      ? "border-cyan-500/50 bg-cyan-950/15 shadow-cyan-950/20"
-                      : "border-slate-800 bg-slate-900/95"
+                      ? "border-[#00e5ff]/80 bg-[rgba(0,229,255,0.08)] shadow-[0_0_20px_rgba(0,229,255,0.25)]"
+                      : "border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.7)] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
                   )}
                 >
                   {/* TICKET TOP HEADER */}
                   <div
                     className={cn(
-                      "flex items-center justify-between border-b px-4 py-3",
+                      "flex items-center justify-between border-b px-4 py-3 backdrop-blur-md",
                       ticket.orderStatus === "servido"
                         ? "border-emerald-500/30 bg-emerald-950/40"
                         : isUrgent
-                        ? "border-red-500/40 bg-red-950/40"
+                        ? "border-red-500/40 bg-red-950/50"
                         : isWarning
-                        ? "border-amber-500/30 bg-amber-950/30"
+                        ? "border-amber-500/30 bg-amber-950/40"
                         : ticket.orderStatus === "en_preparacion"
-                        ? "border-cyan-500/30 bg-cyan-950/30"
-                        : "border-slate-800 bg-slate-950/80"
+                        ? "border-[rgba(0,229,255,0.25)] bg-[rgba(0,229,255,0.1)]"
+                        : "border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.85)]"
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-slate-400">
+                      <span className="font-mono text-xs font-bold text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.5)]">
                         #{ticket.ticketNumber}
                       </span>
-                      <h3 className="text-base font-black text-white">{ticket.title}</h3>
+                      <h3 className="text-base font-extrabold text-white">{ticket.title}</h3>
                       {ticket.type === "delivery" && (
-                        <span className="flex items-center gap-1 rounded-md bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-bold text-purple-300 border border-purple-500/30">
+                        <span className="flex items-center gap-1 rounded-md bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-bold text-purple-300 border border-purple-500/30 shadow-[0_0_8px_rgba(139,92,246,0.3)]">
                           <Bike className="h-3 w-3" /> Delivery
                         </span>
                       )}

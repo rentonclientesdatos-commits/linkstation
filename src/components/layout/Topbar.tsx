@@ -35,24 +35,44 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header className="border-border bg-card/80 relative z-[50] flex h-14 shrink-0 items-center justify-between border-b px-4 backdrop-blur-md transition-all duration-500 md:h-16 md:px-6">
+    <header
+      className="relative z-[50] flex h-14 shrink-0 items-center justify-between px-4 transition-all duration-300 md:h-[52px] md:px-5"
+      style={{
+        background: "rgba(3, 7, 18, 0.7)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        borderBottom: "1px solid rgba(0, 229, 255, 0.07)",
+        boxShadow: "0 1px 0 rgba(0,229,255,0.04), 0 4px 20px rgba(0,0,0,0.3)",
+      }}
+    >
+      {/* Subtle neon top border glow */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
+
       {/* Left: Hamburger (mobile) + Title */}
       <div className="flex items-center gap-3">
         {/* Mobile menu button */}
         <button
           onClick={onMenuClick}
-          className="text-muted-foreground hover:bg-card flex h-9 w-9 items-center justify-center rounded-xl transition-all lg:hidden"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-white/5 hover:text-slate-300 lg:hidden"
           aria-label="Abrir menú"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
 
         <div className="flex flex-col">
-          <h1 className="text-foreground text-sm leading-tight font-black tracking-tight uppercase md:text-base">
+          <h1
+            className="text-xs leading-tight font-bold tracking-[0.1em] uppercase md:text-sm"
+            style={{ color: "#e2e8f0" }}
+          >
             {(config?.dashboard_title as string) || title}
           </h1>
           {tenantName && (
-            <span className="text-primary mt-0.5 text-[10px] leading-none font-bold tracking-widest uppercase">
+            <span
+              className="mt-0.5 text-[9px] leading-none font-bold tracking-[0.2em] uppercase"
+              style={{
+                color: "#00e5ff",
+                textShadow: "0 0 8px rgba(0, 229, 255, 0.5)",
+              }}
+            >
               {tenantName}
             </span>
           )}
@@ -60,58 +80,96 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
       </div>
 
       {/* Right controls */}
-      <div className="flex items-center gap-2">
-        {/* Restaurant Role Quick Switcher */}
+      <div className="flex items-center gap-1.5">
+        {/* Restaurant Role Quick Switcher — neon pill style */}
         {isRestaurant && (
-          <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-inner">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 px-2 uppercase tracking-wider hidden md:inline">
+          <div
+            className="hidden sm:flex items-center gap-0.5 p-1 rounded-xl"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(0,229,255,0.08)",
+            }}
+          >
+            <span className="text-[9px] font-bold text-slate-600 px-2 uppercase tracking-widest hidden md:inline">
               Turno:
             </span>
+
+            {/* Admin */}
             <button
               type="button"
               onClick={() => setRestaurantRole("admin")}
-              title="Vista Dueño / Administrador (Todo habilitado)"
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+              title="Vista Dueño / Administrador"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+              style={
                 currentRole === "admin"
-                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/80 dark:border-slate-700"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                  ? {
+                      background: "rgba(0,229,255,0.12)",
+                      color: "#00e5ff",
+                      border: "1px solid rgba(0,229,255,0.2)",
+                      boxShadow: "0 0 10px rgba(0,229,255,0.12)",
+                    }
+                  : { color: "#4b5563", border: "1px solid transparent" }
+              }
             >
               👑 Admin
             </button>
+
+            {/* Mesero */}
             <button
               type="button"
               onClick={() => setRestaurantRole("mesero")}
-              title="Vista Mesero (Solo Mesas y Carta interactiva)"
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+              title="Vista Mesero"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+              style={
                 currentRole === "mesero"
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                  ? {
+                      background: "rgba(16,185,129,0.15)",
+                      color: "#10b981",
+                      border: "1px solid rgba(16,185,129,0.25)",
+                      boxShadow: "0 0 10px rgba(16,185,129,0.12)",
+                    }
+                  : { color: "#4b5563", border: "1px solid transparent" }
+              }
             >
               🍽️ Mesero
             </button>
+
+            {/* Caja */}
             <button
               type="button"
               onClick={() => setRestaurantRole("cajero")}
-              title="Vista Caja (WhatsApp, Cobros, Tickets e Inventario)"
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+              title="Vista Caja"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+              style={
                 currentRole === "cajero"
-                  ? "bg-amber-600 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                  ? {
+                      background: "rgba(245,158,11,0.15)",
+                      color: "#f59e0b",
+                      border: "1px solid rgba(245,158,11,0.25)",
+                      boxShadow: "0 0 10px rgba(245,158,11,0.12)",
+                    }
+                  : { color: "#4b5563", border: "1px solid transparent" }
+              }
             >
               💼 Caja
             </button>
+
+            {/* Cocina */}
             <button
               type="button"
               onClick={() => setRestaurantRole("cocina")}
-              title="Vista Cocina / KDS (Pantalla táctil de preparación de pedidos)"
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+              title="Vista Cocina / KDS"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+              style={
                 currentRole === "cocina"
-                  ? "bg-rose-600 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
+                  ? {
+                      background: "rgba(255,45,85,0.15)",
+                      color: "#ff2d55",
+                      border: "1px solid rgba(255,45,85,0.25)",
+                      boxShadow: "0 0 10px rgba(255,45,85,0.12)",
+                    }
+                  : { color: "#4b5563", border: "1px solid transparent" }
+              }
             >
               👨‍🍳 Cocina
             </button>
@@ -119,14 +177,18 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
         )}
 
         <ThemeToggle />
-        <div className="bg-border mx-1 h-6 w-px" />
+
+        {/* Separator */}
+        <div className="mx-0.5 h-5 w-px bg-[rgba(255,255,255,0.06)]" />
+
+        {/* Logout */}
         <button
           onClick={handleLogout}
-          className="text-muted-foreground flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-bold transition hover:bg-red-500/10 hover:text-red-500 md:px-3"
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 transition-all hover:bg-[rgba(255,45,85,0.08)] hover:text-[#ff2d55] md:px-2.5"
           aria-label="Cerrar sesión"
         >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Cerrar sesión</span>
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline tracking-wide">Salir</span>
         </button>
       </div>
     </header>

@@ -4,15 +4,15 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 import type { KpiGenerales } from "@/lib/actions/analytics";
 import { Info } from "lucide-react";
 
-const PALETTE = ["#2563eb", "#f97316", "#10b981", "#8b5cf6"];
+const PALETTE = ["#00e5ff", "#8b5cf6", "#10b981", "#ff2d55"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function TooltipPie({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="border-border bg-card rounded-xl border px-4 py-3 text-xs shadow-xl">
-      <p className="text-card-foreground font-bold">{payload[0].name}</p>
-      <p className="font-black text-blue-600 dark:text-blue-400">
+    <div className="rounded-xl border border-[rgba(0,229,255,0.25)] bg-[rgba(6,11,26,0.92)] px-4 py-3 text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_15px_rgba(0,229,255,0.15)] backdrop-blur-xl">
+      <p className="font-bold text-slate-200">{payload[0].name}</p>
+      <p className="font-black text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]">
         {payload[0].value?.toLocaleString()} ({payload[0].payload?.pct}%)
       </p>
     </div>
@@ -50,9 +50,12 @@ export function OverviewCanalDistribution({ kpi }: { kpi: KpiGenerales }) {
           ? "Distribución por canal sin datos en el período seleccionado. Web tracking en desarrollo."
           : `Distribución por canal: ${llamadas} llamadas y ${whatsapp} conversaciones de WhatsApp. Web tracking en desarrollo.`
       }
-      className="border-border bg-card flex h-full flex-col rounded-3xl border p-7 shadow-sm"
+      className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(0,229,255,0.08)]"
     >
-      <h3 className="text-muted-foreground mb-6 text-sm font-black tracking-widest uppercase">
+      {/* Top subtle glow line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
+
+      <h3 className="mb-6 text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
         Distribución por canal
       </h3>
       <div className="min-h-[260px] flex-1">

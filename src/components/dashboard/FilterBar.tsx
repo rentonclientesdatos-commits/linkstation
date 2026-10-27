@@ -77,9 +77,12 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
   }
 
   return (
-    <div className="border-border bg-card mb-6 flex flex-col gap-3 rounded-3xl border p-4 shadow-sm transition-colors md:p-5">
+    <div className="relative mb-6 flex flex-col gap-3 rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 md:p-5">
+      {/* Top subtle glow line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
+
       {/* Row 1: Quick Presets */}
-      <div className="border-border bg-muted custom-scrollbar no-scrollbar flex items-center gap-1 overflow-x-auto rounded-xl border p-1">
+      <div className="custom-scrollbar no-scrollbar flex items-center gap-1 overflow-x-auto rounded-xl border border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.7)] p-1">
         {DATE_PRESETS.map((p) => (
           <button
             key={p.value}
@@ -89,10 +92,10 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
               setDraftTo("");
             }}
             className={cn(
-              "flex-shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all",
+              "flex-shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200",
               draftPreset === p.value
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+                ? "border border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.25)]"
+                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
             )}
           >
             {p.label}
@@ -103,7 +106,7 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
       {/* Row 2: Search + actions */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2" />
+          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
             placeholder="Buscar teléfono / ID..."
@@ -112,36 +115,36 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-            className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card w-full rounded-xl border py-2.5 pr-4 pl-10 text-sm font-medium transition-all outline-none"
+            className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] py-2.5 pr-4 pl-10 text-sm font-medium text-slate-100 placeholder:text-slate-500 transition-all outline-none focus:border-[#00e5ff] focus:bg-[rgba(255,255,255,0.05)] focus:shadow-[0_0_15px_rgba(0,229,255,0.2)]"
           />
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
-            "flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-bold transition-all",
+            "flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200",
             isExpanded
-              ? "border-primary/20 bg-primary/10 text-primary"
-              : "border-border text-muted-foreground hover:bg-muted"
+              ? "border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)]"
+              : "border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] text-slate-300 hover:border-[rgba(0,229,255,0.2)] hover:bg-white/[0.05] hover:text-white"
           )}
         >
-          <Filter className="h-4 w-4" />
+          <Filter className="h-4 w-4 text-[#00e5ff]" />
           <span className="hidden sm:inline">Filtros</span>
-          <ChevronDown className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")} />
+          <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded && "rotate-180")} />
         </button>
         <button
           onClick={applyFilters}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 flex-shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm transition-all sm:px-6"
+          className="flex-shrink-0 rounded-xl bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#000d14] shadow-[0_0_15px_rgba(0,229,255,0.35)] transition-all hover:bg-[#38bdf8] hover:shadow-[0_0_24px_rgba(0,229,255,0.6)] active:scale-95 sm:px-6"
         >
           Aplicar
         </button>
       </div>
 
-      {/* Row 2: Advanced filters (Colapsible) */}
+      {/* Row 3: Advanced filters (Collapsible) */}
       {isExpanded && (
-        <div className="border-border animate-in fade-in slide-in-from-top-2 grid grid-cols-1 gap-x-6 gap-y-4 border-t pt-5 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-[rgba(0,229,255,0.08)] pt-5 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 animate-in fade-in slide-in-from-top-2">
           {/* Custom Dates - Takes 2 columns on larger screens */}
           <div className="flex flex-col space-y-1.5 sm:col-span-2 lg:col-span-2">
-            <label className="text-muted-foreground ml-1 text-[10px] font-black tracking-wider uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">
               Rango Personalizado
             </label>
             <div className="flex items-center gap-2">
@@ -155,10 +158,10 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
                     setDraftFrom(e.target.value);
                     setDraftPreset("");
                   }}
-                  className="border-border bg-muted text-foreground focus:border-primary focus:bg-card w-full rounded-xl border px-3 py-2.5 text-xs font-bold shadow-sm transition-all outline-none"
+                  className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-xs font-semibold text-slate-200 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
                 />
               </div>
-              <span className="text-muted-foreground/30 font-bold">/</span>
+              <span className="text-xs font-bold text-slate-600">a</span>
               <div className="relative flex-1">
                 <input
                   type="date"
@@ -169,43 +172,43 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
                     setDraftTo(e.target.value);
                     setDraftPreset("");
                   }}
-                  className="border-border bg-muted text-foreground focus:border-primary focus:bg-card w-full rounded-xl border px-3 py-2.5 text-xs font-bold shadow-sm transition-all outline-none"
+                  className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-xs font-semibold text-slate-200 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
                 />
               </div>
             </div>
           </div>
 
-          {/* Curso */}
+          {/* Curso / Interés */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-muted-foreground ml-1 text-[10px] font-black tracking-wider uppercase">
-              Curso / Master
+            <label className="ml-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">
+              Curso / Interés
             </label>
             <input
               type="text"
-              placeholder="Ej: MBA..."
+              placeholder="Ej: Manejo..."
               value={curso}
               onChange={(e) => setCurso(e.target.value)}
-              className="border-border bg-muted text-foreground focus:border-primary focus:bg-card placeholder:text-muted-foreground w-full rounded-xl border px-3 py-2.5 text-sm font-medium shadow-sm transition-all outline-none"
+              className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-sm font-medium text-slate-100 placeholder:text-slate-500 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
             />
           </div>
 
           {/* País */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-muted-foreground ml-1 text-[10px] font-black tracking-wider uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">
               País
             </label>
             <input
               type="text"
-              placeholder="Ej: España..."
+              placeholder="Ej: Chile..."
               value={pais}
               onChange={(e) => setPais(e.target.value)}
-              className="border-border bg-muted text-foreground focus:border-primary focus:bg-card placeholder:text-muted-foreground w-full rounded-xl border px-3 py-2.5 text-sm font-medium shadow-sm transition-all outline-none"
+              className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-sm font-medium text-slate-100 placeholder:text-slate-500 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
             />
           </div>
 
           {/* Origen */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-muted-foreground ml-1 text-[10px] font-black tracking-wider uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">
               Origen
             </label>
             <input
@@ -213,14 +216,14 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
               placeholder="Ej: Facebook..."
               value={origen}
               onChange={(e) => setOrigen(e.target.value)}
-              className="border-border bg-muted text-foreground focus:border-primary focus:bg-card placeholder:text-muted-foreground w-full rounded-xl border px-3 py-2.5 text-sm font-medium shadow-sm transition-all outline-none"
+              className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-sm font-medium text-slate-100 placeholder:text-slate-500 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
             />
           </div>
 
           {/* Campaña */}
           <div className="flex flex-col justify-between space-y-1.5">
             <div className="space-y-1.5">
-              <label className="text-muted-foreground ml-1 text-[10px] font-black tracking-wider uppercase">
+              <label className="ml-1 text-[10px] font-bold tracking-wider uppercase text-slate-400">
                 Campaña
               </label>
               {availableCampaigns.length > 0 ? (
@@ -229,7 +232,7 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
                   title="Seleccionar campaña"
                   aria-label="Seleccionar campaña"
                   onChange={(e) => setCampana(e.target.value)}
-                  className="border-border bg-muted text-foreground focus:border-primary focus:bg-card w-full cursor-pointer appearance-none rounded-xl border px-3 py-2.5 text-sm font-medium shadow-sm transition-all outline-none"
+                  className="w-full cursor-pointer appearance-none rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.9)] px-3 py-2.5 text-sm font-medium text-slate-200 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
                 >
                   <option value="">Todas las campañas</option>
                   {availableCampaigns.map((c) => (
@@ -244,13 +247,13 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
                   placeholder="Ej: Invierno 2024..."
                   value={campana}
                   onChange={(e) => setCampana(e.target.value)}
-                  className="border-border bg-muted text-foreground focus:border-primary focus:bg-card placeholder:text-muted-foreground w-full rounded-xl border px-3 py-2.5 text-sm font-medium shadow-sm transition-all outline-none"
+                  className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-sm font-medium text-slate-100 placeholder:text-slate-500 shadow-sm transition-all outline-none focus:border-[#00e5ff] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)]"
                 />
               )}
             </div>
             <button
               onClick={clearFilters}
-              className="text-muted-foreground mt-2 flex items-center justify-center gap-2 text-[9px] font-black tracking-[0.2em] uppercase transition-colors hover:text-red-500"
+              className="mt-2 flex items-center justify-center gap-2 text-[9px] font-bold tracking-[0.2em] uppercase text-slate-500 transition-colors hover:text-[#ff2d55]"
             >
               <RotateCcw className="h-3 w-3" />
               Limpiar Filtros

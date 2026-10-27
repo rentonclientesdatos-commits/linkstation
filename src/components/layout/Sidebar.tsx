@@ -55,181 +55,181 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Super Admin",
     href: "/dashboard/super-admin",
-    icon: <ShieldCheck className="h-5 w-5 text-amber-500" strokeWidth={1.8} />,
+    icon: <ShieldCheck className="h-4 w-4 text-amber-400" strokeWidth={1.5} />,
     superAdminOnly: true,
   },
   {
     label: "Dashboard",
     href: "/dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "dashboard",
   },
   {
     label: "Constructor & IA",
     href: "/dashboard/onboarding",
-    icon: <Workflow className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <Workflow className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "ai_agents",
     subItems: [
       {
         label: "Constructor",
         href: "/dashboard/onboarding",
-        icon: <PlusCircle className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <PlusCircle className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Agentes AI",
         href: "/dashboard/agents",
-        icon: <Bot className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Bot className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Knowledge Base",
         href: "/dashboard/knowledge",
-        icon: <BookOpen className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Agentes de Voz",
         href: "/dashboard/voice-agents",
-        icon: <Mic className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Mic className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Chatbot Web",
         href: "/dashboard/web-chatbot",
-        icon: <Globe className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Globe className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Leads",
     href: "/dashboard/historial",
-    icon: <Users className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <Users className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "leads",
     subItems: [
       {
         label: "Resumen Leads",
         href: "/dashboard/historial",
-        icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <LayoutDashboard className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
-        label: "Conversaciones whatsapp",
+        label: "Conversaciones WhatsApp",
         href: "/dashboard/conversaciones",
-        icon: <MessageSquare className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Lead Llamadas",
         href: "/dashboard/lead-llamadas",
-        icon: <PhoneCall className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <PhoneCall className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Calendario",
     href: "/dashboard/calendar",
-    icon: <Calendar className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <Calendar className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "calendar",
   },
   {
     label: "Pedidos & Mesas",
     href: "/dashboard/pedidos",
-    icon: <Utensils className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <Utensils className="h-4 w-4" strokeWidth={1.5} />,
     restaurantOnly: true,
     moduleId: "restaurant",
     subItems: [
       {
         label: "Plano & Mesas",
         href: "/dashboard/pedidos",
-        icon: <Utensils className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Utensils className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Cocina / KDS",
         href: "/dashboard/pedidos/kds",
-        icon: <Flame className="h-4 w-4 text-rose-500" strokeWidth={1.8} />,
+        icon: <Flame className="h-3.5 w-3.5 text-rose-400" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Campañas",
     href: "/dashboard/campanas",
-    icon: <Megaphone className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <Megaphone className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "campaigns",
     subItems: [
       {
         label: "Métricas y Estado",
         href: "/dashboard/campanas",
-        icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <LayoutDashboard className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Jorklif (Cartera & Cotiz)",
         href: "/dashboard/campanas/jorklif",
-        icon: <PhoneCall className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <PhoneCall className="h-3.5 w-3.5" strokeWidth={1.5} />,
         tenantOnly: ["jorklif", "jorklift", "45f45121-4ed4-48f1-bd13-816df3755188"],
       },
       {
         label: "Constructor",
         href: "/dashboard/campanas/nuevo",
-        icon: <PlusCircle className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <PlusCircle className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Métricas",
     href: "/dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "dashboard",
     subItems: [
       {
         label: "Llamadas",
         href: "/dashboard/minutos",
-        icon: <Clock className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Clock className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Whatsapp",
         href: "/dashboard/whatsapp",
-        icon: <MessageCircle className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Lista de Leads",
         href: "/dashboard/historial",
-        icon: <History className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <History className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Pruebas y Logs",
     href: "/dashboard/simulator",
-    icon: <FlaskConical className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <FlaskConical className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "simulator",
     subItems: [
       {
         label: "Simulador",
         href: "/dashboard/simulator",
-        icon: <FlaskConical className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <FlaskConical className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Playground",
         href: "/dashboard/playground",
-        icon: <Terminal className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Auditoría Logs",
         href: "/dashboard/logs",
-        icon: <Terminal className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Negocio",
     href: "/dashboard/costs",
-    icon: <DollarSign className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <DollarSign className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "costs",
     subItems: [
       {
         label: "Análisis de Costes",
         href: "/dashboard/costs",
-        icon: <DollarSign className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <DollarSign className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Admin Panel",
         href: "/dashboard/admin",
-        icon: <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.5} />,
         superAdminOnly: true,
       },
     ],
@@ -237,54 +237,54 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Ajustes",
     href: "/dashboard/settings",
-    icon: <Settings className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <Settings className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "integrations",
     subItems: [
       {
         label: "Clientes y Config.",
         href: "/dashboard/settings",
-        icon: <SlidersHorizontal className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={1.5} />,
         superAdminOnly: true,
       },
       {
         label: "Google Sheets",
         href: "/dashboard/settings/integrations/google-sheets",
-        icon: <Sheet className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Sheet className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Zoho CRM",
         href: "/dashboard/settings/integrations/zoho-pull",
-        icon: <RefreshCw className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "WhatsApp WABA",
         href: "/dashboard/settings/whatsapp",
-        icon: <MessageSquare className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
       {
         label: "Instagram",
         href: "/dashboard/settings/integrations/instagram",
-        icon: <Instagram className="h-4 w-4" strokeWidth={1.8} />,
+        icon: <Instagram className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
     ],
   },
   {
     label: "Docs",
     href: "/dashboard/docs",
-    icon: <BookOpen className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <BookOpen className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "docs",
   },
   {
     label: "Doc Admin",
     href: "/dashboard/docs-admin",
-    icon: <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <ShieldCheck className="h-4 w-4" strokeWidth={1.5} />,
     superAdminOnly: true,
     moduleId: "docs",
   },
   {
     label: "Docs Clientes",
     href: "/dashboard/docs-clientes",
-    icon: <BookOpen className="h-5 w-5" strokeWidth={1.8} />,
+    icon: <BookOpen className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "docs",
   },
 ];
@@ -326,7 +326,6 @@ export function Sidebar({
   const businessType =
     ((tenantConfig as Record<string, unknown>)?.business_type as string | undefined) ||
     storeBusinessType;
-  // If businessType is not specified (legacy), default to restaurant; otherwise check explicitly
   const isRestaurant =
     !businessType || businessType === "restaurant" || businessType === "restaurante";
 
@@ -339,37 +338,21 @@ export function Sidebar({
     string[] | undefined;
 
   const filterNavItem = (item: NavItem): NavItem | null => {
-    // 1. Super Admin restringido estrictamente al Super Admin global
     if (item.superAdminOnly && !isSuperAdmin) return null;
-
-    // 2. Control de adminOnly
     if (item.adminOnly && !isAdmin && !isSuperAdmin) return null;
-
-    // 3. Negocio tipo restaurante
     if (item.restaurantOnly && !isRestaurant) return null;
 
-    // 4. Filtrado específico por ROL DE RESTAURANTE (Mesero vs Cajero vs Admin)
     if (isRestaurant && !isSuperAdmin) {
       if (restaurantRole === "mesero") {
-        // El mesero solo tiene acceso a Pedidos y Mesas
-        if (item.moduleId !== "restaurant" && item.href !== "/dashboard/pedidos") {
-          return null;
-        }
+        if (item.moduleId !== "restaurant" && item.href !== "/dashboard/pedidos") return null;
       } else if (restaurantRole === "cocina") {
-        // La cocina solo ve Pedidos / Pantalla KDS
-        if (item.moduleId !== "restaurant" && !item.href.startsWith("/dashboard/pedidos")) {
-          return null;
-        }
+        if (item.moduleId !== "restaurant" && !item.href.startsWith("/dashboard/pedidos")) return null;
       } else if (restaurantRole === "cajero") {
-        // El cajero ve Pedidos & Mesas (cobros/tickets), WhatsApp y Métricas de caja
         const allowedCajeroModules = ["restaurant", "whatsapp", "dashboard"];
-        if (item.moduleId && !allowedCajeroModules.includes(item.moduleId)) {
-          return null;
-        }
+        if (item.moduleId && !allowedCajeroModules.includes(item.moduleId)) return null;
       }
     }
 
-    // 5. Tenant específico (ej: exclusivo para Jorklif)
     if (item.tenantOnly) {
       const currentName = (tenantName || "").toLowerCase().trim();
       const currentId = (tenantId || "").toLowerCase().trim();
@@ -381,11 +364,8 @@ export function Sidebar({
       if (!matches) return null;
     }
 
-    // 6. Módulos asignados por el Super Admin
     if (!isSuperAdmin && item.moduleId && visibleModules && Array.isArray(visibleModules)) {
-      if (!visibleModules.includes(item.moduleId)) {
-        return null;
-      }
+      if (!visibleModules.includes(item.moduleId)) return null;
     }
 
     let filteredSubItems: NavItem[] | undefined = undefined;
@@ -393,23 +373,15 @@ export function Sidebar({
       filteredSubItems = item.subItems
         .map(filterNavItem)
         .filter((sub): sub is NavItem => sub !== null);
-
-      if (filteredSubItems.length === 0 && item.subItems.length > 0) {
-        return null;
-      }
+      if (filteredSubItems.length === 0 && item.subItems.length > 0) return null;
     }
 
-    // Si es Ajustes y no es Super Admin, redirigir al primer subItem visible (ej: WhatsApp WABA o Sheets)
     const activeHref =
       !isSuperAdmin && item.label === "Ajustes" && filteredSubItems?.[0]
         ? filteredSubItems[0].href
         : item.href;
 
-    return {
-      ...item,
-      href: activeHref,
-      subItems: filteredSubItems,
-    };
+    return { ...item, href: activeHref, subItems: filteredSubItems };
   };
 
   const visibleNavItems = NAV_ITEMS.map(filterNavItem).filter(
@@ -425,37 +397,51 @@ export function Sidebar({
       (item.href !== "/dashboard" && safePathname.startsWith(item.href + "/"));
 
     return (
-      <div key={item.label} className="space-y-1">
+      <div key={item.label} className="space-y-0.5">
         <div
           className={cn(
-            "group flex items-center gap-1 rounded-xl px-1 text-sm font-semibold transition-all duration-200",
+            "group relative flex items-center gap-1 rounded-xl text-xs font-medium transition-all duration-200",
             isActive && !hasSubItems
-              ? "bg-grad-primary text-primary-foreground shadow-primary/30 shadow-lg"
-              : "text-foreground/60 hover:bg-card/60 hover:text-foreground",
-            depth > 0 && !collapsed && "ml-4"
+              ? "bg-[rgba(0,229,255,0.08)] text-[#00e5ff]"
+              : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
+            depth > 0 && !collapsed && "ml-3"
           )}
         >
-          {/* Main Link Area (Icon + Label) */}
+          {/* Active indicator bar */}
+          {isActive && !hasSubItems && (
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-[#00e5ff] shadow-[0_0_8px_rgba(0,229,255,0.8)]" />
+          )}
+
+          {/* Main Link Area */}
           <Link
             href={item.href}
-            className="flex flex-1 items-center gap-3 px-2 py-2.5 outline-none"
+            className="flex flex-1 items-center gap-2.5 px-3 py-2 outline-none"
             onClick={() => {
               if (!isExpanded && hasSubItems) toggleExpand(item.label);
             }}
           >
-            <span className="relative flex-shrink-0">
+            <span
+              className={cn(
+                "relative flex-shrink-0 transition-all duration-200",
+                isActive && !hasSubItems ? "text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.7)]" : "text-slate-500 group-hover:text-slate-300"
+              )}
+            >
               {item.icon}
               {item.href === "/dashboard/settings" && !isConfigured && (
-                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="absolute -top-1 -right-1 flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
                 </span>
               )}
             </span>
-            {!collapsed && <span className="flex-1">{item.label}</span>}
+            {!collapsed && (
+              <span className={cn("flex-1 tracking-wide", isActive && !hasSubItems && "font-semibold")}>
+                {item.label}
+              </span>
+            )}
           </Link>
 
-          {/* Expand Toggle (Chevron Area) */}
+          {/* Expand Toggle */}
           {!collapsed && hasSubItems && (
             <button
               onClick={(e) => {
@@ -463,13 +449,13 @@ export function Sidebar({
                 e.stopPropagation();
                 toggleExpand(item.label);
               }}
-              className="mr-1 rounded-lg p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              className="mr-1.5 rounded-lg p-1.5 transition-colors hover:bg-white/5 text-slate-600 hover:text-slate-400"
               title={isExpanded ? "Contraer" : "Expandir"}
               aria-label={isExpanded ? "Contraer submenú" : "Expandir submenú"}
             >
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 transition-transform duration-200",
+                  "h-3 w-3 transition-transform duration-200",
                   isExpanded && "rotate-180"
                 )}
               />
@@ -478,7 +464,7 @@ export function Sidebar({
         </div>
 
         {hasSubItems && isExpanded && !collapsed && (
-          <div className="space-y-1">
+          <div className="space-y-0.5 pl-1">
             {item.subItems?.map((subItem) => (
               <NavLink key={subItem.label} item={subItem} depth={depth + 1} />
             ))}
@@ -490,28 +476,41 @@ export function Sidebar({
 
   return (
     <>
-      {/* ── MOBILE: Overlay backdrop ───────────────────────────────── */}
+      {/* ── MOBILE: Overlay backdrop ─────────────────────────── */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={onMobileClose}
         />
       )}
 
-      {/* ── DESKTOP Sidebar / MOBILE Drawer ───────────────────────── */}
+      {/* ── DESKTOP Sidebar / MOBILE Drawer ──────────────────── */}
       <aside
         className={cn(
-          "border-border bg-grad-surface relative hidden h-screen flex-col border-r transition-all duration-300 lg:flex",
-          collapsed ? "w-16" : "w-64",
+          // Glass panel base
+          "relative hidden h-screen flex-col transition-all duration-300 lg:flex",
+          // Neon glass sidebar
+          "border-r border-[rgba(0,229,255,0.07)]",
+          "bg-[rgba(4,8,20,0.75)] backdrop-blur-2xl",
+          // Collapsed / expanded width
+          collapsed ? "w-[60px]" : "w-60",
+          // Mobile: drawer
           "max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:flex max-lg:w-72 max-lg:shadow-2xl",
           mobileOpen ? "max-lg:translate-x-0" : "max-lg:-translate-x-full",
           "max-lg:transition-transform max-lg:duration-300"
         )}
+        style={{
+          boxShadow: "inset -1px 0 0 rgba(0,229,255,0.05), 4px 0 40px rgba(0,0,0,0.4)",
+        }}
       >
-        {/* Logo */}
+        {/* Subtle top glow line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.4)] to-transparent" />
+
+        {/* Logo area */}
         <div
           className={cn(
-            "border-border flex h-16 items-center justify-between border-b px-4 transition-all md:h-20"
+            "flex h-16 items-center justify-between px-4 transition-all md:h-[60px]",
+            "border-b border-[rgba(0,229,255,0.07)]"
           )}
         >
           {!collapsed ? (
@@ -521,15 +520,15 @@ export function Sidebar({
                 <img
                   src={(tenantConfig as Record<string, unknown>)?.logo_url as string}
                   alt="Logo del Negocio"
-                  className="h-10 w-auto max-w-[200px] object-contain transition-all sm:h-12"
+                  className="h-8 w-auto max-w-[180px] object-contain opacity-90"
                 />
               ) : (
                 <NextImage
                   src="/logo-login.png"
                   alt="LinkStation"
-                  width={260}
-                  height={130}
-                  className="h-10 w-auto object-contain sm:h-12"
+                  width={200}
+                  height={100}
+                  className="h-8 w-auto object-contain opacity-90"
                   priority
                 />
               )}
@@ -541,15 +540,15 @@ export function Sidebar({
                 <img
                   src={(tenantConfig as Record<string, unknown>)?.logo_url as string}
                   alt="Logo"
-                  className="h-8 w-8 rounded-md object-contain"
+                  className="h-7 w-7 rounded-lg object-contain"
                 />
               ) : (
                 <NextImage
                   src="/favicon-renton.png"
                   alt="LinkStation"
-                  width={40}
-                  height={40}
-                  className="mx-auto h-9 w-9 object-contain"
+                  width={36}
+                  height={36}
+                  className="mx-auto h-8 w-8 object-contain opacity-90"
                 />
               )}
             </div>
@@ -557,42 +556,60 @@ export function Sidebar({
           {onMobileClose && (
             <button
               onClick={onMobileClose}
-              className="text-muted-foreground/50 hover:bg-card flex h-9 w-9 items-center justify-center rounded-xl transition-all lg:hidden"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-white/5 hover:text-slate-300 transition-all lg:hidden"
               title="Cerrar menú"
               aria-label="Cerrar menú"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
 
         {isAdmin && <TenantSelector collapsed={collapsed} isAdmin={isAdmin} />}
 
-        <nav className="mt-2 flex-1 space-y-1.5 overflow-y-auto p-3">
+        {/* Nav items */}
+        <nav className="mt-1 flex-1 space-y-0.5 overflow-y-auto px-2 py-2 custom-scrollbar">
+          {/* Section label */}
+          {!collapsed && (
+            <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.15em] text-slate-600">
+              Navegación
+            </p>
+          )}
           {visibleNavItems.map((item) => (
             <NavLink key={item.label} item={item} />
           ))}
         </nav>
 
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-muted-foreground/40 hover:bg-card hover:text-foreground m-3 hidden items-center justify-center rounded-xl py-2.5 transition lg:flex"
-          title={collapsed ? "Expandir" : "Colapsar"}
-        >
-          <svg
-            className={cn("h-4 w-4 transition-transform duration-300", collapsed && "rotate-180")}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2.5}
+        {/* Collapse toggle */}
+        <div className="border-t border-[rgba(0,229,255,0.06)] p-2">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex w-full items-center justify-center rounded-xl py-2 text-slate-600 hover:bg-white/[0.04] hover:text-slate-400 transition-all"
+            title={collapsed ? "Expandir" : "Colapsar"}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        </button>
+            <svg
+              className={cn("h-3.5 w-3.5 transition-transform duration-300", collapsed && "rotate-180")}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
       </aside>
 
-      {/* ── MOBILE: Bottom Navigation Bar ─────────────────────────── */}
-      <nav className="border-border bg-card/95 pb-safe fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t px-1 backdrop-blur-md lg:hidden">
+      {/* ── MOBILE: Bottom Navigation Bar ──────────────────────── */}
+      <nav
+        className="pb-safe fixed inset-x-0 bottom-0 z-30 flex items-center justify-around px-1 lg:hidden"
+        style={{
+          background: "rgba(4, 8, 20, 0.9)",
+          backdropFilter: "blur(24px)",
+          borderTop: "1px solid rgba(0, 229, 255, 0.1)",
+          boxShadow: "0 -4px 30px rgba(0,0,0,0.5)",
+        }}
+      >
         {(
           [
             NAV_ITEMS.find((n) => n.label === "Métricas"),
@@ -610,18 +627,27 @@ export function Sidebar({
               href={item.href}
               className={cn(
                 "flex min-w-[48px] flex-col items-center gap-0.5 rounded-xl px-2 py-2 transition-all",
-                active ? "text-primary" : "text-muted-foreground/40"
+                active ? "text-[#00e5ff]" : "text-slate-600"
               )}
             >
               <span
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
-                  active ? "bg-primary/10" : ""
+                  "flex h-8 w-8 items-center justify-center rounded-xl transition-all",
+                  active
+                    ? "bg-[rgba(0,229,255,0.1)] shadow-[0_0_10px_rgba(0,229,255,0.2)]"
+                    : ""
                 )}
               >
                 {item.icon}
               </span>
-              <span className="text-[9px] font-black tracking-tight uppercase">{item.label}</span>
+              <span
+                className={cn(
+                  "text-[8px] font-bold tracking-tight uppercase",
+                  active ? "text-[#00e5ff]" : "text-slate-600"
+                )}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}

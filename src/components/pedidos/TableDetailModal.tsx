@@ -283,18 +283,21 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
   };
 
   return (
-    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-end bg-slate-950/70 p-4 backdrop-blur-sm duration-200 md:p-6">
-      <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 p-4 backdrop-blur-md duration-200 animate-in fade-in md:p-6">
+      <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.15)] bg-[rgba(10,15,30,0.88)] shadow-[0_16px_50px_rgba(0,0,0,0.7),0_0_30px_rgba(0,229,255,0.1)] backdrop-blur-2xl">
+        {/* Top subtle glow line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.4)] to-transparent" />
+
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/80 p-6">
+        <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.8)] p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-lg font-bold text-indigo-400">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.1)] text-lg font-black text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.25)]">
               #{table.number}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white">{table.name}</h2>
-                <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-300">
+                <h2 className="text-xl font-extrabold text-white">{table.name}</h2>
+                <span className="rounded-lg border border-[rgba(0,229,255,0.15)] bg-[rgba(0,229,255,0.05)] px-2.5 py-0.5 text-xs font-semibold text-[#00e5ff]">
                   {table.zone === "terraza"
                     ? "Terraza"
                     : table.zone === "vip"
@@ -310,17 +313,17 @@ export const TableDetailModal: React.FC<TableDetailModalProps> = ({
 
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.08)] bg-white/[0.04] text-slate-400 transition-colors hover:border-[rgba(0,229,255,0.3)] hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Modal Content Scrollable */}
-        <div className="flex-1 space-y-6 overflow-y-auto p-6">
+        <div className="flex-1 space-y-6 overflow-y-auto p-6 custom-scrollbar">
           {/* Quick Status Control Buttons */}
-          <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4">
-            <label className="mb-2.5 block text-xs font-bold tracking-wider text-slate-400 uppercase">
+          <div className="rounded-2xl border border-[rgba(0,229,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+            <label className="mb-2.5 block text-xs font-bold tracking-wider uppercase text-slate-400">
               Estado de la Mesa
             </label>
             <div className="grid grid-cols-3 gap-2">
