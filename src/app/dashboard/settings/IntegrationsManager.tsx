@@ -166,8 +166,8 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 space-y-12 duration-700">
-      {/* ── SP-4-NEW-12: buscador integraciones ── */}
-      <div className="sticky top-0 z-10 -mx-2 bg-gradient-to-b from-white via-white/95 to-transparent px-2 pt-2 pb-3 backdrop-blur-sm dark:from-slate-950 dark:via-slate-950/95">
+      {/* ── Buscador integraciones ── */}
+      <div className="sticky top-0 z-10 -mx-2 bg-[rgba(3,7,18,0.95)] px-2 pt-2 pb-3 backdrop-blur-xl">
         <label className="relative block">
           <span className="sr-only">Buscar integración</span>
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -176,7 +176,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             placeholder="Buscar integración (retell, whatsapp, crm, sheets...)"
-            className="h-10 rounded-xl border-slate-200 bg-white pl-9 text-sm dark:border-slate-800 dark:bg-slate-950"
+            className="h-10 rounded-xl border-[rgba(0,229,255,0.2)] bg-[rgba(4,8,20,0.8)] pl-9 text-sm text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] backdrop-blur-md"
           />
         </label>
       </div>
@@ -186,13 +186,13 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
       {/* ── SECTION: ULTRAVOX AI ── */}
       {matchesFilter("ultravox voz voice agent realtime inference web-native") && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.1)] pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-500/30 bg-[rgba(139,92,246,0.12)] text-purple-400 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
                 <Mic className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                <h3 className="text-sm font-black tracking-tight text-white uppercase">
                   Ultravox AI Integration
                 </h3>
                 <p className="text-left text-[10px] font-bold tracking-widest text-slate-400 uppercase">
@@ -206,7 +206,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
               size="sm"
               onClick={() => handleSync(ultravoxApiKey)}
               disabled={isSyncing || !ultravoxApiKey}
-              className="h-8 gap-2 rounded-lg border-purple-100 bg-purple-50 text-[10px] font-black tracking-widest text-purple-600 uppercase hover:bg-purple-100"
+              className="h-8 gap-2 rounded-lg border-[rgba(139,92,246,0.4)] bg-[rgba(139,92,246,0.1)] text-[10px] font-black tracking-widest text-purple-400 uppercase hover:bg-[rgba(139,92,246,0.2)] hover:shadow-[0_0_10px_rgba(139,92,246,0.2)] transition-all"
             >
               <RefreshCw className={cn("h-3 w-3", isSyncing && "animate-spin")} />
               {isSyncing ? "Sincronizando..." : "Sincronizar Recursos"}
@@ -223,7 +223,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
                 onChange={(e) => updateField("ultravox", { api_key: e.target.value })}
                 type="password"
                 placeholder="Ultravox API Secret"
-                className="h-11 rounded-xl border-slate-200 bg-white font-mono text-xs dark:border-slate-800 dark:bg-slate-950"
+                className="h-11 rounded-xl border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] font-mono text-xs text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] backdrop-blur-md"
               />
             </div>
           </div>
@@ -325,13 +325,13 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
       {/* ── SECTION: CRM WEBHOOKS ⭐ NUEVO ── */}
       {matchesFilter("crm webhooks hubspot zoho salesforce integraciones") && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.1)] pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-600/20 bg-orange-600/10 text-orange-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-600/30 bg-[rgba(234,88,12,0.1)] text-orange-500 shadow-[0_0_12px_rgba(234,88,12,0.1)]">
                 <Database className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                <h3 className="text-sm font-black tracking-tight text-white uppercase">
                   CRM Webhook (Ingesta Inmediata)
                 </h3>
                 <p className="text-left text-[10px] font-bold tracking-widest text-slate-400 uppercase">
@@ -342,7 +342,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-950/5 p-4 dark:border-slate-800">
+            <div className="space-y-3 rounded-xl border border-dashed border-[rgba(0,229,255,0.15)] bg-[rgba(0,229,255,0.03)] p-4 backdrop-blur-md">
               <div>
                 <p className="mb-1 text-[9px] font-black tracking-widest text-slate-400 uppercase">
                   Endpoint URL (POST)
@@ -389,13 +389,13 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
       {/* ── SECTION: GOOGLE SHEETS (NEW) ── */}
       {matchesFilter("google sheets drive spreadsheets") && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.1)] pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-green-500/20 bg-green-500/10 text-green-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-500/30 bg-[rgba(16,185,129,0.12)] text-[#34d399] shadow-[0_0_12px_rgba(16,185,129,0.15)]">
                 <FileSpreadsheet className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                <h3 className="text-sm font-black tracking-tight text-white uppercase">
                   Google Sheets / Drive
                 </h3>
                 <p className="text-left text-[10px] font-bold tracking-widest text-slate-400 uppercase">
@@ -418,7 +418,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
                 }
                 window.location.href = `/api/integrations/google/auth?tenantId=${tenantId}`;
               }}
-              className="h-8 gap-2 rounded-lg border-slate-200 bg-white text-[10px] font-black tracking-widest text-slate-600 uppercase hover:bg-slate-50"
+              className="h-8 gap-2 rounded-lg border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.08)] text-[10px] font-black tracking-widest text-[#00e5ff] uppercase hover:bg-[rgba(0,229,255,0.16)] shadow-[0_0_10px_rgba(0,229,255,0.1)] transition-all"
             >
               <RefreshCw className="h-3 w-3" />
               {(config?.google as { connected?: boolean })?.connected
@@ -429,36 +429,36 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2 text-left">
-              <Label className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+              <Label className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 Spreadsheet ID
               </Label>
               <Input
                 value={(config?.google as { spreadsheetId?: string })?.spreadsheetId || ""}
                 onChange={(e) => updateField("google", { spreadsheetId: e.target.value })}
                 placeholder="ID de la hoja de cálculo (de la URL)"
-                className="h-11 rounded-xl border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950"
+                className="h-11 rounded-xl border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] text-sm text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] backdrop-blur-md"
               />
               <p className="text-[9px] font-medium text-slate-400">
                 Ejemplo: 1abc123... (se encuentra en la URL del documento)
               </p>
             </div>
             <div className="space-y-2 text-left">
-              <Label className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+              <Label className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 Nombre de la Pestaña
               </Label>
               <Input
                 value={(config?.google as { sheetName?: string })?.sheetName || "Leads"}
                 onChange={(e) => updateField("google", { sheetName: e.target.value })}
                 placeholder="Hoja1"
-                className="h-11 rounded-xl border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950"
+                className="h-11 rounded-xl border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] text-sm text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] backdrop-blur-md"
               />
             </div>
           </div>
 
           {(config?.google as { connected?: boolean })?.connected && (
-            <div className="flex items-center gap-3 rounded-xl border border-green-100 bg-green-50 p-3 dark:border-green-900/30 dark:bg-green-950/20">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <span className="text-[10px] font-bold tracking-tight text-green-700 uppercase dark:text-green-400">
+            <div className="flex items-center gap-3 rounded-xl border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.1)] p-3 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+              <CheckCircle2 className="h-4 w-4 text-[#34d399]" />
+              <span className="text-[10px] font-bold tracking-tight text-[#34d399] uppercase">
                 Cuenta de Google vinculada correctamente
               </span>
             </div>
@@ -469,13 +469,13 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
       {/* ── SECTION: PDF.CO ── */}
       {matchesFilter("pdf cotizacion documento pdf.co generar reporte") && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+          <div className="flex items-center justify-between border-b border-[rgba(0,229,255,0.1)] pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-500/30 bg-[rgba(244,63,94,0.12)] text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.15)]">
                 <FileDown className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                <h3 className="text-sm font-black tracking-tight text-white uppercase">
                   pdf.co — Generador de PDF
                 </h3>
                 <p className="text-left text-[10px] font-bold tracking-widest text-slate-400 uppercase">
@@ -487,7 +487,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
               href="https://app.pdf.co"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[10px] font-bold text-rose-600 transition-colors hover:bg-rose-100 dark:border-rose-900/30 dark:bg-rose-900/10 dark:text-rose-400"
+              className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-[rgba(244,63,94,0.1)] px-3 py-1.5 text-[10px] font-bold text-rose-400 transition-colors hover:bg-[rgba(244,63,94,0.2)] shadow-[0_0_10px_rgba(244,63,94,0.15)]"
             >
               <ExternalLink className="h-3 w-3" />
               Ir a pdf.co
@@ -497,8 +497,8 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
           {/* API Key */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Key className="h-4 w-4 text-rose-500" />
-              <Label className="text-[11px] font-black tracking-widest text-slate-500 uppercase dark:text-slate-400">
+              <Key className="h-4 w-4 text-rose-400" />
+              <Label className="text-[11px] font-black tracking-widest text-slate-400 uppercase">
                 API Key de pdf.co
               </Label>
             </div>
@@ -507,15 +507,15 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
               value={((config?.pdfco as Record<string, string>) || {}).api_key || ""}
               onChange={(e) => updateField("pdfco", { api_key: e.target.value })}
               placeholder="Tu API Key de pdf.co (ej: abc123@example.com_...)"
-              className="font-mono text-sm"
+              className="h-11 rounded-xl border-[rgba(0,229,255,0.15)] bg-[rgba(4,8,20,0.8)] font-mono text-sm text-white placeholder-slate-500 focus:border-[rgba(0,229,255,0.5)] focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] backdrop-blur-md"
             />
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-[10px] text-slate-400">
               Crea tu cuenta gratuita en{" "}
               <a
                 href="https://app.pdf.co"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-rose-500 underline underline-offset-2"
+                className="text-rose-400 underline underline-offset-2"
               >
                 app.pdf.co
               </a>{" "}
@@ -555,7 +555,7 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
                   toast({ variant: "error", title: "Error de conexión con pdf.co" });
                 }
               }}
-              className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 transition-all hover:bg-rose-100 dark:border-rose-900/30 dark:bg-rose-900/10 dark:text-rose-400 dark:hover:bg-rose-900/20"
+              className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-[rgba(244,63,94,0.1)] px-4 py-2 text-xs font-bold text-rose-400 transition-all hover:bg-[rgba(244,63,94,0.2)] shadow-[0_0_10px_rgba(244,63,94,0.15)]"
             >
               <TestTube className="h-4 w-4" />
               Probar conexión (genera PDF de prueba)
@@ -563,30 +563,31 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
           </div>
 
           {/* Info card */}
-          <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
-            <p className="text-[10px] font-black tracking-widest text-amber-600 uppercase dark:text-amber-400">
+          <div className="rounded-2xl border border-[rgba(245,158,11,0.25)] bg-[rgba(245,158,11,0.06)] p-4 backdrop-blur-md">
+            <p className="text-[10px] font-black tracking-widest text-[#fbbf24] uppercase drop-shadow-[0_0_6px_rgba(245,158,11,0.3)]">
               ¿Cómo usarlo?
             </p>
-            <ol className="mt-2 space-y-1 text-[11px] text-amber-700/80 dark:text-amber-300/60 list-decimal list-inside">
+            <ol className="mt-2 space-y-1 text-[11px] text-amber-200/80 list-decimal list-inside">
               <li>Configura la API Key arriba y guarda.</li>
               <li>En el Constructor de IA, agrega el nodo <strong>"Generar PDF"</strong>.</li>
-              <li>Escribe tu plantilla HTML con <code className="font-mono bg-amber-100/50 px-1 rounded">&#123;&#123;variables&#125;&#125;</code>.</li>
-              <li>El nodo expone la URL del PDF como <code className="font-mono bg-amber-100/50 px-1 rounded">&#123;&#123;pdf_url&#125;&#125;</code>.</li>
+              <li>Escribe tu plantilla HTML con <code className="font-mono bg-[rgba(245,158,11,0.2)] text-[#fbbf24] px-1 rounded">&#123;&#123;variables&#125;&#125;</code>.</li>
+              <li>El nodo expone la URL del PDF como <code className="font-mono bg-[rgba(245,158,11,0.2)] text-[#fbbf24] px-1 rounded">&#123;&#123;pdf_url&#125;&#125;</code>.</li>
               <li>Pasa esa variable al nodo <strong>Agente de Texto IA</strong> o <strong>Plantilla WhatsApp</strong>.</li>
             </ol>
           </div>
         </div>
       )}
 
-      <div className="flex items-start gap-4 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 text-left dark:border-blue-900/30 dark:bg-blue-900/10">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+      <div className="relative flex items-start gap-4 overflow-hidden rounded-2xl border border-[rgba(0,229,255,0.2)] bg-[rgba(6,10,25,0.85)] p-5 text-left shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.4)] to-transparent" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)]">
           <Zap className="h-4 w-4" />
         </div>
         <div className="space-y-1">
-          <h4 className="text-[10px] font-black tracking-widest text-blue-600 uppercase dark:text-blue-400">
+          <h4 className="text-[10px] font-black tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_6px_rgba(0,229,255,0.4)]">
             Orquestación Multi-Agente
           </h4>
-          <p className="text-[11px] leading-relaxed font-medium text-blue-700/70 dark:text-blue-300/60">
+          <p className="text-[11px] leading-relaxed font-medium text-slate-300">
             Estas credenciales permiten al orquestador central disparar llamadas y mensajes
             automáticos bajo la identidad de este cliente.
           </p>

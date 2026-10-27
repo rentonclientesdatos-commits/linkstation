@@ -74,45 +74,46 @@ export function CRMProviderCard({ provider, integration, otherActive, onChanged 
     });
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="relative overflow-hidden rounded-2xl border border-[rgba(0,229,255,0.15)] bg-[rgba(6,10,25,0.8)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Plug className={`h-4 w-4 ${meta.color}`} />
-            <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{meta.label}</h4>
+            <h4 className="text-sm font-bold text-white">{meta.label}</h4>
             {isConnected && !isError && (
-              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+              <Badge className="border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.12)] text-[#34d399] shadow-[0_0_8px_rgba(16,185,129,0.2)]">
                 <CheckCircle2 className="mr-1 h-3 w-3" /> Conectado
               </Badge>
             )}
             {isError && (
-              <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+              <Badge className="border border-[rgba(244,63,94,0.3)] bg-[rgba(244,63,94,0.12)] text-[#fb7185] shadow-[0_0_8px_rgba(244,63,94,0.2)]">
                 <AlertTriangle className="mr-1 h-3 w-3" /> Error
               </Badge>
             )}
             {!isConnected && (
-              <Badge variant="outline" className="text-slate-500">
+              <Badge variant="outline" className="border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] text-slate-400">
                 Sin conectar
               </Badge>
             )}
           </div>
           {integration?.portal_id && (
-            <p className="text-xs text-slate-500">Portal ID: {integration.portal_id}</p>
+            <p className="text-xs text-slate-400">Portal ID: {integration.portal_id}</p>
           )}
           {(integration?.metadata as { api_domain?: string } | null)?.api_domain && (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               API: {(integration?.metadata as { api_domain?: string }).api_domain}
             </p>
           )}
           {lastCheck && (
-            <p className="text-[11px] text-slate-400">Último healthcheck: {lastCheck}</p>
+            <p className="text-[11px] text-slate-500">Último healthcheck: {lastCheck}</p>
           )}
         </div>
 
         <div className="flex flex-col gap-2">
           {!isConnected && !otherActive && (
             <a href={`/api/integrations/${provider}/auth/start`}>
-              <Button size="sm" variant="default">
+              <Button size="sm" className="border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.12)] font-bold text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)] hover:bg-[rgba(0,229,255,0.22)] transition-all">
                 <PlugZap className="mr-1 h-3 w-3" /> Conectar
               </Button>
             </a>
@@ -127,20 +128,20 @@ export function CRMProviderCard({ provider, integration, otherActive, onChanged 
           )}
           {isConnected && (
             <>
-              <Button size="sm" variant="outline" onClick={handleTest} disabled={testing}>
+              <Button size="sm" variant="outline" onClick={handleTest} disabled={testing} className="border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.05)] text-slate-200 hover:bg-[rgba(0,229,255,0.1)]">
                 <RefreshCw className={`mr-1 h-3 w-3 ${testing ? "animate-spin" : ""}`} />
                 Test
               </Button>
               <a href={`/api/integrations/${provider}/auth/start`}>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" className="w-full border-[rgba(0,229,255,0.2)] bg-[rgba(0,229,255,0.05)] text-slate-200 hover:bg-[rgba(0,229,255,0.1)]">
                   Reconectar
                 </Button>
               </a>
               <Button
                 size="sm"
-                variant="destructive"
                 onClick={handleDisconnect}
                 disabled={disconnecting}
+                className="border border-[rgba(255,0,85,0.3)] bg-[rgba(255,0,85,0.1)] text-[#ff0055] hover:bg-[rgba(255,0,85,0.2)] transition-all"
               >
                 Desconectar
               </Button>

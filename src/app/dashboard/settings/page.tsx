@@ -204,10 +204,10 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-20">
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-3xl font-black tracking-tight text-white">
           Configuración de Clientes
         </h1>
-        <p className="mt-2 text-base font-medium text-slate-500">
+        <p className="mt-2 text-base font-medium text-slate-400">
           Gestiona los clientes del sistema centralizado. Cada cliente tiene su propio espacio de
           datos aislado por Row Level Security.
         </p>
@@ -239,38 +239,40 @@ export default function SettingsPage() {
               }}
               title="Añadir nuevo cliente"
               aria-label="Añadir nuevo cliente"
-              className="rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-200 hover:bg-blue-700"
+              className="rounded-xl border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.1)] font-bold text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.2)] hover:bg-[rgba(0,229,255,0.18)] transition-all"
             >
               <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
             </Button>
           )}
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="relative overflow-hidden rounded-3xl border border-[rgba(0,229,255,0.1)] bg-[rgba(6,10,25,0.8)] shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          {/* Top glow line */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-50 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/50">
-                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-slate-900 uppercase dark:text-slate-200">
+              <tr className="border-b border-[rgba(0,229,255,0.08)] bg-[rgba(0,229,255,0.03)]">
+                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                   Cliente
                 </th>
-                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-slate-900 uppercase dark:text-slate-200">
+                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                   Infraestructura
                 </th>
-                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-slate-900 uppercase dark:text-slate-200">
+                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                   Email de Acceso
                 </th>
-                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-slate-900 uppercase dark:text-slate-200">
+                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                   Tipo Negocio
                 </th>
-                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-slate-900 uppercase dark:text-slate-200">
+                <th className="px-6 py-4 text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                   Nivel
                 </th>
-                <th className="px-6 py-4 pr-8 text-right text-[10px] font-black tracking-widest text-slate-900 uppercase dark:text-slate-200">
+                <th className="px-6 py-4 pr-8 text-right text-[10px] font-black tracking-widest text-[#00e5ff] uppercase">
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-[rgba(0,229,255,0.06)]">
               {loading && (
                 <tr>
                   <td
@@ -295,7 +297,7 @@ export default function SettingsPage() {
               {showNewForm && (
                 <tr>
                   <td colSpan={6} className="p-0">
-                    <div className="animate-in slide-in-from-top border-b border-blue-100 bg-blue-50/30 p-8 duration-300">
+                    <div className="animate-in slide-in-from-top border-b border-[rgba(0,229,255,0.1)] bg-[rgba(4,8,20,0.9)] p-8 duration-300 backdrop-blur-xl">
                       <form onSubmit={handleSaveNew} className="space-y-6">
                         <div className="mb-4 flex items-center justify-between">
                           <h3 className="flex items-center gap-2 text-sm font-black tracking-widest text-blue-600 uppercase">
@@ -880,15 +882,15 @@ export default function SettingsPage() {
                   key={t.id}
                   className={cn(
                     "transition-all duration-300",
-                    isEditing === t.id ? "bg-blue-50/50" : "hover:bg-slate-50/50"
+                    isEditing === t.id ? "bg-[rgba(0,229,255,0.06)]" : "hover:bg-[rgba(0,229,255,0.03)]"
                   )}
                 >
                   {isEditing === t.id ? (
                     <td colSpan={6} className="p-8">
                       <div className="mb-8 flex items-center justify-between gap-6">
-                        <h3 className="flex items-center gap-2 text-sm font-black tracking-widest text-slate-900 uppercase dark:text-white">
-                          <Edit2 className="h-4 w-4 text-blue-600" /> Editando:{" "}
-                          <span className="text-blue-600">{t.name}</span>
+                        <h3 className="flex items-center gap-2 text-sm font-black tracking-widest text-white uppercase">
+                          <Edit2 className="h-4 w-4 text-[#00e5ff]" /> Editando:{" "}
+                          <span className="text-[#00e5ff]">{t.name}</span>
                         </h3>
                         <div className="flex items-center gap-2">
                           <button
@@ -1325,23 +1327,23 @@ export default function SettingsPage() {
                             )}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-black tracking-tight text-slate-900 dark:text-white">
+                            <span className="text-sm font-black tracking-tight text-white">
                               {t.name}
                             </span>
                             {t.username && (
-                              <span className="text-[10px] text-slate-500">@{t.username}</span>
+                              <span className="text-[10px] text-slate-400">@{t.username}</span>
                             )}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-[10px] font-bold">
                         {t.is_admin ? (
-                          <span className="flex items-center gap-1.5 tracking-widest text-blue-600 uppercase">
+                          <span className="flex items-center gap-1.5 tracking-widest text-[#00e5ff] uppercase drop-shadow-[0_0_6px_rgba(0,229,255,0.4)]">
                             <Shield className="h-3 w-3" /> Sistema Central
                           </span>
                         ) : t.supabase_url ? (
                           <div className="flex flex-col">
-                            <span className="flex items-center gap-1.5 tracking-widest text-emerald-600 uppercase">
+                            <span className="flex items-center gap-1.5 tracking-widest text-[#34d399] uppercase">
                               <Globe className="h-3 w-3" /> API del Cliente
                             </span>
                             <span className="max-w-[120px] truncate font-mono text-[9px] text-slate-400">
@@ -1354,22 +1356,22 @@ export default function SettingsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                      <td className="px-6 py-4 text-sm font-bold text-slate-200">
                         {t.client_email || "-"}
                       </td>
                       <td className="px-6 py-4">
                         {((t.config as Record<string, unknown>)?.business_type ||
                           t.business_type) === "sales" ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[9px] font-black text-emerald-700 uppercase dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.12)] px-2.5 py-1 text-[9px] font-black text-[#34d399] uppercase shadow-[0_0_8px_rgba(16,185,129,0.15)]">
                             <Briefcase className="h-3 w-3" /> Ventas
                           </span>
                         ) : ((t.config as Record<string, unknown>)?.business_type ||
                             t.business_type) === "other" ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[9px] font-black text-slate-700 uppercase dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] px-2.5 py-1 text-[9px] font-black text-slate-300 uppercase">
                             <Building2 className="h-3 w-3" /> General
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[9px] font-black text-amber-700 uppercase dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.12)] px-2.5 py-1 text-[9px] font-black text-[#fbbf24] uppercase shadow-[0_0_8px_rgba(245,158,11,0.15)]">
                             <Utensils className="h-3 w-3" /> Restaurante
                           </span>
                         )}
@@ -1381,17 +1383,17 @@ export default function SettingsPage() {
                             t.username?.toLowerCase() === "renton";
                           if (isRenton) {
                             return (
-                              <span className="rounded-full border border-violet-200 bg-violet-100/70 px-2.5 py-1 text-[9px] font-black tracking-wide text-violet-700 uppercase dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-300">
+                              <span className="rounded-full border border-[rgba(168,85,247,0.35)] bg-[rgba(168,85,247,0.15)] px-2.5 py-1 text-[9px] font-black tracking-wide text-[#c084fc] uppercase shadow-[0_0_10px_rgba(168,85,247,0.2)]">
                                 👑 Renton Admin
                               </span>
                             );
                           }
                           return t.is_admin ? (
-                            <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-1 text-[9px] font-black text-blue-600 uppercase">
+                            <span className="rounded-full border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] px-2 py-1 text-[9px] font-black text-[#00e5ff] uppercase shadow-[0_0_8px_rgba(0,229,255,0.15)]">
                               Admin Cliente
                             </span>
                           ) : (
-                            <span className="rounded-full border border-slate-100 bg-slate-50 px-2 py-1 text-[9px] font-black text-slate-400 uppercase">
+                            <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-2 py-1 text-[9px] font-black text-slate-400 uppercase">
                               Cliente
                             </span>
                           );
@@ -1403,7 +1405,7 @@ export default function SettingsPage() {
                             onClick={() => startEdit(t)}
                             title="Editar cliente"
                             aria-label={`Editar cliente ${t.name}`}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-blue-50 hover:text-blue-600"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-slate-400 transition-all hover:border-[rgba(0,229,255,0.3)] hover:bg-[rgba(0,229,255,0.1)] hover:text-[#00e5ff] hover:shadow-[0_0_10px_rgba(0,229,255,0.2)]"
                           >
                             <Edit2 className="h-4 w-4" />
                           </button>
@@ -1415,7 +1417,7 @@ export default function SettingsPage() {
                               onClick={() => handleDelete(t.id)}
                               title="Eliminar cliente"
                               aria-label={`Eliminar cliente ${t.name}`}
-                              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-slate-400 transition-all hover:border-[rgba(255,0,85,0.3)] hover:bg-[rgba(255,0,85,0.1)] hover:text-[#ff0055] hover:shadow-[0_0_10px_rgba(255,0,85,0.2)]"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -1433,13 +1435,13 @@ export default function SettingsPage() {
       )}
 
       {!isSuperAdmin && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="relative overflow-hidden rounded-2xl border border-[rgba(0,229,255,0.15)] bg-[rgba(6,10,25,0.8)] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.15)]">
               <Shield className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+              <h2 className="text-base font-bold text-white">
                 Panel de Integraciones y Ajustes
               </h2>
               <p className="text-xs text-slate-400">
@@ -1451,13 +1453,16 @@ export default function SettingsPage() {
       )}
 
       {/* Security Alert */}
-      <div className="relative flex items-center gap-6 overflow-hidden rounded-3xl bg-blue-600 p-8 text-white shadow-xl shadow-blue-100">
-        <Shield className="h-10 w-10 text-blue-100 opacity-50" />
+      <div className="relative flex items-center gap-6 overflow-hidden rounded-3xl border border-[rgba(0,229,255,0.2)] bg-[rgba(6,10,25,0.85)] p-8 text-white shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.4)] to-transparent" />
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.3)] bg-[rgba(0,229,255,0.1)] text-[#00e5ff] shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+          <Shield className="h-7 w-7" />
+        </div>
         <div className="space-y-1">
-          <h4 className="text-xs font-black tracking-[0.2em] uppercase">
+          <h4 className="text-xs font-black tracking-[0.2em] text-[#00e5ff] uppercase drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]">
             Protocolo de Seguridad Centralizada
           </h4>
-          <p className="max-w-2xl text-sm leading-relaxed font-medium text-blue-100">
+          <p className="max-w-2xl text-sm leading-relaxed font-medium text-slate-300">
             Cada entorno cargado aquí utiliza un túnel seguro. Los administradores centralizados
             pueden gestionar KPIs y flujos sin comprometer la integridad de los datos de cada
             cliente.
