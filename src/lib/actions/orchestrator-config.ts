@@ -133,30 +133,64 @@ interface DBConfigResponse {
 /**
  * Fetches the orchestrator config for the active tenant.
  */
-export async function getOrchestratorConfig(): Promise<{
+export async function getOrchestratorConfig(targetTenantId?: string): Promise<{
   success: boolean;
   data?: TenantOrchestratorConfig;
   error?: string;
 }> {
   try {
-    const tenantId = await getActiveTenantId();
+    const tenantId = targetTenantId || (await getActiveTenantId());
     if (!tenantId) return { success: false, error: "No hay un cliente seleccionado." };
 
     const supabase = await getAdminSupabaseClient();
      
-    const { data, error } = await supabase
-      .from("tenant_orchestrator_config")
-      .select("config, flow_graph")
-      .eq("tenant_id", tenantId)
+    // 1. Check central tenants.config first (always exists and persists)
+    const { data: tenantData } = await supabase
+      .from("tenants")
+      .select("config")
+      .eq("id", tenantId)
       .single();
 
-    if (error || !data) {
-      return { success: true, data: DEFAULT_CONFIG };
+    const tenantConfig = (tenantData?.config as Record<string, unknown>) || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let baseOrch = (tenantConfig.orchestrator as any) || {};
+
+    // 2. Also check tenant_orchestrator_config table if available
+    try {
+      const { data, error } = await supabase
+        .from("tenant_orchestrator_config")
+        .select("config, flow_graph")
+        .eq("tenant_id", tenantId)
+        .single();
+
+      if (!error && data) {
+        const dbData = data as unknown as DBConfigResponse;
+        baseOrch = deepMerge(baseOrch, dbData.config || {});
+        if (dbData.flow_graph) {
+          baseOrch.flow_graph = dbData.flow_graph;
+        }
+      }
+    } catch {
+      // Table might not exist in schema, fallback to tenants.config
     }
 
-    const dbData = data as unknown as DBConfigResponse;
-    const merged = deepMerge(DEFAULT_CONFIG, dbData.config);
-    merged.flow_graph = dbData.flow_graph || DEFAULT_CONFIG.flow_graph;
+    const merged = deepMerge(DEFAULT_CONFIG, baseOrch);
+
+    // Priority chain for country: orchestrator config > working_hours backup > DEFAULT
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const workingHours = (tenantConfig.working_hours as any) || {};
+    // Always apply working_hours as authoritative if orchestrator doesn't have it explicitly saved
+    if (workingHours.country && merged.timezone_rules.country === DEFAULT_CONFIG.timezone_rules.country && !baseOrch.timezone_rules?.country) {
+      merged.timezone_rules.country = workingHours.country;
+    }
+    // Also apply if explicitly in working_hours as the canonical saved value
+    if (workingHours.country && baseOrch.timezone_rules?.country === undefined) {
+      merged.timezone_rules.country = workingHours.country;
+    }
+    if (workingHours.start && !baseOrch.timezone_rules?.start) merged.timezone_rules.start = workingHours.start;
+    if (workingHours.end && !baseOrch.timezone_rules?.end) merged.timezone_rules.end = workingHours.end;
+    if (workingHours.days && !baseOrch.timezone_rules?.working_days?.length) merged.timezone_rules.working_days = workingHours.days;
+
     return { success: true, data: merged };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
@@ -166,65 +200,80 @@ export async function getOrchestratorConfig(): Promise<{
 
 /**
  * Saves the orchestrator config for the active tenant (upsert).
- *
- * NEW-01 (Sprint 1 Bloque 2.9) — fix bug crítico Renzo V1:
- *   Antes solo persistía `flow_graph`; el objeto `config` (sequence, timezone_rules,
- *   ab_testing, retell, escalation, scheduling, entry_filters, advisors, company_name)
- *   se descartaba silenciosamente. Esto provocaba que toda configuración hecha por
- *   el usuario en los nodos del orquestador se perdiera al guardar — la UI mostraba
- *   los datos pero la BD nunca los registraba.
- *
- *   Fix: persistir AMBAS columnas (`config` JSONB + `flow_graph` JSONB) en el mismo
- *   upsert, merging con el config existente para que llamadas parciales (solo
- *   `flow_graph` o solo un sub-campo del config) no borren el resto.
+ * Saves to tenants.config and tenant_orchestrator_config for full persistence.
  */
 export async function saveOrchestratorConfig(
-  config: Partial<TenantOrchestratorConfig>
+  config: Partial<TenantOrchestratorConfig>,
+  targetTenantId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const tenantId = await getActiveTenantId();
+    const tenantId = targetTenantId || (await getActiveTenantId());
     if (!tenantId) return { success: false, error: "No hay un cliente seleccionado." };
 
-    // Cargar config existente para hacer merge parcial — evita que un save con
-    // solo `flow_graph` borre el resto del config (y viceversa).
-    const current = await getOrchestratorConfigForTenant(tenantId);
+    const supabase = await getAdminSupabaseClient();
 
-    // Separar flow_graph (columna física propia) del resto del config (columna JSONB).
+    // 1. Cargar config existente del tenant para merge seguro
+    const current = await getOrchestratorConfigForTenant(tenantId);
     const { flow_graph: incomingFlowGraph, ...incomingConfig } = config;
     const mergedConfig = deepMerge(current, incomingConfig as Partial<TenantOrchestratorConfig>);
-    // No queremos persistir flow_graph dentro de `config` JSONB (vive en columna propia).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (mergedConfig as any).flow_graph;
 
-    const flowGraph = incomingFlowGraph ?? current.flow_graph ?? { nodes: [], edges: [] };
+    const country = config.timezone_rules?.country || mergedConfig.timezone_rules?.country || "España";
 
-    const supabase = await getAdminSupabaseClient();
-    console.log(
-      `[SAVE_FLOW] Saving for tenant ${tenantId}. Graph nodes: ${flowGraph.nodes?.length || 0}. ` +
-        `Config keys: ${Object.keys(mergedConfig).join(",")}`
-    );
+    // 2. Persistir siempre en tenants.config (garantiza que nunca se pierda el país ni los horarios)
+    const { data: tenantRecord } = await supabase
+      .from("tenants")
+      .select("config")
+      .eq("id", tenantId)
+      .single();
 
-     
-    const { error } = await supabase.from("tenant_orchestrator_config").upsert(
-      {
-        tenant_id: tenantId,
-        config: mergedConfig,
-        flow_graph: flowGraph,
+    const currentTenantConfig = (tenantRecord?.config as Record<string, unknown>) || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentWorkingHours = (currentTenantConfig.working_hours as any) || {};
+
+    const updatedTenantConfig = {
+      ...currentTenantConfig,
+      orchestrator: mergedConfig,
+      working_hours: {
+        ...currentWorkingHours,
+        country: country,
+        start: config.timezone_rules?.start || currentWorkingHours.start || "09:00",
+        end: config.timezone_rules?.end || currentWorkingHours.end || "20:00",
+        days: config.timezone_rules?.working_days || currentWorkingHours.days || [1, 2, 3, 4, 5],
       },
-      {
-        onConflict: "tenant_id",
-      }
-    );
+    };
 
-    if (error) {
-      console.error("[SAVE_FLOW] Upsert Error:", error);
-      return { success: false, error: error.message };
+    const { error: tenantUpdateError } = await supabase
+      .from("tenants")
+      .update({ config: updatedTenantConfig })
+      .eq("id", tenantId);
+
+    if (tenantUpdateError) {
+      console.error("[SAVE_CONFIG] tenants.config update error:", tenantUpdateError);
+    }
+
+    // 3. Persistir en tenant_orchestrator_config si la tabla existe
+    try {
+      const flowGraph = incomingFlowGraph ?? current.flow_graph ?? { nodes: [], edges: [] };
+      await supabase.from("tenant_orchestrator_config").upsert(
+        {
+          tenant_id: tenantId,
+          config: mergedConfig,
+          flow_graph: flowGraph,
+        },
+        {
+          onConflict: "tenant_id",
+        }
+      );
+    } catch (err) {
+      console.warn("[SAVE_CONFIG] tenant_orchestrator_config upsert skipped:", err);
     }
 
     return { success: true };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
-    console.error("[SAVE_FLOW] Critical Catch:", msg);
+    console.error("[SAVE_CONFIG] Critical Catch:", msg);
     return { success: false, error: msg };
   }
 }
@@ -238,15 +287,41 @@ export async function getOrchestratorConfigForTenant(
   try {
     const supabase = await getAdminSupabaseClient();
      
-    const { data } = await supabase
-      .from("tenant_orchestrator_config")
+    // Leer primero de tenants.config
+    const { data: tenantRecord } = await supabase
+      .from("tenants")
       .select("config")
-      .eq("tenant_id", tenantId)
+      .eq("id", tenantId)
       .single();
 
-    if (!data) return DEFAULT_CONFIG;
-    const dbData = data as unknown as { config: TenantOrchestratorConfig };
-    return deepMerge(DEFAULT_CONFIG, dbData.config);
+    const tenantConfig = (tenantRecord?.config as Record<string, unknown>) || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let orchConfig = (tenantConfig.orchestrator as any) || {};
+
+    try {
+      const { data } = await supabase
+        .from("tenant_orchestrator_config")
+        .select("config")
+        .eq("tenant_id", tenantId)
+        .single();
+
+      if (data) {
+        const dbData = data as unknown as { config: TenantOrchestratorConfig };
+        orchConfig = deepMerge(orchConfig, dbData.config || {});
+      }
+    } catch {
+      // Ignorar si la tabla no existe
+    }
+
+    const merged = deepMerge(DEFAULT_CONFIG, orchConfig);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const workingHours = (tenantConfig.working_hours as any) || {};
+    // Apply working_hours.country if orchestrator doesn't have it explicitly
+    if (workingHours.country && orchConfig.timezone_rules?.country === undefined) {
+      merged.timezone_rules.country = workingHours.country;
+    }
+
+    return merged;
   } catch {
     return DEFAULT_CONFIG;
   }

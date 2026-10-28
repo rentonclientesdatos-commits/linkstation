@@ -36,9 +36,13 @@ export function DashboardShell({
 
   return (
     <div
-      className="flex h-screen overflow-hidden transition-all duration-500"
+      className="relative flex h-screen overflow-hidden transition-all duration-500"
       style={{ background: "#030712" }}
     >
+      {/* Ambient background aura behind floating macOS sidebar */}
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/[0.035] blur-3xl transform-gpu" />
+      <div className="pointer-events-none absolute top-1/2 -left-20 h-64 w-64 rounded-full bg-violet-600/[0.025] blur-3xl transform-gpu" />
+
       <Sidebar
         isAdmin={isAdmin}
         isSuperAdmin={isSuperAdmin}

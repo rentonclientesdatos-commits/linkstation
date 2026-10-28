@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -41,7 +41,6 @@ import {
 import { NodeConfigSidebar } from "./NodeConfigSidebar";
 import {
   Save,
-  Plus,
   Rocket,
   Trash2,
   Phone,
@@ -60,11 +59,16 @@ import {
   ArrowRightLeft,
   FileDown,
   Sparkles,
+  Zap,
+  ChevronDown,
+  Activity,
+  Layers,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
 
-// ─── NODE TYPES REGISTRY ─────────────────────────────────────────
+// â”€â”€â”€ NODE TYPES REGISTRY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const nodeTypes = {
   // New specialized nodes
   ultravoxTrigger: UltravoxTriggerNode,
@@ -100,228 +104,94 @@ const createMinimalNodes = (): Node[] => [
   },
 ];
 
-// ─── NODE MENU CONFIG ─────────────────────────────────────────────
-const NODE_MENU = [
+// ─── NODE MENU CONFIG ────────────────────────────────────────────────────────
+interface NodeMenuItem {
+  type: string;
+  label: string;
+  icon: React.ReactNode;
+  accentColor: string;
+  bgColor: string;
+  data?: Record<string, unknown>;
+}
+interface NodeMenuGroup {
+  section: string;
+  categoryIcon: React.ReactNode;
+  items: NodeMenuItem[];
+}
+
+const NODE_MENU: NodeMenuGroup[] = [
   {
-    section: "🚀 Disparadores",
+    section: "Disparadores",
+    categoryIcon: <Zap className="h-3.5 w-3.5 text-amber-400" />,
     items: [
-      {
-        type: "leadTrigger",
-        label: "Entry Lead (CRM / Webhook)",
-        icon: <Globe className="h-4 w-4" />,
-        color: "text-orange-400 hover:bg-orange-500/20",
-      },
-      {
-        type: "ultravoxTrigger",
-        label: "Llamada Ultravox (Cotización)",
-        icon: <Phone className="h-4 w-4" />,
-        color: "text-violet-400 hover:bg-violet-500/20",
-        data: {
-          config: {
-            tool_name: "capturarDatosCotizacion",
-            agent_name: "Asistente Voz Ultravox",
-          },
-        },
-      },
-      {
-        type: "webhookTrigger",
-        label: "Webhook (Genérico)",
-        icon: <Webhook className="h-4 w-4" />,
-        color: "text-orange-500 hover:bg-orange-600/20",
-      },
-      {
-        type: "inboundWhatsApp",
-        label: "Mensaje Entrante (WhatsApp)",
-        icon: <MessageCircle className="h-4 w-4" />,
-        color: "text-emerald-400 hover:bg-emerald-500/20",
-      },
+      { type: "leadTrigger", label: "Entry Lead (CRM)", icon: <Globe className="h-3.5 w-3.5" />, accentColor: "#f97316", bgColor: "bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/40" },
+      { type: "ultravoxTrigger", label: "Ultravox Voice", icon: <Phone className="h-3.5 w-3.5" />, accentColor: "#8b5cf6", bgColor: "bg-violet-500/10 border-violet-500/20 hover:bg-violet-500/20 hover:border-violet-500/40", data: { config: { tool_name: "capturarDatosCotizacion", agent_name: "Asistente Voz Ultravox" } } },
+      { type: "webhookTrigger", label: "Webhook (Generico)", icon: <Webhook className="h-3.5 w-3.5" />, accentColor: "#f97316", bgColor: "bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/40" },
+      { type: "inboundWhatsApp", label: "WhatsApp Entrante", icon: <MessageCircle className="h-3.5 w-3.5" />, accentColor: "#10b981", bgColor: "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40" },
     ],
   },
   {
-    section: "⚙️ Lógica de Sistema",
+    section: "Logica",
+    categoryIcon: <GitBranchPlus className="h-3.5 w-3.5 text-indigo-400" />,
     items: [
-      {
-        type: "timeCondition",
-        label: "Condición Horaria",
-        icon: <Timer className="h-4 w-4" />,
-        color: "text-yellow-400 hover:bg-yellow-500/20",
-        data: { config: { start: "09:00", end: "20:00", working_days: [1, 2, 3, 4, 5] } },
-      },
-      {
-        type: "retrySequence",
-        label: "Bucle de Reintentos",
-        icon: <ArrowRightLeft className="h-4 w-4" />,
-        color: "text-orange-400 hover:bg-orange-500/20",
-        data: { config: { maxAttempts: 5, retryDelayHours: 27, channels: ["call", "whatsapp"] } },
-      },
-      {
-        type: "condition",
-        label: "Condición (IF/ELSE)",
-        icon: <GitBranchPlus className="h-4 w-4" />,
-        color: "text-indigo-400 hover:bg-indigo-500/20",
-      },
-      {
-        type: "delay",
-        label: "Espera (Wait)",
-        icon: <Clock className="h-4 w-4" />,
-        color: "text-amber-400 hover:bg-amber-500/20",
-        data: { config: { duration: 2 } },
-      },
+      { type: "timeCondition", label: "Condicion Horaria", icon: <Timer className="h-3.5 w-3.5" />, accentColor: "#eab308", bgColor: "bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/20 hover:border-yellow-500/40", data: { config: { start: "09:00", end: "20:00", working_days: [1, 2, 3, 4, 5] } } },
+      { type: "retrySequence", label: "Bucle Reintentos", icon: <ArrowRightLeft className="h-3.5 w-3.5" />, accentColor: "#f97316", bgColor: "bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/40", data: { config: { maxAttempts: 5, retryDelayHours: 27, channels: ["call", "whatsapp"] } } },
+      { type: "condition", label: "IF / ELSE", icon: <GitBranchPlus className="h-3.5 w-3.5" />, accentColor: "#6366f1", bgColor: "bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20 hover:border-indigo-500/40" },
+      { type: "delay", label: "Espera (Wait)", icon: <Clock className="h-3.5 w-3.5" />, accentColor: "#f59e0b", bgColor: "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 hover:border-amber-500/40", data: { config: { duration: 2 } } },
     ],
   },
   {
-    section: "📞 Canales de Contacto",
+    section: "Canales",
+    categoryIcon: <Phone className="h-3.5 w-3.5 text-blue-400" />,
     items: [
-      {
-        type: "voiceCall",
-        label: "Llamada IA (Voz)",
-        icon: <Phone className="h-4 w-4" />,
-        color: "text-blue-400 hover:bg-blue-500/20",
-        data: { config: { provider: "retell" } },
-      },
-      {
-        type: "whatsapp",
-        label: "WhatsApp Template",
-        icon: <MessageSquare className="h-4 w-4" />,
-        color: "text-emerald-400 hover:bg-emerald-500/20",
-      },
-      {
-        type: "textAgent",
-        label: "Agente de Texto IA",
-        icon: <Bot className="h-4 w-4" />,
-        color: "text-purple-400 hover:bg-purple-500/20",
-      },
+      { type: "voiceCall", label: "Llamada IA (Voz)", icon: <Phone className="h-3.5 w-3.5" />, accentColor: "#3b82f6", bgColor: "bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/40", data: { config: { provider: "retell" } } },
+      { type: "whatsapp", label: "WhatsApp Template", icon: <MessageSquare className="h-3.5 w-3.5" />, accentColor: "#10b981", bgColor: "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40" },
+      { type: "textAgent", label: "Agente de Texto IA", icon: <Bot className="h-3.5 w-3.5" />, accentColor: "#a855f7", bgColor: "bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20 hover:border-purple-500/40" },
     ],
   },
   {
-    section: "🧠 Inteligencia",
+    section: "IA & APIs",
+    categoryIcon: <BrainCircuit className="h-3.5 w-3.5 text-fuchsia-400" />,
     items: [
-      {
-        type: "llm",
-        label: "LLM / Razonamiento",
-        icon: <BrainCircuit className="h-4 w-4" />,
-        color: "text-fuchsia-400 hover:bg-fuchsia-500/20",
-      },
-      {
-        type: "api",
-        label: "Petición API / CRM",
-        icon: <Globe className="h-4 w-4" />,
-        color: "text-cyan-400 hover:bg-cyan-500/20",
-      },
+      { type: "llm", label: "LLM / Razonamiento", icon: <BrainCircuit className="h-3.5 w-3.5" />, accentColor: "#d946ef", bgColor: "bg-fuchsia-500/10 border-fuchsia-500/20 hover:bg-fuchsia-500/20 hover:border-fuchsia-500/40" },
+      { type: "api", label: "API / CRM", icon: <Globe className="h-3.5 w-3.5" />, accentColor: "#06b6d4", bgColor: "bg-cyan-500/10 border-cyan-500/20 hover:bg-cyan-500/20 hover:border-cyan-500/40" },
     ],
   },
   {
-    section: "🔗 Integración Avanzada",
+    section: "Extras",
+    categoryIcon: <Layers className="h-3.5 w-3.5 text-pink-400" />,
     items: [
-      {
-        type: "subWorkflow",
-        label: "Sub-Workflow",
-        icon: <GitBranchPlus className="h-4 w-4" />,
-        color: "text-pink-400 hover:bg-pink-500/20",
-      },
-      {
-        type: "webhookResponse",
-        label: "Webhook Respuesta",
-        icon: <Reply className="h-4 w-4" />,
-        color: "text-indigo-400 hover:bg-indigo-500/20",
-      },
-      {
-        type: "webhookWait",
-        label: "Webhook Espera",
-        icon: <Hourglass className="h-4 w-4" />,
-        color: "text-pink-500 hover:bg-pink-600/20",
-      },
-    ],
-  },
-  {
-    section: "📄 Documentos & PDF",
-    items: [
-      {
-        type: "pdfGenerator",
-        label: "Crear PDF (Cotización)",
-        icon: <FileDown className="h-4 w-4" />,
-        color: "text-rose-400 hover:bg-rose-500/20",
-        data: {
-          config: {
-            pdf_template_name: "Cotización Grúas",
-            pdf_output_variable: "pdf_url",
-            pdf_filename: "cotizacion.pdf",
-            pdf_paper_size: "Letter",
-            pdf_variables: JSON.stringify(
-              {
-                cliente: "{{lead.nombre}}",
-                telefono: "{{lead.telefono}}",
-                items: "{{items}}",
-                total: "{{total}}",
-                fecha: "{{fecha}}",
-              },
-              null,
-              2
-            ),
-            pdf_html_template: `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
-    .header { background: #1a1a2e; color: white; padding: 20px; border-radius: 8px; }
-    .logo { font-size: 24px; font-weight: bold; }
-    .subtitle { color: #aaa; font-size: 12px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th { background: #f0f0f0; padding: 10px; text-align: left; }
-    td { padding: 10px; border-bottom: 1px solid #eee; }
-    .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo">Cotización de Servicio</div>
-    <div class="subtitle">Cliente: {{cliente}} | Tel: {{telefono}} | Fecha: {{fecha}}</div>
-  </div>
-  <table>
-    <thead><tr><th>Descripción</th><th>Detalles</th></tr></thead>
-    <tbody>
-      <tr><td>Items / Servicios</td><td>{{items}}</td></tr>
-    </tbody>
-  </table>
-  <div class="total">Total: {{total}}</div>
-</body>
-</html>`,
-          },
-        },
-      },
-    ],
-  },
-  {
-    section: "🏁 Finalización",
-    items: [
-      {
-        type: "end",
-        label: "Fin de Flujo",
-        icon: <CheckCircle2 className="h-4 w-4" />,
-        color: "text-gray-400 hover:bg-gray-500/20",
-      },
+      { type: "subWorkflow", label: "Sub-Workflow", icon: <GitBranchPlus className="h-3.5 w-3.5" />, accentColor: "#ec4899", bgColor: "bg-pink-500/10 border-pink-500/20 hover:bg-pink-500/20 hover:border-pink-500/40" },
+      { type: "webhookResponse", label: "Webhook Respuesta", icon: <Reply className="h-3.5 w-3.5" />, accentColor: "#6366f1", bgColor: "bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20 hover:border-indigo-500/40" },
+      { type: "webhookWait", label: "Webhook Espera", icon: <Hourglass className="h-3.5 w-3.5" />, accentColor: "#ec4899", bgColor: "bg-pink-500/10 border-pink-500/20 hover:bg-pink-500/20 hover:border-pink-500/40" },
+      { type: "pdfGenerator", label: "Crear PDF", icon: <FileDown className="h-3.5 w-3.5" />, accentColor: "#f43f5e", bgColor: "bg-rose-500/10 border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40", data: { config: { pdf_template_name: "Cotizacion Gruas", pdf_output_variable: "pdf_url", pdf_filename: "cotizacion.pdf", pdf_paper_size: "Letter" } } },
+      { type: "end", label: "Fin de Flujo", icon: <CheckCircle2 className="h-3.5 w-3.5" />, accentColor: "#6b7280", bgColor: "bg-gray-500/10 border-gray-500/20 hover:bg-gray-500/20 hover:border-gray-500/40" },
     ],
   },
 ];
 
-// ─── COMPONENT ────────────────────────────────────────────────────
+// â”€â”€â”€ COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; workflowId: string }) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(createMinimalNodes());
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isPublishing, setIsPublishing] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const { setViewport } = useReactFlow();
 
-  // Close menu when clicking outside
+  // Close category dropdown when clicking outside the toolbar
   useEffect(() => {
-    if (!isAddMenuOpen) return;
-    const handleClickOutside = () => setIsAddMenuOpen(false);
-    window.addEventListener("click", handleClickOutside);
-    return () => window.removeEventListener("click", handleClickOutside);
-  }, [isAddMenuOpen]);
+    if (activeCategory === null) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(e.target as globalThis.Node)) {
+        setActiveCategory(null);
+      }
+    };
+    window.addEventListener("mousedown", handleOutside);
+    return () => window.removeEventListener("mousedown", handleOutside);
+  }, [activeCategory]);
 
   // Load existing graph for this workflow
   useEffect(() => {
@@ -407,6 +277,7 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
     setSelectedEdge(null);
+    setActiveCategory(null);
   }, []);
 
   const onConfigSave = (newConfig: Record<string, unknown>) => {
@@ -438,9 +309,9 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         type: "pdfGenerator",
         position: { x: 350, y: 250 },
         data: {
-          label: "Crear PDF (Cotización)",
+          label: "Crear PDF (Cotizacion)",
           config: {
-            pdf_template_name: "Cotización Repuestos y Maquinaria",
+            pdf_template_name: "Cotizacion Repuestos y Maquinaria",
             pdf_filename: "Cotizacion.pdf",
             pdf_output_variable: "pdf_url",
             pdf_paper_size: "Letter",
@@ -455,7 +326,7 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
           label: "Enviar PDF por WhatsApp",
           config: {
             send_pdf: true,
-            caption: "Hola {{lead.nombre}}, aquí tienes el PDF con tu cotización.",
+            caption: "Hola {{lead.nombre}}, aqui tienes el PDF con tu cotizacion.",
             templateId: "",
           },
         },
@@ -482,8 +353,8 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
     setNodes(newNodes);
     setEdges(newEdges);
     toast({
-      title: "Flujo Cargado con Éxito",
-      description: "Llamada Ultravox ➔ Crear PDF ➔ Enviar por WhatsApp",
+      title: "Flujo Cargado con Exito",
+      description: "Llamada Ultravox -> Crear PDF -> Enviar por WhatsApp",
       variant: "success",
     });
   };
@@ -532,123 +403,196 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         toast({
           variant: "warning",
           title: "Flujo guardado pero no activado",
-          description: "El flujo se guardó pero hubo un error al activarlo.",
+          description: "El flujo se guardo pero hubo un error al activarlo.",
         });
       }
     } catch (error) {
       console.error("Error deploying:", error);
-      toast({ variant: "error", title: "Error crítico en el despliegue" });
+      toast({ variant: "error", title: "Error critico en el despliegue" });
     } finally {
       setIsPublishing(false);
     }
   };
 
+  const hasSelection = !!(selectedNode || selectedEdge);
+
   return (
-    <div className="group relative h-full w-full flex-1">
-      {/* ── Canvas Toolbar ─────────────────────────────────────── */}
-      <div className="absolute top-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/10 bg-black/80 p-2 opacity-40 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:opacity-100">
-        <button
-          disabled={isPublishing}
-          onClick={onPublish}
-          className={cn(
-            "flex items-center gap-2 rounded-xl bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-all hover:bg-white/10 hover:text-white",
-            isPublishing && "cursor-not-allowed opacity-50"
-          )}
+    <div className="relative h-full w-full flex-1 overflow-hidden">
+
+      {/* â”€â”€ Ambient glow layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/3 h-80 w-80 rounded-full bg-violet-600/6 blur-3xl" />
+        <div className="absolute bottom-10 right-1/4 h-60 w-60 rounded-full bg-cyan-500/5 blur-3xl" />
+      </div>
+
+      {/* â”€â”€ Dynamic Island Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div
+        ref={toolbarRef}
+        className="absolute top-4 left-1/2 z-50 -translate-x-1/2"
+      >
+        <div
+          className="flex items-center gap-1 rounded-[20px] border border-white/[0.07] bg-[#0c0c0f]/90 p-1.5 shadow-2xl backdrop-blur-2xl"
+          style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.04), 0 12px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)" }}
         >
-          <Save className={cn("h-4 w-4", isPublishing && "animate-spin")} />
-          {isPublishing ? "Guardando..." : "Guardar Borrador"}
-        </button>
+          {/* Brand icon */}
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-violet-500 to-indigo-700 shadow-lg shadow-violet-500/25">
+            <Zap className="h-3.5 w-3.5 text-white" />
+          </div>
 
-        <div className="mx-1 h-4 w-px bg-white/10" />
+          <div className="mx-1 h-4 w-px bg-white/[0.07]" />
 
-        {/* Add node menu */}
-        <div className="relative">
+          {/* Save draft */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsAddMenuOpen(!isAddMenuOpen);
-            }}
+            disabled={isPublishing}
+            onClick={onPublish}
             className={cn(
-              "flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors",
-              isAddMenuOpen
-                ? "bg-primary text-primary-foreground"
-                : "text-white/60 hover:bg-white/5 hover:text-white"
+              "flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-white/40 transition-all hover:bg-white/[0.06] hover:text-white/70",
+              isPublishing && "cursor-wait opacity-50"
             )}
+            title="Guardar borrador"
           >
-            <Plus className="h-4 w-4" />
-            Agregar Nodo
+            <Save className={cn("h-3.5 w-3.5", isPublishing && "animate-spin")} />
+            Guardar
           </button>
 
-          {/* Dropdown */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className={cn(
-              "absolute top-full left-0 z-[100] mt-2 max-h-[70vh] w-56 origin-top-left overflow-auto rounded-2xl border border-white/10 bg-black/95 shadow-2xl backdrop-blur-2xl transition-all",
-              isAddMenuOpen
-                ? "pointer-events-auto scale-100 opacity-100"
-                : "pointer-events-none scale-95 opacity-0"
-            )}
-          >
-            {NODE_MENU.map((group) => (
-              <div key={group.section}>
-                <p className="sticky top-0 border-b border-white/5 bg-black/95 px-3 py-2 text-[9px] font-black tracking-widest text-white/20 uppercase backdrop-blur-xl">
-                  {group.section}
-                </p>
-                {group.items.map((item) => (
-                  <button
-                    key={item.type}
-                    onClick={() => {
-                      addNode(item.type, item.data);
-                      setIsAddMenuOpen(false);
-                    }}
+          <div className="mx-1 h-4 w-px bg-white/[0.07]" />
+
+          {/* Node category pills */}
+          <div className="flex items-center gap-0.5">
+            {NODE_MENU.map((group, idx) => (
+              <div key={group.section} className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveCategory(activeCategory === idx ? null : idx);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-[11px] px-2.5 py-1.5 text-[11px] font-black transition-all duration-200",
+                    activeCategory === idx
+                      ? "bg-white/10 text-white"
+                      : "text-white/30 hover:bg-white/[0.05] hover:text-white/60"
+                  )}
+                >
+                  <span className="flex items-center">{group.categoryIcon}</span>
+                  <span className="hidden text-[10px] font-black uppercase tracking-wide sm:block">{group.section}</span>
+                  <ChevronDown
                     className={cn(
-                      "flex w-full items-center gap-3 px-3 py-2 text-left text-xs font-bold text-white/50 transition-colors",
-                      item.color
+                      "h-2.5 w-2.5 transition-transform duration-200",
+                      activeCategory === idx && "rotate-180"
                     )}
+                  />
+                </button>
+
+                {/* Dropdown panel */}
+                {activeCategory === idx && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute top-full left-1/2 z-[200] mt-2 w-52 -translate-x-1/2 overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0c0c0f]/98 shadow-2xl backdrop-blur-2xl"
+                    style={{
+                      boxShadow: "0 0 0 1px rgba(255,255,255,0.04), 0 24px 64px rgba(0,0,0,0.7)",
+                      animation: "dyn-island-drop 0.18s cubic-bezier(0.34,1.56,0.64,1) forwards",
+                    }}
                   >
-                    {item.icon} {item.label}
-                  </button>
-                ))}
+                    <div className="flex items-center gap-2 border-b border-white/[0.05] px-3 py-2.5">
+                      {group.categoryIcon}
+                      <p className="text-[9px] font-black tracking-widest text-white/40 uppercase">
+                        {group.section}
+                      </p>
+                    </div>
+                    <div className="space-y-0.5 p-1.5">
+                      {group.items.map((item) => (
+                        <button
+                          key={item.type}
+                          onClick={() => {
+                            addNode(item.type, item.data as Record<string, unknown>);
+                            setActiveCategory(null);
+                          }}
+                          className={cn(
+                            "flex w-full items-center gap-2.5 rounded-xl border px-2.5 py-2 text-left text-[11px] font-bold transition-all",
+                            item.bgColor
+                          )}
+                          style={{ color: item.accentColor }}
+                        >
+                          <span
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg"
+                            style={{ background: `${item.accentColor}1a` }}
+                          >
+                            {item.icon}
+                          </span>
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
+
+          <div className="mx-1 h-4 w-px bg-white/[0.07]" />
+
+          {/* Delete */}
+          <button
+            onClick={deleteSelected}
+            disabled={!hasSelection}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-[10px] font-black uppercase tracking-wide transition-all",
+              hasSelection
+                ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                : "cursor-not-allowed text-white/10"
+            )}
+            title="Eliminar seleccionado"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+
+          <div className="mx-1 h-4 w-px bg-white/[0.07]" />
+
+          {/* Template loader */}
+          <button
+            onClick={loadUltravoxQuotationFlow}
+            className="flex items-center gap-1.5 rounded-xl border border-violet-500/25 bg-violet-500/10 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wide text-violet-300 transition-all hover:border-violet-500/50 hover:bg-violet-500/20 active:scale-95"
+            title="Plantilla: Ultravox -> PDF -> WhatsApp"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Plantilla
+          </button>
+
+          <div className="mx-1 h-4 w-px bg-white/[0.07]" />
+
+          {/* Deploy CTA */}
+          <button
+            onClick={onDeploy}
+            disabled={isPublishing}
+            className={cn(
+              "flex items-center gap-1.5 rounded-[11px] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-all",
+              "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-400 hover:to-teal-400 hover:scale-105 active:scale-95",
+              isPublishing && "cursor-wait opacity-70"
+            )}
+          >
+            <Rocket className={cn("h-3.5 w-3.5", isPublishing && "animate-pulse")} />
+            {isPublishing ? "..." : "Deploy"}
+          </button>
         </div>
 
-        <button
-          onClick={deleteSelected}
-          className={cn(
-            "rounded-xl p-2 transition-colors",
-            selectedNode || selectedEdge
-              ? "text-red-500 hover:bg-red-500/10"
-              : "cursor-not-allowed text-white/20"
-          )}
-          title="Eliminar seleccionado (Nodo o Conexión)"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-
-        <div className="mx-1 h-4 w-px bg-white/10" />
-
-        <button
-          onClick={loadUltravoxQuotationFlow}
-          className="flex items-center gap-2 rounded-xl border border-violet-500/40 bg-violet-600/20 px-3 py-2 text-[10px] font-black tracking-widest text-violet-300 uppercase shadow-lg transition-all hover:bg-violet-600/30 active:scale-95"
-          title="Cargar flujo completo: Llamada Ultravox ➔ Crear PDF ➔ WhatsApp"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-violet-300" />
-          Plantilla Ultravox ➔ PDF
-        </button>
-
-        <button
-          onClick={onDeploy}
-          disabled={isPublishing}
-          className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
-        >
-          <Rocket className={cn("h-3.5 w-3.5", isPublishing && "animate-pulse")} />
-          {isPublishing ? "Desplegando..." : "Desplegar Workflow"}
-        </button>
+        {/* Selection info pill — appears below toolbar */}
+        {hasSelection && (
+          <div className="mt-2 flex justify-center">
+            <div className="flex items-center gap-2 rounded-xl border border-indigo-500/20 bg-[#0c0c0f]/90 px-3 py-1.5 text-[10px] font-bold text-indigo-300 backdrop-blur-xl shadow-lg">
+              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" />
+              {selectedNode ? `${selectedNode.type}` : "Conexión"} seleccionado
+              <button
+                onClick={() => { setSelectedNode(null); setSelectedEdge(null); }}
+                className="ml-1 rounded-md p-0.5 opacity-60 hover:bg-indigo-500/20 hover:opacity-100 transition-all"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── React Flow Canvas ──────────────────────────────────── */}
+      {/* ─── React Flow Canvas ────────────────────────────────────────────── */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -662,21 +606,21 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         colorMode="dark"
         fitView
         fitViewOptions={{ padding: 0.15 }}
-        className="bg-[#0a0a0a]"
+        className="bg-[#070709]"
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={28}
-          size={1.2}
-          color="#222"
-          className="opacity-60"
+          gap={32}
+          size={1}
+          color="#18182a"
+          className="opacity-90"
         />
         <Controls
-          className="overflow-hidden rounded-xl border border-white/10 bg-black/60 fill-white"
+          className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#0c0c0f]/80 fill-white/40 backdrop-blur-xl"
           showInteractive={false}
         />
         <MiniMap
-          className="overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-2xl"
+          className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c0c0f]/80 shadow-2xl backdrop-blur-xl"
           nodeColor={(n: Node) => {
             if (n.type === "ultravoxTrigger") return "#8b5cf6";
             if (n.type === "leadTrigger") return "#f97316";
@@ -689,14 +633,14 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
             if (n.type === "llm") return "#a855f7";
             if (n.type === "api") return "#06b6d4";
             if (n.type === "pdfGenerator" || n.type === "flow_pdf_generator") return "#f43f5e";
-            if (n.type === "end") return "#6b7280";
+            if (n.type === "end") return "#374151";
             return "#fff";
           }}
-          maskColor="rgba(0, 0, 0, 0.7)"
+          maskColor="rgba(7, 7, 9, 0.85)"
         />
       </ReactFlow>
 
-      {/* ── Node Configuration Sidebar ─────────────────────────── */}
+      {/* ─── Node Configuration Sidebar ───────────────────────────────────── */}
       {selectedNode && (
         <NodeConfigSidebar
           key={selectedNode.id}
@@ -707,21 +651,36 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         />
       )}
 
-      {/* ── Status Badge ───────────────────────────────────────── */}
-      <div className="pointer-events-none absolute right-5 bottom-5 z-50">
-        <div className="space-y-1 rounded-2xl border border-white/5 bg-black/50 p-4 backdrop-blur-md">
-          <p className="text-[9px] font-black tracking-widest text-white/20 uppercase">
-            Flow Engine
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            <p className="text-[11px] font-bold text-emerald-400">Operational V2</p>
+      {/* ─── Status HUD (bottom-right) ────────────────────────────────────── */}
+      <div className="pointer-events-none absolute right-4 bottom-4 z-50">
+        <div
+          className="space-y-2 rounded-2xl border border-white/[0.05] bg-[#0c0c0f]/75 p-3.5 backdrop-blur-xl"
+          style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.5)" }}
+        >
+          <div className="flex items-center gap-1.5">
+            <Activity className="h-3 w-3 text-white/20" />
+            <p className="text-[9px] font-black tracking-widest text-white/20 uppercase">Flow Engine</p>
           </div>
-          <p className="font-mono text-[9px] text-white/20">
-            {nodes.length} nodos · {edges.length} conexiones
-          </p>
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/60" />
+            <p className="text-[11px] font-bold text-emerald-400">Operational v2</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Layers className="h-3 w-3 text-white/15" />
+            <p className="font-mono text-[9px] text-white/20">
+              {nodes.length}n • {edges.length}e
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* â”€â”€ Dynamic Island keyframe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <style>{`
+        @keyframes dyn-island-drop {
+          from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.97); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   );
 }

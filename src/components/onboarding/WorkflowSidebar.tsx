@@ -84,7 +84,8 @@ export function WorkflowSidebar({ tenantId, selectedWorkflowId, onSelect }: Work
   // Load orchestrator config for timezone section
   useEffect(() => {
     async function loadConfig() {
-      const res = await getOrchestratorConfig();
+      if (!tenantId) return;
+      const res = await getOrchestratorConfig(tenantId);
       if (res.success && res.data) {
         setStartTime(res.data.timezone_rules.start || "09:00");
         setEndTime(res.data.timezone_rules.end || "20:00");
@@ -92,40 +93,68 @@ export function WorkflowSidebar({ tenantId, selectedWorkflowId, onSelect }: Work
         setPacingMinutes(res.data.scheduling?.slot_pacing_minutes || 60);
         setMessagesPerSlot(res.data.scheduling?.messages_per_slot || 10);
         setReminderHours(res.data.scheduling?.reminder_hours || 24);
-        setCountry(res.data.timezone_rules.country || "España");
+        if (res.data.timezone_rules?.country) {
+          setCountry(res.data.timezone_rules.country);
+        }
       }
     }
     loadConfig();
-  }, []);
+  }, [tenantId]);
 
   const handleSaveConfig = async () => {
     setSavingConfig(true);
-    await saveOrchestratorConfig({
-      timezone_rules: {
-        start: startTime,
-        end: endTime,
-        working_days: workingDays,
-        phone_prefix_map: {
-          "+34": "Europe/Madrid",
-          "+56": "America/Santiago",
-          "+52": "America/Mexico_City",
-          "+57": "America/Bogota",
-          "+51": "America/Lima",
-          "+54": "America/Argentina/Buenos_Aires",
-          "+598": "America/Montevideo",
-          "+1": "America/New_York",
-          "+44": "Europe/London",
+    try {
+      const res = await saveOrchestratorConfig(
+        {
+          timezone_rules: {
+            start: startTime,
+            end: endTime,
+            working_days: workingDays,
+            phone_prefix_map: {
+              "+34": "Europe/Madrid",
+              "+56": "America/Santiago",
+              "+52": "America/Mexico_City",
+              "+57": "America/Bogota",
+              "+51": "America/Lima",
+              "+54": "America/Argentina/Buenos_Aires",
+              "+598": "America/Montevideo",
+              "+1": "America/New_York",
+              "+44": "Europe/London",
+            },
+            country: country,
+          },
+          scheduling: {
+            slot_pacing_minutes: pacingMinutes,
+            messages_per_slot: messagesPerSlot,
+            reminder_hours: reminderHours,
+            reminder_template: "appointment_reminder_es",
+          },
         },
-        country: country,
-      },
-      scheduling: {
-        slot_pacing_minutes: pacingMinutes,
-        messages_per_slot: messagesPerSlot,
-        reminder_hours: reminderHours,
-        reminder_template: "appointment_reminder_es",
-      },
-    });
-    setSavingConfig(false);
+        tenantId
+      );
+
+      if (res.success) {
+        toast({
+          variant: "success",
+          title: "Configuración guardada",
+          description: `País base guardado en ${country} correctamente.`,
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Error al guardar",
+          description: res.error || "No se pudo guardar la configuración.",
+        });
+      }
+    } catch (err: unknown) {
+      toast({
+        variant: "error",
+        title: "Error inesperado",
+        description: err instanceof Error ? err.message : "Error al guardar.",
+      });
+    } finally {
+      setSavingConfig(false);
+    }
   };
 
   const handleDeploy = async () => {
