@@ -835,6 +835,17 @@ export class PdfService {
         };
       }
 
+      // 3. Fallback: Environment variables
+      const envToken = process.env.WHATSAPP_ACCESS_TOKEN;
+      const envPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+      if (envToken && envPhoneId) {
+        return {
+          accessToken: envToken,
+          phoneNumberId: envPhoneId,
+          wabaId: process.env.WHATSAPP_WABA_ID || undefined,
+        };
+      }
+
       return null;
     } catch (err) {
       console.error("[PDF SERVICE] Error resolving WhatsApp config:", err);

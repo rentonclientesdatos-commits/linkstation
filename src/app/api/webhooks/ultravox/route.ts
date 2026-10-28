@@ -170,13 +170,34 @@ export async function POST(req: Request) {
     }
 
     const metadata = callData.systemMetadata || callData.templateContext || {};
-    const tenantId = metadata.tenant_id;
-    const leadId = metadata.lead_id;
+    let tenantId = metadata.tenant_id;
+    let leadId = metadata.lead_id;
+    const callerPhone = metadata.telefono || metadata.phone || metadata.lead_phone;
     const tipoGestion = (metadata.tipo_gestion || "GENERAL").toUpperCase();
     const isJorklifCampaign = !!(tenantId && leadId && metadata.campana?.includes("Jorklif"));
 
+    const supabaseAdmin = getAdminSupabase();
+
+    // Fallback: If tenantId or leadId is missing, attempt lookup via phone number
+    if ((!tenantId || !leadId) && callerPhone) {
+      const cleanPhone = String(callerPhone).replace(/^\+/, "");
+      const { data: matchedLead } = await (supabaseAdmin as any)
+        .from("lead")
+        .select("id, tenant_id")
+        .or(`telefono.eq.+${cleanPhone},telefono.eq.${cleanPhone}`)
+        .order("fecha_actualizacion", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (matchedLead) {
+        leadId = leadId || matchedLead.id;
+        tenantId = tenantId || matchedLead.tenant_id;
+        log.info("Resolved missing metadata via phone lookup", { leadId, tenantId, callerPhone });
+      }
+    }
+
     if (!tenantId || !leadId) {
-      log.warn("Missing tenant_id or lead_id in metadata", { call_id: callData.callId });
+      log.warn("Missing tenant_id or lead_id in metadata and phone lookup", { call_id: callData.callId });
       return NextResponse.json({ received: true, warning: "Missing metadata" });
     }
 
@@ -205,8 +226,6 @@ export async function POST(req: Request) {
           .map((m: any) => `[${m.role?.replace("MESSAGE_ROLE_", "") || "?"}]: ${m.text || m.content || ""}`)
           .join("\n")
       : "(Transcripción de Ultravox - pendiente de sync API)";
-
-    const supabaseAdmin = getAdminSupabase();
 
     // ── Insertar en tabla llamadas ────────────────────────────────────────────
     const { error: llamadaError, data: llamadaInsertRaw } = await supabaseAdmin
@@ -358,7 +377,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, message: "Logged to Inbox", jorklif_result: jorklifResult });
+    // ── Enviar WhatsApp Post-Llamada con link del grupo o info necesaria ─────
+    let waResult = null;
+    const shouldSendWhatsApp =
+      metadata.send_whatsapp !== false &&
+      metadata.enviar_whatsapp !== false;
+
+    if (shouldSendWhatsApp) {
+      try {
+        const { WhatsAppPostCallService } = await import("@/lib/services/whatsapp-postcall-service");
+        waResult = await WhatsAppPostCallService.dispatch({
+          supabase: supabaseAdmin as any,
+          tenantId,
+          leadId,
+          phone: callerPhone,
+          recipientName: metadata.nombre || metadata.name,
+          groupLink: metadata.group_link || metadata.whatsapp_group_link || metadata.link_grupo,
+          templateName: metadata.whatsapp_template || metadata.template_name,
+          callId: callData.callId,
+        });
+        log.info("Post-call WhatsApp dispatch completed", { trace_id, success: waResult.success });
+      } catch (waErr) {
+        log.warn("Post-call WhatsApp dispatch error", { trace_id, error: (waErr as Error).message });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Logged to Inbox",
+      jorklif_result: jorklifResult,
+      whatsapp: waResult,
+    });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     log.error("Unhandled error in ultravox webhook", { trace_id, error: msg });

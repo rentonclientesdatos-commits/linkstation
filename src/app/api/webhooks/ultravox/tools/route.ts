@@ -6,17 +6,8 @@ import { Database } from "@/types/database";
 import { PdfService } from "@/lib/services/pdf-service";
 import { GoogleSheetsService } from "@/lib/services/google-sheets-service";
 
-export async function POST(req: Request) {
+export async function handleToolExecution(req: Request, explicitToolName?: string) {
   try {
-    const rawBody = await req.text();
-
-    let payload: Record<string, any> = {};
-    try {
-      payload = JSON.parse(rawBody);
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-    }
-
     const { searchParams } = new URL(req.url);
     const queryTool =
       searchParams.get("tool") ||
@@ -24,13 +15,38 @@ export async function POST(req: Request) {
       searchParams.get("name") ||
       searchParams.get("action");
 
-    // Resolve toolName from payload, query parameter, or payload keys
-    let toolName = payload.toolName || payload.name || queryTool;
+    let payload: Record<string, any> = {};
+
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      const rawBody = await req.text().catch(() => "");
+      if (rawBody && rawBody.trim().length > 0) {
+        try {
+          payload = JSON.parse(rawBody);
+        } catch {
+          return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+        }
+      }
+    } else {
+      payload = Object.fromEntries(searchParams.entries());
+    }
+
+    // Resolve toolName from explicit parameter, payload, query parameter, or payload keys
+    let toolName = explicitToolName || payload.toolName || payload.name || queryTool;
 
     // Resolve args: if payload has nested parameters/args, use them; otherwise use payload itself
     let args: Record<string, any> = payload.parameters || payload.args || {};
     if (Object.keys(args).length === 0) {
       args = payload;
+    }
+
+    // Healthcheck / Browser ping on GET when no arguments are provided
+    if (req.method === "GET" && Object.keys(args).length === 0) {
+      return NextResponse.json({
+        status: "active",
+        endpoint: "Ultravox Tools Endpoint",
+        tool: toolName || "auto",
+        message: "Endpoint activo y listo para recibir llamadas de Ultravox.",
+      });
     }
 
     // Auto-detect toolName if Ultravox HTTP tool called endpoint directly without wrapping
@@ -40,17 +56,25 @@ export async function POST(req: Request) {
         args.repuesto_solicitado_y_cantidad ||
         args.Datos_de_la_grua ||
         args.datos_de_la_grua ||
-        args.Comuna_o_Ciudad ||
-        args.comuna_o_ciudad ||
         args.repuestos ||
         args.repuesto
       ) {
         toolName = "capturarDatosCotizacion";
       } else if (args.Nombre_empresa || args.nombre_empresa) {
         toolName = "Arriendo_de_Gruas";
+      } else if (
+        args.link_grupo ||
+        args.group_link ||
+        args.enviar_whatsapp ||
+        args.send_whatsapp ||
+        args.url ||
+        args.mensaje ||
+        args.message
+      ) {
+        toolName = "enviar_whatsapp";
       } else {
-        // Fallback default for LinkStation
-        toolName = "capturarDatosCotizacion";
+        // Default general lead & contact capture (without forcing PDF generation)
+        toolName = "registrar_datos_llamada";
       }
     }
 
@@ -127,6 +151,16 @@ export async function POST(req: Request) {
       case "agendar_visita_arriendo":
       case "schedule_rental_visit":
         return await handleAgendarVisitaArriendo(supabase, tenantId, leadId, args);
+
+      // ── Workflow 4: Enviar WhatsApp / Link de Grupo ────────────────
+      case "enviar_whatsapp":
+      case "send_whatsapp":
+      case "enviar_link_grupo":
+      case "enviar_whatsapp_grupo":
+      case "compartir_link":
+      case "enviar_informacion":
+      case "send_group_link":
+        return await handleEnviarWhatsApp(supabase, tenantId, leadId, args, call?.callId);
 
       default:
         console.warn(`[ULTRAVOX TOOLS] Unknown tool called: ${toolName}`);
@@ -341,10 +375,10 @@ async function handleSaveLead(
   args: Record<string, unknown>
 ) {
   try {
-    const rawNombre = (args.nombre || args.name || "") as string;
-    const telefono = (args.telefono || args.phone || "") as string;
-    const email = (args.correo || args.email || "") as string;
-    const notas = (args.notas || args.interes || args.notes || args.resumen || "") as string;
+    const rawNombre = (findArgByKeywords(args, ["nombre", "name", "cliente", "usuario"]) || "") as string;
+    const telefono = (findArgByKeywords(args, ["telefono", "phone", "whatsapp", "celular", "numero"]) || "") as string;
+    const email = (findArgByKeywords(args, ["email", "correo", "mail"]) || "") as string;
+    const notas = (findArgByKeywords(args, ["motivacion", "notas", "interes", "notes", "resumen", "motivo"]) || "") as string;
 
     // Resolver tenant si no viene en metadata
     let effectiveTenantId = tenantId;
@@ -358,9 +392,9 @@ async function handleSaveLead(
     const nombre = parts[0] || "Prospecto";
     const apellido = parts.slice(1).join(" ") || "";
 
-    console.log("[ULTRAVOX TOOL] Guardando lead:", { nombre, apellido, telefono, email, notas });
+    console.log("[ULTRAVOX TOOL] Guardando lead dinámico:", { nombre, apellido, telefono, email, notas, args });
 
-    // 1. Guardar en Supabase (tabla 'lead')
+    // 1. Guardar en Supabase (tabla 'lead') - guardando TODOS los campos enviados por Ultravox
     if (leadId) {
       await (supabase as any).from("lead").update({
         nombre: nombre || undefined,
@@ -368,6 +402,7 @@ async function handleSaveLead(
         telefono: telefono || undefined,
         email: email || undefined,
         metadata: {
+          ...args,
           notas,
           capturado_por: "ultravox_ai",
           fecha_actualizacion: new Date().toISOString(),
@@ -383,6 +418,7 @@ async function handleSaveLead(
         origen: "ultravox",
         status: "nuevo",
         metadata: {
+          ...args,
           notas,
           capturado_por: "ultravox_ai",
           fecha_creacion: new Date().toISOString(),
@@ -412,9 +448,33 @@ async function handleSaveLead(
       }
     }
 
+    // 3. Opcional: Enviar WhatsApp si se solicita enlace de grupo o mensaje
+    let waSent = false;
+    const linkGrupo = args.link_grupo || args.group_link || args.link || args.url;
+    if (telefono && (args.enviar_whatsapp !== false || linkGrupo)) {
+      try {
+        const { WhatsAppPostCallService } = await import("@/lib/services/whatsapp-postcall-service");
+        const waRes = await WhatsAppPostCallService.dispatch({
+          supabase,
+          tenantId: effectiveTenantId || "",
+          leadId,
+          phone: telefono,
+          recipientName: nombre,
+          groupLink: linkGrupo as string | undefined,
+          customMessage: (args.mensaje || args.message) as string | undefined,
+        });
+        waSent = waRes.success;
+      } catch (waErr) {
+        console.warn("[ULTRAVOX SAVE LEAD] Error enviando WhatsApp:", waErr);
+      }
+    }
+
+    const waText = waSent ? " y te acabo de enviar el enlace a tu WhatsApp" : "";
+
     return NextResponse.json({
       success: true,
-      message: "Datos de contacto guardados correctamente.",
+      whatsapp_sent: waSent,
+      message: `Listo ${nombre}, tus datos han sido registrados correctamente${waText}. ¿Deseas consultar algo más?`,
     });
   } catch (error) {
     console.error("[ULTRAVOX SAVE LEAD ERROR]:", error);
@@ -516,10 +576,10 @@ async function handleCapturaCotizacion(
     const effectiveTenantId = await resolveTenant(supabase, tenantId);
     const cliente = String(
       args.Nombre_del_cliente ||
-        args.nombre_del_cliente ||
-        args.nombre ||
-        args.cliente ||
-        "Cliente"
+      args.nombre_del_cliente ||
+      args.nombre ||
+      args.cliente ||
+      "Cliente"
     ).trim();
 
     // Clean phone number from string, float or number
@@ -534,48 +594,48 @@ async function handleCapturaCotizacion(
 
     const email = String(
       args.Correo_electronico ||
-        args.correo_electronico ||
-        args.email ||
-        ""
+      args.correo_electronico ||
+      args.email ||
+      ""
     ).trim();
 
     const repuestos = String(
       args.Repuesto_solicitado_y_cantidad ||
-        args.repuesto_solicitado_y_cantidad ||
-        args.repuestos ||
-        args.repuesto ||
-        args.items ||
-        args.repuestos_solicitados ||
-        args.repuesto_solicitado ||
-        args.repuesto_a_cotizar ||
-        ""
+      args.repuesto_solicitado_y_cantidad ||
+      args.repuestos ||
+      args.repuesto ||
+      args.items ||
+      args.repuestos_solicitados ||
+      args.repuesto_solicitado ||
+      args.repuesto_a_cotizar ||
+      ""
     ).trim();
 
     const maquinaria = String(
       args.Datos_de_la_grua ||
-        args.datos_de_la_grua ||
-        args.maquinaria ||
-        args.maquina ||
-        args.tipo_maquina ||
-        args.grua ||
-        ""
+      args.datos_de_la_grua ||
+      args.maquinaria ||
+      args.maquina ||
+      args.tipo_maquina ||
+      args.grua ||
+      ""
     ).trim();
 
     const comuna = String(
       args.Comuna_o_Ciudad ||
-        args.comuna_o_ciudad ||
-        args.comuna ||
-        args.ciudad ||
-        args.direccion ||
-        ""
+      args.comuna_o_ciudad ||
+      args.comuna ||
+      args.ciudad ||
+      args.direccion ||
+      ""
     ).trim();
 
     const modelo = String(
       args.modelo ||
-        args.modelo_maquina ||
-        args.numero_serie ||
-        args.serie ||
-        ""
+      args.modelo_maquina ||
+      args.numero_serie ||
+      args.serie ||
+      ""
     ).trim();
 
     const total = args.total || args.precio || args.valor || args.monto || "";
@@ -654,7 +714,7 @@ async function handleCapturaCotizacion(
       activeLeadId = newLead?.id;
     }
 
-    // 2. Generate PDF and dispatch directly via Email ONLY (sendWhatsApp: false to prevent memory collision with WhatsApp bot)
+    // 2. Generate PDF and dispatch via WhatsApp (if phone exists) and Email (if email exists)
     const quotationResult = await PdfService.executeQuotationAndWhatsApp({
       supabase,
       tenantId: effectiveTenantId,
@@ -669,22 +729,29 @@ async function handleCapturaCotizacion(
         total: total ? String(total) : undefined,
         observaciones: observacionesCompletas,
       },
-      sendWhatsApp: false, // Prevents dual-agent collision in WhatsApp!
+      sendWhatsApp: Boolean(telefono),
     });
 
     const itemsResumen = repuestos ? `los repuestos "${repuestos}"` : "tu solicitud de cotización";
-    const emailConfirmation = email
-      ? `y te acabo de enviar la cotización oficial en PDF directamente a tu correo electrónico (${email})`
-      : `y nuestro equipo te enviará la cotización oficial en PDF`;
+
+    let dispatchConfirmation = "y nuestro equipo te enviará la información";
+    if (quotationResult.whatsappSent && quotationResult.emailSent) {
+      dispatchConfirmation = `y te acabo de enviar la cotización oficial tanto a tu WhatsApp como a tu correo (${email})`;
+    } else if (quotationResult.whatsappSent) {
+      dispatchConfirmation = `y te acabo de enviar la cotización oficial en PDF directamente a tu WhatsApp`;
+    } else if (quotationResult.emailSent) {
+      dispatchConfirmation = `y te acabo de enviar la cotización oficial en PDF directamente a tu correo electrónico (${email})`;
+    }
 
     return NextResponse.json({
       success: true,
       lead_id: activeLeadId,
       pdf_url: quotationResult.pdfUrl,
-      whatsapp_sent: false,
+      whatsapp_sent: quotationResult.whatsappSent,
+      whatsapp_error: quotationResult.whatsappError || null,
       email_sent: quotationResult.emailSent,
-      email_error: quotationResult.emailError,
-      message: `Listo ${cliente}, he registrado con éxito ${itemsResumen} para tu equipo ${maquinaria || "grúa"}, ${emailConfirmation}. ¿Deseas consultar algo más?`,
+      email_error: quotationResult.emailError || null,
+      message: `Listo ${cliente}, he registrado con éxito ${itemsResumen} para tu equipo ${maquinaria || "grúa"}, ${dispatchConfirmation}. ¿Deseas consultar algo más?`,
     });
   } catch (error) {
     console.error("[CAPTURAR_COTIZACION ERROR]:", error);
@@ -710,12 +777,12 @@ async function handleBuscarRepuestos(
     const effectiveTenantId = await resolveTenant(supabase, tenantId);
     const query = String(
       args.query ||
-        args.repuesto ||
-        args.parte ||
-        args.busqueda ||
-        args.codigo ||
-        args.search ||
-        ""
+      args.repuesto ||
+      args.parte ||
+      args.busqueda ||
+      args.codigo ||
+      args.search ||
+      ""
     );
     const sheetName = String(args.sheet || args.hoja || "") || undefined;
 
@@ -759,8 +826,7 @@ async function handleBuscarRepuestos(
     const summary = formatted
       .map(
         (r, i) =>
-          `${i + 1}. ${r.descripcion} (Cód: ${r.codigo}) - Precio: ${r.precio} - Stock: ${r.stock}${
-            r.modelo_compatible ? ` - Compatible con: ${r.modelo_compatible}` : ""
+          `${i + 1}. ${r.descripcion} (Cód: ${r.codigo}) - Precio: ${r.precio} - Stock: ${r.stock}${r.modelo_compatible ? ` - Compatible con: ${r.modelo_compatible}` : ""
           }`
       )
       .join("; ");
@@ -927,10 +993,10 @@ async function handleAgendarVisitaArriendo(
       appointmentId = appointment?.id as string | undefined;
       scheduledAtFormatted = appointment?.scheduled_at
         ? new Date(appointment.scheduled_at as string).toLocaleString("es-CL", {
-            timeZone: "America/Santiago",
-            dateStyle: "full",
-            timeStyle: "short",
-          })
+          timeZone: "America/Santiago",
+          dateStyle: "full",
+          timeStyle: "short",
+        })
         : fecha;
     } catch (apptErr) {
       console.error("[AGENDAR_VISITA] Error al agendar cita:", apptErr);
@@ -954,12 +1020,12 @@ async function handleAgendarVisitaArriendo(
           await bridge.sendTextMessage(
             telefono,
             `✅ *Visita Agendada - LinkStation*\n\n` +
-              `Hola ${empresa}, confirmamos tu visita técnica:\n\n` +
-              `📅 *Fecha:* ${scheduledAtFormatted}\n` +
-              (hora ? `🕐 *Hora:* ${hora}\n` : "") +
-              (tipoMaquinaria ? `🏗️ *Maquinaria:* ${tipoMaquinaria}\n` : "") +
-              (lugarVisita ? `📍 *Lugar:* ${lugarVisita}\n` : "") +
-              `\nNuestro equipo comercial te contactará para confirmar los detalles. ¡Hasta pronto!`,
+            `Hola ${empresa}, confirmamos tu visita técnica:\n\n` +
+            `📅 *Fecha:* ${scheduledAtFormatted}\n` +
+            (hora ? `🕐 *Hora:* ${hora}\n` : "") +
+            (tipoMaquinaria ? `🏗️ *Maquinaria:* ${tipoMaquinaria}\n` : "") +
+            (lugarVisita ? `📍 *Lugar:* ${lugarVisita}\n` : "") +
+            `\nNuestro equipo comercial te contactará para confirmar los detalles. ¡Hasta pronto!`,
             {
               accessToken: waConfig.access_token,
               phoneNumberId: waConfig.phone_number_id,
@@ -980,12 +1046,192 @@ async function handleAgendarVisitaArriendo(
       lead_id: activeLeadId,
       appointment_id: appointmentId,
       scheduled_at: scheduledAtFormatted,
-      message: `Perfecto ${empresa}, tu visita ha sido agendada para el ${scheduledAtFormatted}${
-        hora ? ` a las ${hora}` : ""
-      }. Recibirás confirmación en tu WhatsApp (${telefono}). ¿Hay algo más en lo que pueda ayudarte?`,
+      message: `Perfecto ${empresa}, tu visita ha sido agendada para el ${scheduledAtFormatted}${hora ? ` a las ${hora}` : ""
+        }. Recibirás confirmación en tu WhatsApp (${telefono}). ¿Hay algo más en lo que pueda ayudarte?`,
     });
   } catch (error) {
     console.error("[AGENDAR_VISITA_ARRIENDO ERROR]:", error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
+
+/**
+ * Universal dynamic argument finder for future-proof agent tools
+ */
+function findArgByKeywords(args: Record<string, any>, keywords: string[]): any {
+  for (const kw of keywords) {
+    if (args[kw] !== undefined && args[kw] !== null && String(args[kw]).trim() !== "") {
+      return args[kw];
+    }
+  }
+  const keys = Object.keys(args);
+  for (const key of keys) {
+    const lowerKey = key.toLowerCase();
+    for (const kw of keywords) {
+      if (lowerKey.includes(kw.toLowerCase())) {
+        const val = args[key];
+        if (val !== undefined && val !== null && String(val).trim() !== "") {
+          return val;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Tool Handler: Enviar WhatsApp con link del grupo o info
+ */
+async function handleEnviarWhatsApp(
+  supabase: SupabaseClient<Database>,
+  tenantId: string | undefined,
+  leadId: string | undefined,
+  args: Record<string, any>,
+  callId?: string
+) {
+  try {
+    // 1. Universal fuzzy resolution: Works with ANY parameter name from ANY agent
+    const telefono = findArgByKeywords(args, [
+      "whatsapp_usuario",
+      "telefono",
+      "phone",
+      "whatsapp",
+      "celular",
+      "movil",
+      "numero",
+      "lead_phone",
+    ]);
+
+    const email = findArgByKeywords(args, [
+      "email_usuario",
+      "email",
+      "correo",
+      "mail",
+      "lead_email",
+    ]);
+
+    const nombre =
+      findArgByKeywords(args, [
+        "nombre_usuario",
+        "nombre",
+        "name",
+        "cliente",
+        "usuario",
+        "lead_name",
+      ]) || "Participante";
+
+    const linkGrupo = findArgByKeywords(args, [
+      "link_grupo",
+      "group_link",
+      "link",
+      "url",
+      "grupo",
+      "enlace",
+    ]);
+
+    const motivacion = findArgByKeywords(args, [
+      "motivacion_usuario",
+      "motivacion",
+      "interes",
+      "notas",
+      "objetivo",
+      "consulta",
+    ]);
+
+    const customText = findArgByKeywords(args, ["mensaje", "message", "texto"]);
+    const mensaje =
+      customText ||
+      (motivacion
+        ? `¡Hola ${nombre}! Vimos que tu objetivo es: "${motivacion}". Te compartimos el enlace oficial del grupo:`
+        : undefined);
+
+    const templateName = findArgByKeywords(args, ["template", "template_name", "plantilla"]);
+
+    let effectiveTenantId = tenantId;
+    let effectiveLeadId = leadId;
+
+    if (!effectiveTenantId || !effectiveLeadId) {
+      if (effectiveLeadId) {
+        const { data: lead } = await (supabase as any)
+          .from("lead")
+          .select("id, tenant_id, telefono, nombre")
+          .eq("id", effectiveLeadId)
+          .maybeSingle();
+        if (lead) {
+          effectiveTenantId = effectiveTenantId || lead.tenant_id;
+        }
+      } else if (telefono) {
+        const cleanPhone = String(telefono).replace(/^\+/, "");
+        const { data: lead } = await (supabase as any)
+          .from("lead")
+          .select("id, tenant_id, telefono, nombre")
+          .or(`telefono.eq.+${cleanPhone},telefono.eq.${cleanPhone}`)
+          .order("fecha_actualizacion", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (lead) {
+          effectiveLeadId = lead.id;
+          effectiveTenantId = effectiveTenantId || lead.tenant_id;
+        }
+      }
+    }
+
+    if (!effectiveTenantId) {
+      const { data: firstTenant } = await (supabase as any)
+        .from("tenants")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+      effectiveTenantId = firstTenant?.id;
+    }
+
+    if (!effectiveTenantId) {
+      return NextResponse.json(
+        { error: "No se pudo determinar el tenant_id para enviar WhatsApp" },
+        { status: 400 }
+      );
+    }
+
+    const { WhatsAppPostCallService } = await import("@/lib/services/whatsapp-postcall-service");
+    const result = await WhatsAppPostCallService.dispatch({
+      supabase,
+      tenantId: effectiveTenantId,
+      leadId: effectiveLeadId,
+      phone: telefono,
+      recipientName: nombre,
+      groupLink: linkGrupo,
+      customMessage: mensaje,
+      templateName,
+      callId,
+    });
+
+    if (!result.success) {
+      console.warn("[ULTRAVOX TOOL: enviar_whatsapp] Dispatch warning:", result.error);
+      return NextResponse.json({
+        success: false,
+        warning: result.error,
+        mensaje: "El mensaje no pudo ser entregado inmediatamente, pero los datos fueron guardados.",
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      mensaje: `El enlace del grupo de WhatsApp ha sido enviado exitosamente al número ${result.dispatchedTo}.`,
+      destinatario: result.dispatchedTo,
+    });
+  } catch (err) {
+    console.error("[ULTRAVOX TOOL: enviar_whatsapp ERROR]:", err);
+    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  return handleToolExecution(req);
+}
+
+export async function GET(req: Request) {
+  return handleToolExecution(req);
+}
+
+
+
