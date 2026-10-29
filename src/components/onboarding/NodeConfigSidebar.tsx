@@ -1674,6 +1674,26 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                     </p>
                   </div>
 
+                  {/* Quick Preset for Conectabit registered in Ultravox */}
+                  <div className="flex items-center justify-between rounded-xl border border-violet-500/20 bg-violet-500/10 px-3 py-2">
+                    <span className="text-[10px] text-violet-200">
+                      Cuenta detectada: <strong className="text-white font-mono">Renzo319</strong> @ <span className="font-mono text-violet-300">ultravox.conecta-bit.com:7560</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setConfig({
+                          ...config,
+                          sip_domain: "ultravox.conecta-bit.com:7560",
+                          sip_username: "Renzo319",
+                        })
+                      }
+                      className="rounded-lg bg-violet-600 px-2.5 py-1 text-[9px] font-bold text-white hover:bg-violet-500 transition-colors"
+                    >
+                      Autocompletar
+                    </button>
+                  </div>
+
                   {/* SIP Domain */}
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
@@ -1683,11 +1703,11 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                       id="sip-domain"
                       value={(config.sip_domain as string) || ""}
                       onChange={(e) => setConfig({ ...config, sip_domain: e.target.value })}
-                      placeholder="sip.tuproveedorsip.com"
+                      placeholder="ultravox.conecta-bit.com:7560"
                       className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                     />
                     <p className="px-1 text-[9px] text-white/25 italic">
-                      Ej: <code className="text-violet-400">sip.conectabit.com</code> · <code className="text-violet-400">sip.voip.ms</code>
+                      Por defecto: <code className="text-violet-400">ultravox.conecta-bit.com:7560</code>
                     </p>
                   </div>
 
@@ -1701,7 +1721,7 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                         id="sip-username"
                         value={(config.sip_username as string) || ""}
                         onChange={(e) => setConfig({ ...config, sip_username: e.target.value })}
-                        placeholder="usuario_sip"
+                        placeholder="Renzo319"
                         className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                       />
                     </div>
@@ -1729,11 +1749,11 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                       id="sip-caller-id"
                       value={(config.sip_caller_id as string) || ""}
                       onChange={(e) => setConfig({ ...config, sip_caller_id: e.target.value })}
-                      placeholder="+52155XXXXXXXX"
+                      placeholder="+569XXXXXXXX"
                       className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                     />
                     <p className="px-1 text-[9px] text-white/25 italic">
-                      Número que verá el destinatario en pantalla (con código de país, ej: +52…).
+                      Número asignado en tu troncal Conectabit (con código de país, ej: +569…).
                     </p>
                   </div>
 

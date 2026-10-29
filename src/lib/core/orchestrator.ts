@@ -1268,20 +1268,40 @@ export class Orchestrator {
         };
 
         // ── SIP DIRECTO (sin Twilio) ────────────────────────────────────────
-        const sipEnabled = Boolean(conf?.sip_enabled);
-        const sipDomain = (conf?.sip_domain as string) || tenantConf?.telephony?.sip?.domain;
-        const sipUsername = (conf?.sip_username as string) || tenantConf?.telephony?.sip?.username;
-        const sipPassword = (conf?.sip_password as string) || tenantConf?.telephony?.sip?.password;
-        const sipCallerId = (conf?.sip_caller_id as string) || tenantConf?.telephony?.fromNumber;
+        const sipEnabled = Boolean(conf?.sip_enabled) || Boolean(tenantConf?.conectabit?.sip_domain) || Boolean(process.env.CONECTABIT_SIP_DOMAIN);
+        const sipDomain =
+          (conf?.sip_domain as string) ||
+          tenantConf?.conectabit?.sip_domain ||
+          tenantConf?.telephony?.sip?.domain ||
+          process.env.CONECTABIT_SIP_DOMAIN ||
+          "ultravox.conecta-bit.com:7560";
+        const sipUsername =
+          (conf?.sip_username as string) ||
+          tenantConf?.conectabit?.sip_username ||
+          tenantConf?.telephony?.sip?.username ||
+          process.env.CONECTABIT_SIP_USERNAME ||
+          "Renzo319";
+        const sipPassword =
+          (conf?.sip_password as string) ||
+          tenantConf?.conectabit?.sip_password ||
+          tenantConf?.telephony?.sip?.password ||
+          process.env.CONECTABIT_SIP_PASSWORD;
+        const sipCallerId =
+          (conf?.sip_caller_id as string) ||
+          tenantConf?.jorklif?.caller_id ||
+          tenantConf?.telephony?.fromNumber ||
+          process.env.JORKLIF_CALLER_ID ||
+          process.env.TWILIO_PHONE_NUMBER;
         const sipFirstSpeaker = (conf?.sip_first_speaker as string) || "user";
 
         if (sipEnabled && sipDomain) {
-          // Build SIP URI:  sip:+521234567890@sip.proveedor.com
-          const toPhone = lead.telefono || "";
+          // Build SIP URI:  sip:+56912345678@ultravox.conecta-bit.com:7560
+          const rawPhone = lead.telefono || "";
+          const toPhone = rawPhone.replace(/[^0-9+]/g, "");
           const sipUri = `sip:${toPhone}@${sipDomain}`;
 
           console.log(
-            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId} | URI: ${sipUri} | From: ${sipCallerId}`
+            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId} | URI: ${sipUri} | From: ${sipCallerId} | User: ${sipUsername}`
           );
 
           const sipCallResult = await ultravoxBridge.createAgentCall(
