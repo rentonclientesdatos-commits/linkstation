@@ -90,6 +90,56 @@ export class UltravoxBridge {
   }
 
   /**
+   * Initiates a new AI voice call directly using systemPrompt (inline).
+   * Endpoint: POST /api/calls
+   */
+  public async createCall(
+    params: UltravoxCallParams,
+    config: UltravoxConfig
+  ) {
+    if (!config.apiKey) throw new Error("Missing Ultravox API Key");
+
+    try {
+      const response = await fetch(`${this.baseUrl}/api/calls`, {
+        method: "POST",
+        headers: {
+          "X-API-Key": config.apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          systemPrompt: params.systemPrompt,
+          model: params.model,
+          voice: params.voice,
+          temperature: params.temperature,
+          templateContext: params.templateContext || {},
+          medium: params.medium || { twilio: {} },
+          firstSpeakerSettings: params.firstSpeakerSettings || { user: {} },
+          maxDuration: params.maxDuration || "900s",
+          recordingEnabled: params.recordingEnabled ?? true,
+          initialMessages: params.initialMessages || [],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ultravox API Error (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json();
+      return {
+        call_id: data.callId,
+        join_url: data.joinUrl,
+        status: data.status,
+        _raw: data,
+      };
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("[ULTRAVOX BRIDGE] Error creating call:", msg);
+      throw error;
+    }
+  }
+
+  /**
    * List all agents.
    * Endpoint: GET /api/agents
    */

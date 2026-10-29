@@ -1253,6 +1253,19 @@ export class Orchestrator {
             targetAgentId = (vAgent as any).provider_agent_id || targetAgentId;
             agentName = (vAgent as any).name || agentName;
           }
+        } else {
+          // Si no se especificó agentId en el nodo, buscar el agente más reciente del tenant
+          const { data: defaultAgent } = await supabase
+            .from("voice_agents")
+            .select("provider_agent_id, name")
+            .eq("tenant_id", tenantId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (defaultAgent?.provider_agent_id) {
+            targetAgentId = defaultAgent.provider_agent_id;
+            agentName = defaultAgent.name || agentName;
+          }
         }
 
         const templateContext: Record<string, unknown> = {
@@ -1301,28 +1314,37 @@ export class Orchestrator {
           const sipUri = `sip:${toPhone}@${sipDomain}`;
 
           console.log(
-            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId} | URI: ${sipUri} | From: ${sipCallerId} | User: ${sipUsername}`
+            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId || "INLINE"} | URI: ${sipUri} | From: ${sipCallerId} | User: ${sipUsername}`
           );
 
-          const sipCallResult = await ultravoxBridge.createAgentCall(
-            targetAgentId,
-            {
-              templateContext,
-              medium: {
-                sip: {
-                  outgoing: {
-                    to: sipUri,
-                    from: sipCallerId || toPhone,
-                    ...(sipUsername ? { username: sipUsername } : {}),
-                    ...(sipPassword ? { password: sipPassword } : {}),
-                  },
+          const callPayload = {
+            templateContext,
+            medium: {
+              sip: {
+                outgoing: {
+                  to: sipUri,
+                  from: sipCallerId || toPhone,
+                  ...(sipUsername ? { username: sipUsername } : {}),
+                  ...(sipPassword ? { password: sipPassword } : {}),
                 },
               },
-              firstSpeakerSettings: sipFirstSpeaker === "agent" ? { agent: {} } : { user: {} },
-              recordingEnabled: true,
             },
-            { apiKey: uApiKey }
-          );
+            firstSpeakerSettings: sipFirstSpeaker === "agent" ? { agent: {} } : { user: {} },
+            recordingEnabled: true,
+          };
+
+          const sipCallResult = targetAgentId
+            ? await ultravoxBridge.createAgentCall(targetAgentId, callPayload, { apiKey: uApiKey })
+            : await ultravoxBridge.createCall(
+                {
+                  systemPrompt:
+                    conf?.prompt ||
+                    conf?.systemPrompt ||
+                    "Eres un asistente de voz profesional de LinkStation.",
+                  ...callPayload,
+                },
+                { apiKey: uApiKey }
+              );
 
           console.log(
             `[ORCHESTRATOR] ✅ SIP call initiated. Call ID: ${sipCallResult?.call_id || "N/A"}`
