@@ -235,24 +235,28 @@ async function handleWebhook(
       (payload.eventId && !telefono && !nombre);
 
     if (isVerificationPing && !telefono) {
-      // Registrar log de verificación exitosa en orchestration_logs
-      await (supabase as any).from("orchestration_logs").insert({
-        tenant_id: workflow.tenant_id,
-        workflow_id: workflowId,
-        step_number: 0,
-        action_type: "WEBHOOK_TRIGGER",
-        result: "SUCCESS",
-        metadata: {
-          path,
-          method: req.method,
-          node_id: nodeId,
-          payload,
-          verification: true,
-          info: "Test o Ping de verificación de Tally / Webhook validado exitosamente",
-          received_at: new Date().toISOString(),
-        },
-        executed_at: new Date().toISOString(),
-      });
+      // Registrar log de verificación de forma no bloqueante
+      try {
+        await (supabase as any).from("orchestration_logs").insert({
+          tenant_id: workflow.tenant_id,
+          workflow_id: workflowId,
+          step_number: 0,
+          action_type: "WEBHOOK_TRIGGER",
+          result: "SUCCESS",
+          metadata: {
+            path,
+            method: req.method,
+            node_id: nodeId,
+            payload,
+            verification: true,
+            info: "Test o Ping de verificación de Tally / Webhook validado exitosamente",
+            received_at: new Date().toISOString(),
+          },
+          executed_at: new Date().toISOString(),
+        });
+      } catch (logErr) {
+        console.warn("[WEBHOOK] Notice: could not persist ping to orchestration_logs:", logErr);
+      }
 
       return NextResponse.json({
         success: true,
@@ -267,55 +271,113 @@ async function handleWebhook(
       (tallyData.responseId as string | undefined) ??
       `wh_${nodeId}_${Date.now()}`;
 
-    // Standard Lead Upsert
-    const { data: lead, error: leadError } = (await supabase
-      .from("lead")
-      .upsert(
-        {
+    // Ingest Lead safely without relying on non-existent composite unique constraints
+    let lead: Lead | null = null;
+
+    // Buscar si ya existe lead con este teléfono o id_lead_externo para este tenant
+    if (telefono && telefono !== "N/A") {
+      const { data: found } = await supabase
+        .from("lead")
+        .select("*")
+        .eq("tenant_id", workflow.tenant_id)
+        .eq("telefono", telefono)
+        .maybeSingle();
+      if (found) lead = found as Lead;
+    }
+
+    if (!lead && idLeadExterno) {
+      const { data: found } = await supabase
+        .from("lead")
+        .select("*")
+        .eq("tenant_id", workflow.tenant_id)
+        .eq("id_lead_externo", idLeadExterno)
+        .maybeSingle();
+      if (found) lead = found as Lead;
+    }
+
+    const nowIso = new Date().toISOString();
+
+    if (lead) {
+      // Actualizar datos del lead existente
+      const existingMeta = (lead.metadata as Record<string, unknown>) ?? {};
+      const { data: updated, error: updErr } = await supabase
+        .from("lead")
+        .update({
+          nombre: nombre ?? lead.nombre,
+          email: email ?? lead.email,
+          metadata: {
+            ...existingMeta,
+            ...extractedVariables,
+            webhook_path: path,
+            webhook_node_id: nodeId,
+            last_webhook_received_at: nowIso,
+          },
+          fecha_actualizacion: nowIso,
+        })
+        .eq("id", lead.id)
+        .select()
+        .single();
+
+      if (updErr) {
+        console.warn("[WEBHOOK] Warning updating lead, keeping original:", updErr);
+      } else if (updated) {
+        lead = updated as Lead;
+      }
+    } else {
+      // Insertar nuevo lead
+      const { data: inserted, error: insErr } = await supabase
+        .from("lead")
+        .insert({
           tenant_id: workflow.tenant_id,
           nombre: nombre ?? "Referido Webhook",
           telefono: telefono || "N/A",
           email,
           id_lead_externo: idLeadExterno,
+          origen: "webhook",
           metadata: {
             ...extractedVariables,
             webhook_path: path,
             webhook_node_id: nodeId,
-            received_at: new Date().toISOString(),
+            received_at: nowIso,
           },
-          fecha_actualizacion: new Date().toISOString(),
-        },
-        { onConflict: "tenant_id, id_lead_externo" }
-      )
-      .select()
-      .single()) as { data: Lead | null; error: unknown };
+          fecha_creacion: nowIso,
+          fecha_actualizacion: nowIso,
+        })
+        .select()
+        .single();
 
-    if (leadError || !lead) {
-      console.error("[WEBHOOK] Lead ingestion error:", leadError);
-      throw leadError ?? new Error("Lead upsert returned null");
+      if (insErr || !inserted) {
+        console.error("[WEBHOOK] Lead insert failed:", insErr);
+        throw insErr ?? new Error("Lead insert returned null");
+      }
+      lead = inserted as Lead;
     }
 
-    // Registrar log de éxito de entrada en orchestration_logs
-    await (supabase as any).from("orchestration_logs").insert({
-      tenant_id: workflow.tenant_id,
-      workflow_id: workflowId,
-      step_number: 0,
-      action_type: "WEBHOOK_TRIGGER",
-      result: "SUCCESS",
-      lead_id: lead.id,
-      metadata: {
-        path,
-        method: req.method,
-        node_id: nodeId,
-        payload,
-        extracted_phone: telefono,
-        extracted_name: nombre,
-        lead_name: lead.nombre,
-        lead_phone: lead.telefono,
-        received_at: new Date().toISOString(),
-      },
-      executed_at: new Date().toISOString(),
-    });
+    // Registrar log de éxito de entrada en orchestration_logs de forma no bloqueante
+    try {
+      await (supabase as any).from("orchestration_logs").insert({
+        tenant_id: workflow.tenant_id,
+        workflow_id: workflowId,
+        step_number: 0,
+        action_type: "WEBHOOK_TRIGGER",
+        result: "SUCCESS",
+        lead_id: lead.id,
+        metadata: {
+          path,
+          method: req.method,
+          node_id: nodeId,
+          payload,
+          extracted_phone: telefono,
+          extracted_name: nombre,
+          lead_name: lead.nombre,
+          lead_phone: lead.telefono,
+          received_at: nowIso,
+        },
+        executed_at: nowIso,
+      });
+    } catch (logErr) {
+      console.warn("[WEBHOOK] Notice: could not persist to orchestration_logs:", logErr);
+    }
 
     // 6. Trigger Orchestration specifically from this Webhook Node (if phone is present)
     if (telefono && telefono !== "N/A") {
