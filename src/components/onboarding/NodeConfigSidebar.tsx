@@ -1623,6 +1623,160 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                 </div>
               </div>
             </div>
+
+            {/* ── SIP / TELEFONÍA OUTBOUND (Ultravox directo) ──────────────── */}
+            <div className="space-y-4 border-t border-white/5 pt-4">
+              {/* Toggle header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10">
+                    <Phone className="h-3.5 w-3.5 text-violet-400" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black tracking-widest text-violet-300 uppercase">
+                      SIP Directo (Ultravox)
+                    </p>
+                    <p className="text-[9px] text-white/30">
+                      Llama sin Twilio con tu proveedor SIP
+                    </p>
+                  </div>
+                </div>
+                <button
+                  title="Activar SIP Outbound"
+                  onClick={() => setConfig({ ...config, sip_enabled: !config.sip_enabled })}
+                  className={cn(
+                    "relative h-5 w-10 rounded-full transition-all",
+                    config.sip_enabled ? "bg-violet-500" : "bg-white/10"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "absolute top-1 h-3 w-3 rounded-full bg-white transition-all",
+                      config.sip_enabled ? "left-6" : "left-1"
+                    )}
+                  />
+                </button>
+              </div>
+
+              {Boolean(config.sip_enabled) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="space-y-4 overflow-hidden rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4"
+                >
+                  {/* Info banner */}
+                  <div className="flex items-start gap-2 rounded-xl border border-violet-500/10 bg-black/40 p-3">
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-400" />
+                    <p className="text-[9px] leading-relaxed text-white/50">
+                      Ultravox llamará directamente a tu troncal SIP para hacer la llamada outbound.
+                      Ingresa las credenciales de tu proveedor SIP (Conectabit, VoIP.ms, etc.).
+                      No se necesita Twilio Voice.
+                    </p>
+                  </div>
+
+                  {/* SIP Domain */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
+                      Dominio SIP
+                    </label>
+                    <input
+                      id="sip-domain"
+                      value={(config.sip_domain as string) || ""}
+                      onChange={(e) => setConfig({ ...config, sip_domain: e.target.value })}
+                      placeholder="sip.tuproveedorsip.com"
+                      className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
+                    />
+                    <p className="px-1 text-[9px] text-white/25 italic">
+                      Ej: <code className="text-violet-400">sip.conectabit.com</code> · <code className="text-violet-400">sip.voip.ms</code>
+                    </p>
+                  </div>
+
+                  {/* SIP Username & Password */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
+                        Usuario SIP
+                      </label>
+                      <input
+                        id="sip-username"
+                        value={(config.sip_username as string) || ""}
+                        onChange={(e) => setConfig({ ...config, sip_username: e.target.value })}
+                        placeholder="usuario_sip"
+                        className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
+                        Contraseña SIP
+                      </label>
+                      <input
+                        id="sip-password"
+                        type="password"
+                        value={(config.sip_password as string) || ""}
+                        onChange={(e) => setConfig({ ...config, sip_password: e.target.value })}
+                        placeholder="••••••••"
+                        className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Caller ID */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
+                      Caller ID (Número de Salida)
+                    </label>
+                    <input
+                      id="sip-caller-id"
+                      value={(config.sip_caller_id as string) || ""}
+                      onChange={(e) => setConfig({ ...config, sip_caller_id: e.target.value })}
+                      placeholder="+52155XXXXXXXX"
+                      className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
+                    />
+                    <p className="px-1 text-[9px] text-white/25 italic">
+                      Número que verá el destinatario en pantalla (con código de país, ej: +52…).
+                    </p>
+                  </div>
+
+                  {/* Preview of generated SIP URI */}
+                  {(config.sip_domain as string) && (
+                    <div className="rounded-xl border border-violet-500/10 bg-black/60 p-3">
+                      <p className="mb-1 text-[9px] font-black tracking-widest text-violet-400/60 uppercase">
+                        URI SIP generada
+                      </p>
+                      <code className="break-all font-mono text-[10px] text-violet-300/70">
+                        {"sip:{lead.telefono}@"}{(config.sip_domain as string) || "dominio.sip"}
+                      </code>
+                    </div>
+                  )}
+
+                  {/* firstSpeaker setting */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
+                      Primer Turno de Habla
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["agent", "user"] as const).map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setConfig({ ...config, sip_first_speaker: s })}
+                          className={cn(
+                            "h-10 rounded-xl border text-[10px] font-black uppercase transition-all",
+                            (config.sip_first_speaker || "user") === s
+                              ? "border-violet-500/40 bg-violet-500/20 text-violet-300"
+                              : "border-white/10 bg-white/5 text-white/30 hover:text-white/60"
+                          )}
+                        >
+                          {s === "agent" ? "🤖 Agente habla" : "👤 Esperar respuesta"}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="px-1 text-[9px] text-white/25 italic">
+                      Para llamadas outbound usa &quot;Esperar respuesta&quot; (estándar SIP).
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </div>
         )}
 

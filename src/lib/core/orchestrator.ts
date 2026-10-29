@@ -1267,6 +1267,73 @@ export class Orchestrator {
           ...((lead.metadata as Record<string, unknown>) ?? {}),
         };
 
+        // ── SIP DIRECTO (sin Twilio) ────────────────────────────────────────
+        const sipEnabled = Boolean(conf?.sip_enabled);
+        const sipDomain = (conf?.sip_domain as string) || tenantConf?.telephony?.sip?.domain;
+        const sipUsername = (conf?.sip_username as string) || tenantConf?.telephony?.sip?.username;
+        const sipPassword = (conf?.sip_password as string) || tenantConf?.telephony?.sip?.password;
+        const sipCallerId = (conf?.sip_caller_id as string) || tenantConf?.telephony?.fromNumber;
+        const sipFirstSpeaker = (conf?.sip_first_speaker as string) || "user";
+
+        if (sipEnabled && sipDomain) {
+          // Build SIP URI:  sip:+521234567890@sip.proveedor.com
+          const toPhone = lead.telefono || "";
+          const sipUri = `sip:${toPhone}@${sipDomain}`;
+
+          console.log(
+            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId} | URI: ${sipUri} | From: ${sipCallerId}`
+          );
+
+          const sipCallResult = await ultravoxBridge.createAgentCall(
+            targetAgentId,
+            {
+              templateContext,
+              medium: {
+                sip: {
+                  outgoing: {
+                    to: sipUri,
+                    from: sipCallerId || toPhone,
+                    ...(sipUsername ? { username: sipUsername } : {}),
+                    ...(sipPassword ? { password: sipPassword } : {}),
+                  },
+                },
+              },
+              firstSpeakerSettings: sipFirstSpeaker === "agent" ? { agent: {} } : { user: {} },
+              recordingEnabled: true,
+            },
+            { apiKey: uApiKey }
+          );
+
+          console.log(
+            `[ORCHESTRATOR] ✅ SIP call initiated. Call ID: ${sipCallResult?.call_id || "N/A"}`
+          );
+
+          // Registrar en llamadas para trazabilidad
+          try {
+            await supabase.from("llamadas").insert({
+              tenant_id: tenantId,
+              id_lead: lead.id,
+              tipo_agente: "VOICE_SIP",
+              nombre_agente: agentName,
+              estado_llamada: "IN_PROGRESS",
+              fecha_inicio: new Date().toISOString(),
+              metadata: {
+                workflow_id,
+                node_id: conf?.node_id,
+                phone: toPhone,
+                sip_uri: sipUri,
+                sip_domain: sipDomain,
+                call_id: sipCallResult?.call_id,
+              },
+            });
+          } catch (e) {
+            console.warn("[ORCHESTRATOR] Notice: could not write SIP call to llamadas table:", e);
+          }
+
+          break; // SIP handled — skip Twilio path
+        }
+
+        // ── TWILIO / TELEFONY FACTORY (default) ──────────────────────────────
         const ultravoxRes = await ultravoxBridge.createAgentCall(
           targetAgentId,
           {
