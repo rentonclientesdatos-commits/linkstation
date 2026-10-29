@@ -78,6 +78,62 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
   const [isExtractingTemplate, setIsExtractingTemplate] = useState(false);
   const [extractSuccess, setExtractSuccess] = useState<string | null>(null);
 
+  // Estados para prueba en vivo de llamada SIP (Ultravox + Conectabit)
+  const [testPhone, setTestPhone] = useState("");
+  const [isCallingTest, setIsCallingTest] = useState(false);
+  const [testCallResult, setTestCallResult] = useState<{
+    success: boolean;
+    call_id?: string;
+    message?: string;
+    error?: string;
+  } | null>(null);
+
+  const handleTestSIPCall = async () => {
+    if (!testPhone) {
+      alert("Por favor ingresa un número de teléfono para probar la llamada.");
+      return;
+    }
+    setIsCallingTest(true);
+    setTestCallResult(null);
+
+    try {
+      const res = await fetch("/api/orchestration/test-voice-call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId,
+          phone: testPhone,
+          agentId: config.agentId,
+          sip_domain: config.sip_domain,
+          sip_username: config.sip_username,
+          sip_password: config.sip_password,
+          sip_caller_id: config.sip_caller_id,
+          sip_first_speaker: config.sip_first_speaker || "user",
+          prompt: config.prompt,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || "Error al disparar llamada de prueba");
+      }
+
+      setTestCallResult({
+        success: true,
+        call_id: data.call_id,
+        message: data.message || "¡Llamada iniciada exitosamente en Ultravox!",
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setTestCallResult({
+        success: false,
+        error: msg,
+      });
+    } finally {
+      setIsCallingTest(false);
+    }
+  };
+
   const handleFileUploadForTemplate = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1793,6 +1849,98 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                     <p className="px-1 text-[9px] text-white/25 italic">
                       Para llamadas outbound usa &quot;Esperar respuesta&quot; (estándar SIP).
                     </p>
+                  </div>
+
+                  {/* ── BOTÓN PROBAR LLAMADA SIP (Ultravox + Conectabit) ── */}
+                  <div className="space-y-3 rounded-2xl border border-violet-500/30 bg-violet-950/20 p-3.5 shadow-lg shadow-violet-950/20">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/20">
+                        <Phone className="h-3 w-3 text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black tracking-widest text-emerald-300 uppercase">
+                          Probar Llamada SIP en Vivo
+                        </p>
+                        <p className="text-[9px] text-white/40">
+                          Dispara una llamada real a tu teléfono vía Ultravox + Conectabit
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black tracking-widest text-violet-300/70 uppercase">
+                        Teléfono de prueba (con código de país)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="test-sip-phone"
+                          value={testPhone}
+                          onChange={(e) => setTestPhone(e.target.value)}
+                          placeholder="+569XXXXXXXX"
+                          className="h-10 flex-1 rounded-xl border border-violet-500/30 bg-black/50 px-3.5 font-mono text-xs text-white outline-none placeholder:text-white/20 focus:border-violet-400 focus:ring-1 focus:ring-violet-500/40"
+                        />
+                        <button
+                          type="button"
+                          disabled={isCallingTest}
+                          onClick={handleTestSIPCall}
+                          className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 text-[10px] font-black tracking-wider text-white uppercase shadow-md shadow-emerald-950/40 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 transition-all"
+                        >
+                          {isCallingTest ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <span>Llamando...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Phone className="h-3.5 w-3.5" />
+                              <span>Llamar Ahora</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <p className="px-1 text-[9px] text-white/30 italic">
+                        Ej: <code className="text-emerald-400">+56912345678</code> o <code className="text-emerald-400">+5215512345678</code>
+                      </p>
+                    </div>
+
+                    {/* Resultado en vivo */}
+                    {testCallResult && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={cn(
+                          "rounded-xl border p-3 text-[10px]",
+                          testCallResult.success
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
+                            : "border-red-500/30 bg-red-500/10 text-red-200"
+                        )}
+                      >
+                        {testCallResult.success ? (
+                          <div className="space-y-1">
+                            <p className="font-bold flex items-center gap-1.5 text-emerald-300">
+                              <Check className="h-3.5 w-3.5" />
+                              ¡Llamada disparada con éxito!
+                            </p>
+                            <p className="text-[9px] opacity-80">{testCallResult.message}</p>
+                            {testCallResult.call_id && (
+                              <p className="font-mono text-[9px] text-emerald-400">
+                                Call ID: {testCallResult.call_id}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <p className="font-bold flex items-center gap-1.5 text-red-300">
+                              <X className="h-3.5 w-3.5" />
+                              Error al iniciar llamada
+                            </p>
+                            <p className="font-mono text-[9px] text-red-300/80 break-words">
+                              {testCallResult.error}
+                            </p>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
                   </div>
                 </motion.div>
               )}
