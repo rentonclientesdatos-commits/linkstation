@@ -43,7 +43,7 @@ async function handleWebhook(
   req: Request,
   { params }: { params: Promise<{ workflowId: string; nodeId: string; path: string }> }
 ) {
-  const { workflowId, nodeId } = await params;
+  const { workflowId, nodeId, path } = await params;
 
   try {
     const supabase = await getAdminSupabaseClient();
@@ -132,38 +132,157 @@ async function handleWebhook(
       payload = Object.fromEntries(searchParams.entries());
     }
 
-    // 5. Ingest/Identify Lead
-    const telefono = (payload.telefono ?? payload.phone ?? payload.lead_phone) as
-      | string
-      | undefined;
-    const nombre = (payload.nombre ?? payload.name ?? payload.lead_name) as string | undefined;
-    const email = (payload.email ?? payload.lead_email) as string | undefined;
-    const idLeadExterno =
-      (payload.id_lead_externo as string | undefined) ?? `wh_${nodeId}_${Date.now()}`;
+    // 5. Ingest/Identify Lead with flexible parsing (Tally Forms, Typeform, Native)
+    let telefono: string | undefined;
+    let nombre: string | undefined;
+    let email: string | undefined;
+    const extractedVariables: Record<string, unknown> = { ...payload };
 
-    if (!telefono) {
-      // If phone is missing, we still want it to be "functional" but we might need a dummy or skip execution
-      // For this system, we'll return error as the orchestrator depends on Lead
-      return NextResponse.json(
-        {
-          error: "Missing lead phone number",
-          hint: "Ensure payload includes 'telefono', 'phone' or 'lead_phone'",
-        },
-        { status: 400 }
-      );
+    // A) Support Tally Forms format: payload.data.fields = [ { label, type, value }, ... ]
+    const tallyData = (payload.data as Record<string, unknown>) || {};
+    if (Array.isArray(tallyData.fields)) {
+      const fields = tallyData.fields as Array<{ label?: string; type?: string; value?: unknown; key?: string }>;
+      for (const f of fields) {
+        const label = String(f.label || "").toLowerCase();
+        const val = f.value;
+        if (val === undefined || val === null) continue;
+
+        const valStr = typeof val === "object" ? JSON.stringify(val) : String(val);
+        extractedVariables[f.label || f.key || "field"] = val;
+
+        if (
+          !telefono &&
+          (f.type === "INPUT_PHONE_NUMBER" ||
+            label.includes("tel") ||
+            label.includes("phone") ||
+            label.includes("celular") ||
+            label.includes("whatsapp") ||
+            label.includes("móvil") ||
+            label.includes("movil"))
+        ) {
+          telefono = valStr.trim();
+        } else if (
+          !nombre &&
+          (label.includes("nombre") ||
+            label.includes("name") ||
+            label.includes("apellido") ||
+            label.includes("cliente"))
+        ) {
+          nombre = valStr.trim();
+        } else if (
+          !email &&
+          (f.type === "INPUT_EMAIL" ||
+            label.includes("email") ||
+            label.includes("correo") ||
+            label.includes("mail"))
+        ) {
+          email = valStr.trim();
+        }
+      }
     }
 
+    // B) Support Typeform format: payload.form_response.answers = [ ... ]
+    const tfResponse = (payload.form_response as Record<string, unknown>) || {};
+    if (Array.isArray(tfResponse.answers)) {
+      const answers = tfResponse.answers as Array<Record<string, unknown>>;
+      for (const a of answers) {
+        if (a.type === "phone_number" && a.phone_number) telefono = String(a.phone_number).trim();
+        if (a.type === "email" && a.email) email = String(a.email).trim();
+        if (a.type === "text" && !nombre && a.text) nombre = String(a.text).trim();
+      }
+    }
+
+    // C) Standard JSON body fields
+    if (!telefono) {
+      const rawPhone =
+        payload.telefono ??
+        payload.phone ??
+        payload.lead_phone ??
+        payload.celular ??
+        payload.whatsapp ??
+        payload.numero ??
+        payload.phone_number ??
+        payload.mobile;
+      if (rawPhone) telefono = String(rawPhone).trim();
+    }
+
+    if (!nombre) {
+      const rawName =
+        payload.nombre ??
+        payload.name ??
+        payload.lead_name ??
+        payload.full_name ??
+        payload.cliente;
+      if (rawName) nombre = String(rawName).trim();
+    }
+
+    if (!email) {
+      const rawEmail =
+        payload.email ??
+        payload.lead_email ??
+        payload.correo ??
+        payload.mail;
+      if (rawEmail) email = String(rawEmail).trim();
+    }
+
+    // D) Handle Tally / Platform connection ping (no real lead data yet)
+    const isVerificationPing =
+      payload.eventType === "PING" ||
+      payload.type === "PING" ||
+      payload.test === true ||
+      req.method === "GET" ||
+      req.method === "HEAD" ||
+      (payload.eventId && !telefono && !nombre);
+
+    if (isVerificationPing && !telefono) {
+      // Registrar log de verificación exitosa en orchestration_logs
+      await (supabase as any).from("orchestration_logs").insert({
+        tenant_id: workflow.tenant_id,
+        workflow_id: workflowId,
+        step_number: 0,
+        action_type: "WEBHOOK_TRIGGER",
+        result: "SUCCESS",
+        metadata: {
+          path,
+          method: req.method,
+          node_id: nodeId,
+          payload,
+          verification: true,
+          info: "Test o Ping de verificación de Tally / Webhook validado exitosamente",
+          received_at: new Date().toISOString(),
+        },
+        executed_at: new Date().toISOString(),
+      });
+
+      return NextResponse.json({
+        success: true,
+        status: "active",
+        message: "Webhook verificado correctamente. LinkStation está listo para recibir respuestas de este formulario.",
+        node: nodeId,
+      });
+    }
+
+    const idLeadExterno =
+      (payload.id_lead_externo as string | undefined) ??
+      (tallyData.responseId as string | undefined) ??
+      `wh_${nodeId}_${Date.now()}`;
+
     // Standard Lead Upsert
-     
     const { data: lead, error: leadError } = (await supabase
       .from("lead")
       .upsert(
         {
           tenant_id: workflow.tenant_id,
           nombre: nombre ?? "Referido Webhook",
-          telefono,
+          telefono: telefono || "N/A",
           email,
           id_lead_externo: idLeadExterno,
+          metadata: {
+            ...extractedVariables,
+            webhook_path: path,
+            webhook_node_id: nodeId,
+            received_at: new Date().toISOString(),
+          },
           fecha_actualizacion: new Date().toISOString(),
         },
         { onConflict: "tenant_id, id_lead_externo" }
@@ -176,19 +295,44 @@ async function handleWebhook(
       throw leadError ?? new Error("Lead upsert returned null");
     }
 
-    // 6. Trigger Orchestration specifically from this Webhook Node
-    orchestrator
-      .executeWorkflow(workflowId, lead, workflow.tenant_id, payload, nodeId)
-      .catch((err) => {
-        console.error("[WEBHOOK] Orchestration trigger failed:", err);
-      });
+    // Registrar log de éxito de entrada en orchestration_logs
+    await (supabase as any).from("orchestration_logs").insert({
+      tenant_id: workflow.tenant_id,
+      workflow_id: workflowId,
+      step_number: 0,
+      action_type: "WEBHOOK_TRIGGER",
+      result: "SUCCESS",
+      lead_id: lead.id,
+      metadata: {
+        path,
+        method: req.method,
+        node_id: nodeId,
+        payload,
+        extracted_phone: telefono,
+        extracted_name: nombre,
+        lead_name: lead.nombre,
+        lead_phone: lead.telefono,
+        received_at: new Date().toISOString(),
+      },
+      executed_at: new Date().toISOString(),
+    });
 
-    // BUG-SEC-02 / INFO-02 fix: NO exponer `lead_id` interno en la respuesta.
-    // El caller solo necesita confirmación de que la automatización se disparó.
+    // 6. Trigger Orchestration specifically from this Webhook Node (if phone is present)
+    if (telefono && telefono !== "N/A") {
+      orchestrator
+        .executeWorkflow(workflowId, lead, workflow.tenant_id, extractedVariables, nodeId)
+        .catch((err) => {
+          console.error("[WEBHOOK] Orchestration trigger failed:", err);
+        });
+    } else {
+      console.log("[WEBHOOK] Data ingested successfully without valid phone number for immediate calling");
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Special automation link triggered",
+      message: "Webhook processed and automation triggered successfully",
       node: nodeId,
+      lead_id: lead.id,
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);

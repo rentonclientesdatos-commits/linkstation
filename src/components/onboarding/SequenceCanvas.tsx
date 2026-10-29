@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
@@ -39,10 +39,12 @@ import {
   UltravoxTriggerNode,
 } from "./nodes/TriggerNodes";
 import { NodeConfigSidebar } from "./NodeConfigSidebar";
+import { WorkflowLogsDrawer } from "./WorkflowLogsDrawer";
 import {
   Save,
   Rocket,
   Trash2,
+  Terminal,
   Phone,
   MessageSquare,
   BrainCircuit,
@@ -178,6 +180,7 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const { setViewport } = useReactFlow();
 
@@ -560,6 +563,22 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
 
           <div className="mx-1 h-4 w-px bg-white/[0.07]" />
 
+          {/* Live Logs & Inbound Monitor */}
+          <button
+            onClick={() => setIsLogsOpen(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-orange-500/30 bg-orange-500/10 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wide text-orange-400 transition-all hover:border-orange-500/60 hover:bg-orange-500/20 active:scale-95"
+            title="Ver logs y peticiones entrantes en vivo"
+          >
+            <Terminal className="h-3.5 w-3.5" />
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-orange-500"></span>
+            </span>
+            Logs
+          </button>
+
+          <div className="mx-1 h-4 w-px bg-white/[0.07]" />
+
           {/* Deploy CTA */}
           <button
             onClick={onDeploy}
@@ -645,6 +664,7 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         <NodeConfigSidebar
           key={selectedNode.id}
           node={selectedNode}
+          tenantId={tenantId}
           workflowId={workflowId}
           onSave={onConfigSave}
           onClose={() => setSelectedNode(null)}
@@ -674,7 +694,24 @@ export function SequenceCanvas({ tenantId, workflowId }: { tenantId: string; wor
         </div>
       </div>
 
-      {/* â”€â”€ Dynamic Island keyframe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Workflow & Inbound Logs Drawer ───────────────────────────────── */}
+      <WorkflowLogsDrawer
+        tenantId={tenantId}
+        workflowId={workflowId}
+        isOpen={isLogsOpen}
+        onClose={() => setIsLogsOpen(false)}
+        currentWebhookUrl={
+          (() => {
+            const whNode = nodes.find((n) => n.type === "webhookTrigger");
+            if (!whNode) return undefined;
+            const p = (whNode.data?.config as any)?.path || "webhook";
+            const host = typeof window !== "undefined" ? window.location.origin : "";
+            return `${host}/api/webhooks/workflow/${workflowId}/${p}/${whNode.id}`;
+          })()
+        }
+      />
+
+      {/* ── Dynamic Island keyframe ────────────────────────────────────────── */}
       <style>{`
         @keyframes dyn-island-drop {
           from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.97); }

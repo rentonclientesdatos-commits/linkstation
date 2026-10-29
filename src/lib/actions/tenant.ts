@@ -390,6 +390,10 @@ export async function createTenant(tenant: Partial<Tenant> & { password?: string
       username: username || "",
       api_type: api_type || "internal",
       business_type: finalBusinessType,
+      // Todos los tenants nuevos deben tener orquestación habilitada por defecto.
+      // La migración 20260524000000 ya lo hizo para tenants existentes; aquí cerramos
+      // el gap para creaciones futuras. Ver tarea 1-09.
+      test_orchestrator_enabled: true,
     };
 
     const { data, error } = await serviceSupabase

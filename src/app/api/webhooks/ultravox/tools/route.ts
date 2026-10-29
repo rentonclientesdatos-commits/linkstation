@@ -6,7 +6,11 @@ import { Database } from "@/types/database";
 import { PdfService } from "@/lib/services/pdf-service";
 import { GoogleSheetsService } from "@/lib/services/google-sheets-service";
 
-export async function handleToolExecution(req: Request, explicitToolName?: string) {
+export async function handleToolExecution(
+  req: Request,
+  explicitToolName?: string,
+  explicitTenantId?: string
+) {
   try {
     const { searchParams } = new URL(req.url);
     const queryTool =
@@ -80,16 +84,106 @@ export async function handleToolExecution(req: Request, explicitToolName?: strin
 
     const call = payload.call;
 
-    console.log(`[ULTRAVOX TOOLS] Incoming function call: ${toolName}`, args);
+    console.log(`[ULTRAVOX TOOLS] Incoming function call: ${toolName}`, {
+      args,
+      query: Object.fromEntries(searchParams.entries()),
+    });
 
     const supabase = await getAdminSupabaseClient();
 
-    const metadata = call?.systemMetadata || call?.templateContext || {};
-    const leadId = metadata.lead_id;
-    const tenantId = metadata.tenant_id;
+    // ── Multi-tenant resolution ───────────────────────────────────────
+    // Priority: explicit path param > query param > headers > payload body > call metadata
+    let tenantId: string | undefined =
+      explicitTenantId ||
+      searchParams.get("tenant_id") ||
+      searchParams.get("tenantId") ||
+      searchParams.get("tenant") ||
+      (req.headers.get("x-tenant-id") ?? undefined) ||
+      (req.headers.get("tenant-id") ?? undefined) ||
+      (req.headers.get("x-tenant") ?? undefined) ||
+      payload.tenant_id ||
+      payload.tenantId ||
+      payload.tenant ||
+      args.tenant_id ||
+      args.tenantId;
 
-    if (!leadId || !tenantId) {
-      console.warn("[ULTRAVOX TOOLS] Missing lead_id or tenant_id in call metadata.");
+    const metadata = call?.systemMetadata || call?.templateContext || {};
+    if (!tenantId) {
+      tenantId = metadata.tenant_id;
+    }
+
+    let leadId: string | undefined =
+      metadata.lead_id || payload.lead_id || payload.leadId || args.lead_id || args.leadId;
+
+    // Smart fallback 1: reverse lookup by caller phone number
+    const callerPhone =
+      args.WhatsApp ||
+      args.whatsapp ||
+      args.telefono ||
+      args.phone ||
+      args.celular ||
+      payload.telefono ||
+      payload.phone ||
+      metadata.telefono ||
+      metadata.phone;
+
+    if ((!tenantId || !leadId) && callerPhone) {
+      const cleanPhone = String(callerPhone).replace(/[\s\-\(\)]/g, "");
+      const digits = cleanPhone.replace(/^\+/, "");
+      const { data: matchedLead } = await (supabase as any)
+        .from("lead")
+        .select("id, tenant_id")
+        .or(`telefono.eq.${cleanPhone},telefono.eq.+${digits},telefono.eq.${digits}`)
+        .order("fecha_actualizacion", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (matchedLead) {
+        leadId = leadId || matchedLead.id;
+        tenantId = tenantId || matchedLead.tenant_id;
+        console.log(`[ULTRAVOX TOOLS] Resolved tenant via phone reverse lookup:`, {
+          tenantId,
+          leadId,
+          callerPhone,
+        });
+      }
+    }
+
+    // Smart fallback 2: lookup by agent ID in voice_agents table
+    if (!tenantId && call?.agentId) {
+      const { data: matchedAgent } = await (supabase as any)
+        .from("voice_agents")
+        .select("tenant_id")
+        .or(`id.eq.${call.agentId},provider_agent_id.eq.${call.agentId}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (matchedAgent?.tenant_id) {
+        tenantId = matchedAgent.tenant_id;
+        console.log(`[ULTRAVOX TOOLS] Resolved tenant via voice_agents table:`, {
+          tenantId,
+          agentId: call.agentId,
+        });
+      }
+    }
+
+    // Smart fallback 3: single-tenant database instance
+    if (!tenantId) {
+      const { data: allTenants, count } = await (supabase as any)
+        .from("tenants")
+        .select("id", { count: "exact" })
+        .limit(2);
+
+      if (count === 1 && allTenants?.[0]?.id) {
+        tenantId = allTenants[0].id;
+        console.log(`[ULTRAVOX TOOLS] Single-tenant fallback resolved:`, { tenantId });
+      }
+    }
+
+    if (!tenantId) {
+      console.warn(
+        `[ULTRAVOX TOOLS] Missing tenant_id for tool call "${toolName}". Request will proceed with default tenant resolution.`
+      );
     }
 
     switch (toolName) {
@@ -114,38 +208,39 @@ export async function handleToolExecution(req: Request, explicitToolName?: strin
       case "guardar_lead":
       case "save_lead":
       case "save_contact":
+      case "registrar_datos_llamada":
         return await handleSaveLead(supabase, tenantId, leadId, args);
 
       case "book_appointment":
       case "agendar_cita":
-        return await handleBookAppointment(supabase, tenantId, leadId, args);
+        return await handleBookAppointment(supabase, tenantId || "", leadId || "", args);
 
       case "cancel_appointment":
       case "cancelar_cita":
-        return await handleCancelAppointment(supabase, tenantId ?? "", args);
+        return await handleCancelAppointment(supabase, tenantId || "", args);
 
       case "reschedule_appointment":
       case "reprogramar_cita":
-        return await handleRescheduleAppointment(supabase, tenantId ?? "", args);
+        return await handleRescheduleAppointment(supabase, tenantId || "", args);
 
       case "check_availability":
       case "consultar_disponibilidad":
-        return await handleCheckAvailability(supabase, tenantId, args);
+        return await handleCheckAvailability(supabase, tenantId || "", args);
 
       case "get_lead_info":
       case "consultar_datos":
-        return await handleGetLeadInfo(supabase, leadId);
+        return await handleGetLeadInfo(supabase, leadId || "");
 
       // ── Workflow 2: Google Sheets data lookup ──────────────────────
       case "buscar_repuestos":
       case "search_parts":
       case "consultar_repuestos":
-        return await handleBuscarRepuestos(supabase, tenantId, args);
+        return await handleBuscarRepuestos(supabase, tenantId || "", args);
 
       case "obtener_precios_cotizacion":
       case "get_quotation_data":
       case "consultar_precios":
-        return await handleObtenerPreciosCotizacion(supabase, tenantId, args);
+        return await handleObtenerPreciosCotizacion(supabase, tenantId || "", args);
 
       // ── Workflow 3: Agendar visita para arriendo ───────────────────
       case "agendar_visita_arriendo":
@@ -163,8 +258,8 @@ export async function handleToolExecution(req: Request, explicitToolName?: strin
         return await handleEnviarWhatsApp(supabase, tenantId, leadId, args, call?.callId);
 
       default:
-        console.warn(`[ULTRAVOX TOOLS] Unknown tool called: ${toolName}`);
-        return NextResponse.json({ error: "Tool implementation not found" }, { status: 404 });
+        console.log(`[ULTRAVOX TOOLS] Generic tool dynamic handler: ${toolName}`);
+        return await handleGenericCustomTool(supabase, tenantId, leadId, toolName, args);
     }
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -395,8 +490,9 @@ async function handleSaveLead(
     console.log("[ULTRAVOX TOOL] Guardando lead dinámico:", { nombre, apellido, telefono, email, notas, args });
 
     // 1. Guardar en Supabase (tabla 'lead') - guardando TODOS los campos enviados por Ultravox
+    let savedLead: any = null;
     if (leadId) {
-      await (supabase as any).from("lead").update({
+      const { data } = await (supabase as any).from("lead").update({
         nombre: nombre || undefined,
         apellido: apellido || undefined,
         telefono: telefono || undefined,
@@ -407,9 +503,10 @@ async function handleSaveLead(
           capturado_por: "ultravox_ai",
           fecha_actualizacion: new Date().toISOString(),
         },
-      }).eq("id", leadId);
+      }).eq("id", leadId).select().single();
+      savedLead = data;
     } else {
-      await (supabase as any).from("lead").insert({
+      const { data } = await (supabase as any).from("lead").insert({
         tenant_id: effectiveTenantId,
         nombre,
         apellido,
@@ -423,7 +520,12 @@ async function handleSaveLead(
           capturado_por: "ultravox_ai",
           fecha_creacion: new Date().toISOString(),
         },
-      });
+      }).select().single();
+      savedLead = data;
+    }
+
+    if (savedLead && effectiveTenantId) {
+      await triggerUltravoxWorkflows(supabase, effectiveTenantId, savedLead, "guardar_datos_contacto", args);
     }
 
     // 2. Enviar a Google Sheets si está configurada la URL
@@ -484,10 +586,142 @@ async function handleSaveLead(
 
 async function resolveTenant(supabase: SupabaseClient<Database>, tenantId?: string): Promise<string> {
   if (tenantId) return tenantId;
-  const { data: jorklift } = await (supabase as any).from("tenants").select("id").eq("name", "jorklift").maybeSingle();
-  if (jorklift?.id) return jorklift.id;
+  const { data: allTenants, count } = await (supabase as any)
+    .from("tenants")
+    .select("id", { count: "exact" })
+    .limit(2);
+  if (count === 1 && allTenants?.[0]?.id) return allTenants[0].id;
   const { data: first } = await (supabase as any).from("tenants").select("id").limit(1).single();
-  return first?.id;
+  return first?.id || "";
+}
+
+/**
+ * Automatically triggers active orchestration workflows configured with `ultravoxTrigger`
+ * for the given tenant and tool.
+ */
+async function triggerUltravoxWorkflows(
+  supabase: SupabaseClient<Database>,
+  tenantId: string | undefined,
+  lead: any,
+  toolName: string,
+  args: Record<string, unknown>
+) {
+  if (!tenantId || !lead) return;
+  try {
+    const { data: graphs, error: graphErr } = await (supabase as any)
+      .from("orchestration_graphs")
+      .select("workflow_id, graph_data")
+      .eq("tenant_id", tenantId);
+
+    if (graphErr || !graphs || graphs.length === 0) {
+      console.log(`[ULTRAVOX AUTOMATION] No orchestration graphs found for tenant ${tenantId}`);
+      return;
+    }
+
+    const { orchestrator } = await import("@/lib/core/orchestrator");
+
+    for (const g of graphs) {
+      const nodes = g.graph_data?.nodes || [];
+      const triggerNode = nodes.find((n: any) => {
+        if (n.type !== "ultravoxTrigger") return false;
+        const configTool = n.data?.config?.tool_name;
+        if (!configTool || configTool === "all" || configTool === "*") return true;
+        return (
+          configTool.toLowerCase() === toolName.toLowerCase() ||
+          configTool === toolName
+        );
+      });
+
+      if (triggerNode) {
+        console.log(
+          `[ULTRAVOX AUTOMATION] 🚀 Disparando workflow ${g.workflow_id} (trigger: ${triggerNode.id}) para lead ${lead.id}`
+        );
+        orchestrator
+          .executeWorkflow(g.workflow_id, lead, tenantId, args, triggerNode.id)
+          .catch((err) => {
+            console.error(`[ULTRAVOX AUTOMATION] Error en ejecución de workflow ${g.workflow_id}:`, err);
+          });
+      }
+    }
+  } catch (err) {
+    console.error("[ULTRAVOX AUTOMATION] Error buscando workflows activos:", err);
+  }
+}
+
+/**
+ * Fallback handler for generic or custom tools defined dynamically by the user in Ultravox
+ */
+async function handleGenericCustomTool(
+  supabase: SupabaseClient<Database>,
+  tenantId: string | undefined,
+  leadId: string | undefined,
+  toolName: string,
+  args: Record<string, unknown>
+) {
+  try {
+    const effectiveTenantId = await resolveTenant(supabase, tenantId);
+    const nombre = (findArgByKeywords(args, ["nombre", "name", "cliente", "usuario"]) || "Prospecto") as string;
+    const telefono = (findArgByKeywords(args, ["telefono", "phone", "whatsapp", "celular", "numero"]) || "") as string;
+    const email = (findArgByKeywords(args, ["email", "correo", "mail"]) || "") as string;
+    const notas = (findArgByKeywords(args, ["notas", "motivo", "resumen", "detalles"]) || "") as string;
+
+    let savedLead: any = null;
+    if (leadId) {
+      const { data } = await (supabase as any)
+        .from("lead")
+        .update({
+          nombre: nombre !== "Prospecto" ? nombre : undefined,
+          telefono: telefono || undefined,
+          email: email || undefined,
+          metadata: {
+            ...args,
+            tool_name: toolName,
+            notas,
+            capturado_por: "ultravox_ai",
+            updated_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", leadId)
+        .select()
+        .single();
+      savedLead = data;
+    } else {
+      const { data } = await (supabase as any)
+        .from("lead")
+        .insert({
+          tenant_id: effectiveTenantId,
+          nombre,
+          telefono,
+          email: email || null,
+          origen: "ultravox",
+          status: "nuevo",
+          metadata: {
+            ...args,
+            tool_name: toolName,
+            notas,
+            capturado_por: "ultravox_ai",
+            captured_at: new Date().toISOString(),
+          },
+        })
+        .select()
+        .single();
+      savedLead = data;
+    }
+
+    if (savedLead && effectiveTenantId) {
+      await triggerUltravoxWorkflows(supabase, effectiveTenantId, savedLead, toolName, args);
+    }
+
+    return NextResponse.json({
+      success: true,
+      tool: toolName,
+      lead_id: savedLead?.id,
+      message: `Tool ${toolName} ejecutada exitosamente. Datos registrados en LinkStation.`,
+    });
+  } catch (error) {
+    console.error(`[ULTRAVOX GENERIC TOOL ERROR: ${toolName}]:`, error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
 }
 
 async function handleArriendoGruas(
@@ -503,7 +737,7 @@ async function handleArriendoGruas(
 
     console.log("[ULTRAVOX TOOL: Arriendo_de_Gruas] Recibido:", args);
 
-    await (supabase as any).from("lead").insert({
+    const { data: savedLead } = await (supabase as any).from("lead").insert({
       tenant_id: effectiveTenantId,
       nombre: empresa,
       telefono: telefono,
@@ -516,7 +750,11 @@ async function handleArriendoGruas(
         parameters: args,
         captured_at: new Date().toISOString(),
       },
-    });
+    }).select().single();
+
+    if (savedLead && effectiveTenantId) {
+      await triggerUltravoxWorkflows(supabase, effectiveTenantId, savedLead, "Arriendo_de_Gruas", args);
+    }
 
     return NextResponse.json({
       success: true,
@@ -541,7 +779,7 @@ async function handleServicioTecnico(
 
     console.log("[ULTRAVOX TOOL: Servicio_Tecnico] Recibido:", args);
 
-    await (supabase as any).from("lead").insert({
+    const { data: savedLead } = await (supabase as any).from("lead").insert({
       tenant_id: effectiveTenantId,
       nombre: empresa,
       telefono: telefono,
@@ -554,7 +792,11 @@ async function handleServicioTecnico(
         parameters: args,
         captured_at: new Date().toISOString(),
       },
-    });
+    }).select().single();
+
+    if (savedLead && effectiveTenantId) {
+      await triggerUltravoxWorkflows(supabase, effectiveTenantId, savedLead, "Servicio_Tecnico", args);
+    }
 
     return NextResponse.json({
       success: true,
@@ -712,6 +954,18 @@ async function handleCapturaCotizacion(
         .select("id")
         .single();
       activeLeadId = newLead?.id;
+    }
+
+    // 1.1 Trigger custom Ultravox workflows if defined in the canvas
+    if (activeLeadId && effectiveTenantId) {
+      const { data: savedLead } = await (supabase as any)
+        .from("lead")
+        .select("*")
+        .eq("id", activeLeadId)
+        .single();
+      if (savedLead) {
+        await triggerUltravoxWorkflows(supabase, effectiveTenantId, savedLead, "capturarDatosCotizacion", args);
+      }
     }
 
     // 2. Generate PDF and dispatch via WhatsApp (if phone exists) and Email (if email exists)

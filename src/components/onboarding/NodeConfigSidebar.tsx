@@ -30,6 +30,7 @@ import {
   FileDown,
   Sparkles,
   Loader2,
+  Activity,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -58,12 +59,13 @@ const DAYS_MAP = [
 
 interface NodeConfigSidebarProps {
   node: Node;
+  tenantId?: string;
   workflowId: string;
   onSave: (config: Record<string, unknown>) => void;
   onClose: () => void;
 }
 
-export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeConfigSidebarProps) {
+export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose }: NodeConfigSidebarProps) {
   // We use a key on this component from the parent to reset state when the node changes
   const [config, setConfig] = useState<Record<string, unknown>>(
     (node.data?.config as Record<string, unknown>) || {}
@@ -170,7 +172,7 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const webhookPath = (config.path as string) || "webhook";
-  const webhookUrl = `${baseUrl}/api/webhooks/${workflowId}/${webhookPath}/${node.id}`;
+  const webhookUrl = `${baseUrl}/api/webhooks/workflow/${workflowId}/${webhookPath}/${node.id}`;
 
   const type = node.type;
   const action = node.data?.action as string | undefined;
@@ -1282,8 +1284,20 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
                 </button>
               </div>
               <p className="px-1 text-[9px] text-white/20 italic">
-                Usa este enlace para enviar datos desde servicios externos.
+                Usa este enlace para enviar datos desde servicios externos (formularios, landing pages, typeforms, cURL, etc.).
               </p>
+
+              <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="h-3.5 w-3.5 text-orange-400" />
+                  <span className="text-[10px] font-black uppercase text-orange-400">
+                    Monitoreo en Vivo de Entradas
+                  </span>
+                </div>
+                <p className="text-[9px] text-white/60 leading-relaxed font-medium">
+                  Para verificar si entraron datos desde tu formulario en tiempo real y ver el JSON exacto recibido, haz clic en el botón <strong className="text-orange-400">LOGS</strong> de la barra superior.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4 border-t border-white/5 pt-2">
@@ -2118,121 +2132,285 @@ export function NodeConfigSidebar({ node, workflowId, onSave, onClose }: NodeCon
           </div>
         )}
 
-        {/* ── ULTRAVOX TRIGGER CONFIG ⭐ NUEVO ─────────────────────── */}
-        {type === "ultravoxTrigger" && (
-          <div className="space-y-5">
-            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/10 p-4">
-              <div className="mb-1 flex items-center gap-2">
-                <Phone className="h-4 w-4 text-violet-400" />
-                <span className="text-[10px] font-black tracking-tighter text-violet-400 uppercase">
-                  Disparador de Voz · Ultravox AI
-                </span>
-              </div>
-              <p className="text-[9px] leading-relaxed font-bold text-white/40">
-                Se activa en tiempo real cuando el agente de voz de Ultravox ejecuta la herramienta de captura de cotización durante la llamada telefónica.
-              </p>
-            </div>
+        {/* ── ULTRAVOX TRIGGER CONFIG ─────────────────────────────────── */}
+        {type === "ultravoxTrigger" && (() => {
+          const WEBHOOK_URL = "https://linkstationapp.vercel.app/api/webhooks/ultravox/tools";
 
-            <div className="space-y-2">
-              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
-                URL del Webhook (Tool Endpoint)
-              </label>
-              <div className="flex items-center gap-2">
+          // ── Registro central de schemas por tool name ──────────────
+          // Cada entrada refleja exactamente los args que maneja el backend (route.ts).
+          const TOOL_SCHEMAS: Record<string, { description: string; params: { name: string; desc: string; required: boolean }[] }> = {
+            capturarDatosCotizacion: {
+              description: "Captura los datos del cliente, repuestos y servicios para generar y enviar la cotización en PDF oficial por WhatsApp.",
+              params: [
+                { name: "Nombre_del_cliente",   desc: "Nombre completo del cliente",                         required: true  },
+                { name: "WhatsApp",              desc: "Teléfono con código de país (ej: +56912345678)",       required: true  },
+                { name: "Repuesto_solicitado_y_cantidad", desc: "Detalle de repuestos o piezas solicitadas", required: true  },
+                { name: "Datos_de_la_grua",      desc: "Modelo o tipo de maquinaria / grúa",                 required: false },
+                { name: "Comuna_o_Ciudad",        desc: "Ciudad o comuna para el despacho",                   required: false },
+                { name: "total",                  desc: "Monto o total cotizado estimado si aplica",           required: false },
+                { name: "Correo_electronico",     desc: "Email opcional del cliente",                         required: false },
+              ],
+            },
+            guardar_datos_contacto: {
+              description: "Guarda los datos de contacto del prospecto en la base de datos y los registra como lead.",
+              params: [
+                { name: "nombre",   desc: "Nombre completo del prospecto",                   required: true  },
+                { name: "telefono", desc: "Teléfono con código de país (ej: +56912345678)",   required: true  },
+                { name: "email",    desc: "Correo electrónico del prospecto",                 required: false },
+                { name: "notas",    desc: "Motivación, interés o resumen de la conversación", required: false },
+              ],
+            },
+            book_appointment: {
+              description: "Agenda una cita o visita en el calendario del equipo.",
+              params: [
+                { name: "date",  desc: "Fecha de la cita en formato YYYY-MM-DD",              required: true  },
+                { name: "time",  desc: "Hora de la cita en formato HH:MM (24h, zona local)",  required: false },
+                { name: "notes", desc: "Notas u observaciones adicionales para la cita",      required: false },
+              ],
+            },
+            cancel_appointment: {
+              description: "Cancela una cita existente por su ID.",
+              params: [
+                { name: "appointmentId", desc: "ID único de la cita a cancelar", required: true },
+              ],
+            },
+            reschedule_appointment: {
+              description: "Reprograma una cita existente a una nueva fecha y hora.",
+              params: [
+                { name: "appointmentId", desc: "ID único de la cita a reprogramar",            required: true  },
+                { name: "newDate",       desc: "Nueva fecha en formato YYYY-MM-DD",             required: true  },
+                { name: "newTime",       desc: "Nueva hora en formato HH:MM (24h, zona local)", required: false },
+              ],
+            },
+            check_availability: {
+              description: "Consulta la disponibilidad de horarios para una fecha específica.",
+              params: [
+                { name: "date", desc: "Fecha a consultar en formato YYYY-MM-DD", required: true },
+              ],
+            },
+            get_lead_info: {
+              description: "Obtiene los datos registrados del lead actual (nombre, programa, país).",
+              params: [],
+            },
+            enviar_whatsapp: {
+              description: "Envía un mensaje o enlace de grupo por WhatsApp al prospecto.",
+              params: [
+                { name: "link_grupo", desc: "Enlace del grupo de WhatsApp a compartir",  required: false },
+                { name: "mensaje",    desc: "Texto personalizado a enviar por WhatsApp",  required: false },
+              ],
+            },
+            buscar_repuestos: {
+              description: "Busca repuestos o piezas en la hoja de Google Sheets del cliente.",
+              params: [
+                { name: "query",  desc: "Nombre, código o descripción del repuesto a buscar", required: true  },
+                { name: "sheet",  desc: "Pestaña de la hoja a consultar (opcional)",            required: false },
+              ],
+            },
+            registrar_datos_llamada: {
+              description: "Registra o actualiza los datos capturados durante la llamada.",
+              params: [
+                { name: "nombre",   desc: "Nombre del prospecto",                               required: false },
+                { name: "telefono", desc: "Teléfono con código de país",                         required: false },
+                { name: "email",    desc: "Correo electrónico",                                  required: false },
+                { name: "notas",    desc: "Resumen o motivación capturada en la llamada",         required: false },
+              ],
+            },
+          };
+
+          // Aliases reconocidos por el backend → canónico
+          const ALIASES: Record<string, string> = {
+            capturar_datos_cotizacion: "capturarDatosCotizacion",
+            cotizacion: "capturarDatosCotizacion",
+            enviar_cotizacion: "capturarDatosCotizacion",
+            mandar_pdf: "capturarDatosCotizacion",
+            guardar_prospecto: "guardar_datos_contacto",
+            guardar_lead: "guardar_datos_contacto",
+            save_lead: "guardar_datos_contacto",
+            save_contact: "guardar_datos_contacto",
+            agendar_cita: "book_appointment",
+            cancelar_cita: "cancel_appointment",
+            reprogramar_cita: "reschedule_appointment",
+            consultar_disponibilidad: "check_availability",
+            consultar_datos: "get_lead_info",
+            send_whatsapp: "enviar_whatsapp",
+            enviar_link_grupo: "enviar_whatsapp",
+            search_parts: "buscar_repuestos",
+          };
+
+          const rawToolName = (config.tool_name as string) || "capturarDatosCotizacion";
+          const canonicalName = ALIASES[rawToolName] ?? rawToolName;
+          const schema = TOOL_SCHEMAS[canonicalName];
+          const isKnown = !!schema;
+
+          // URL que vincula el tenantId directamente al endpoint de la tool
+          const targetWebhookUrl = tenantId
+            ? `${WEBHOOK_URL}/${tenantId}/${rawToolName}`
+            : `${WEBHOOK_URL}/${rawToolName}`;
+
+          const buildToolJson = (name: string) => {
+            const canon = ALIASES[name] ?? name;
+            const s = TOOL_SCHEMAS[canon];
+            const baseUrl = tenantId
+              ? `${WEBHOOK_URL}/${tenantId}/${name}`
+              : `${WEBHOOK_URL}/${name}`;
+
+            const staticParams = tenantId
+              ? [
+                  {
+                    name: "tenant_id",
+                    location: "PARAMETER_LOCATION_QUERY",
+                    value: tenantId,
+                  },
+                ]
+              : [];
+
+            if (!s) {
+              return {
+                name,
+                description: "Herramienta personalizada para capturar datos en LinkStation.",
+                dynamicParameters: [
+                  { name: "param1", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Parámetro 1" }, required: true },
+                ],
+                ...(staticParams.length > 0 ? { staticParameters: staticParams } : {}),
+                http: { baseUrlPattern: baseUrl, httpMethod: "POST" },
+              };
+            }
+            return {
+              name,
+              description: s.description,
+              dynamicParameters: s.params.map((p) => ({
+                name: p.name,
+                location: "PARAMETER_LOCATION_BODY",
+                schema: { type: "string", description: p.desc },
+                required: p.required,
+              })),
+              ...(staticParams.length > 0 ? { staticParameters: staticParams } : {}),
+              http: { baseUrlPattern: baseUrl, httpMethod: "POST" },
+            };
+          };
+
+          const toolJsonStr = JSON.stringify(buildToolJson(rawToolName), null, 2);
+
+          return (
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-violet-500/20 bg-violet-500/10 p-4">
+                <div className="mb-1 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-violet-400" />
+                    <span className="text-[10px] font-black tracking-tighter text-violet-400 uppercase">
+                      Disparador de Voz · Ultravox AI
+                    </span>
+                  </div>
+                  {tenantId && (
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[8px] font-mono font-bold text-emerald-400">
+                      Cliente vinculado
+                    </span>
+                  )}
+                </div>
+                <p className="text-[9px] leading-relaxed font-bold text-white/40">
+                  Elige la tool o escribe su nombre — el JSON se auto-genera con tus credenciales de cliente para que los datos lleguen directamente a tu cuenta.
+                </p>
+              </div>
+
+              {/* URL del webhook */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                  URL del Webhook (Tool Endpoint)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={targetWebhookUrl}
+                    className="w-full rounded-xl border border-white/5 bg-black/40 px-3 py-2 font-mono text-[10px] text-violet-300 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { navigator.clipboard.writeText(targetWebhookUrl); alert("¡URL copiada!"); }}
+                    className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-[10px] font-bold text-violet-300 hover:bg-violet-500/20"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+
+              {/* Selector de tool */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                  Tool disponible (selecciona o escribe)
+                </label>
+                <select
+                  title="Seleccionar tool"
+                  value={isKnown ? canonicalName : "__custom__"}
+                  onChange={(e) => {
+                    if (e.target.value !== "__custom__") {
+                      setConfig({ ...config, tool_name: e.target.value });
+                    }
+                  }}
+                  className="w-full rounded-xl border border-violet-500/20 bg-black/50 px-3 py-2 text-xs text-violet-300 outline-none focus:border-violet-500/50"
+                >
+                  {Object.keys(TOOL_SCHEMAS).map((k) => (
+                    <option key={k} value={k}>{k}</option>
+                  ))}
+                  {!isKnown && <option value="__custom__">{rawToolName} (personalizada)</option>}
+                </select>
+              </div>
+
+              {/* Input manual del nombre */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                    Nombre de la Función (Tool Name)
+                  </label>
+                  {isKnown ? (
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[8px] font-bold text-emerald-400">
+                      ✓ Tool reconocida
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[8px] font-bold text-amber-400">
+                      ⚠ Tool personalizada
+                    </span>
+                  )}
+                </div>
                 <input
                   type="text"
+                  value={rawToolName}
+                  onChange={(e) => setConfig({ ...config, tool_name: e.target.value })}
+                  className="w-full rounded-xl border border-white/5 bg-black/40 px-3 py-2 text-xs text-white/80 outline-none focus:border-violet-500/30"
+                  placeholder="capturarDatosCotizacion"
+                />
+                <p className="text-[8px] text-white/30 italic">
+                  {isKnown
+                    ? `El JSON de abajo se genera automáticamente con los ${schema.params.length} parámetros de esta tool.`
+                    : "Tool no reconocida — el JSON mostrará un esquema genérico que puedes personalizar."}
+                </p>
+              </div>
+
+              {/* JSON auto-generado */}
+              <div className="space-y-2">
+                <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
+                  Definición JSON para Ultravox (Tool Schema)
+                </label>
+                <textarea
                   readOnly
-                  value="https://linkstationapp.vercel.app/api/webhooks/ultravox/tools"
-                  className="w-full rounded-xl border border-white/5 bg-black/40 px-3 py-2 font-mono text-[10px] text-violet-300 outline-none"
+                  rows={isKnown ? Math.max(8, schema.params.length * 2 + 6) : 8}
+                  value={toolJsonStr}
+                  className="w-full rounded-xl border border-violet-500/10 bg-black/40 p-3 font-mono text-[9px] text-white/60 outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText("https://linkstationapp.vercel.app/api/webhooks/ultravox/tools");
-                    alert("¡URL copiada al portapapeles!");
+                    navigator.clipboard.writeText(toolJsonStr);
+                    alert("¡Definición de Tool copiada! Pégala en tu configuración de Ultravox.");
                   }}
-                  className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-[10px] font-bold text-violet-300 hover:bg-violet-500/20"
+                  className="w-full rounded-xl border border-violet-500/30 bg-violet-600/20 py-2.5 text-[10px] font-bold text-violet-300 hover:bg-violet-600/30"
                 >
-                  Copiar
+                  Copiar Tool Schema para Ultravox
                 </button>
               </div>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
-                Nombre de la Función (Tool Name)
-              </label>
-              <input
-                type="text"
-                value={(config.tool_name as string) || "capturarDatosCotizacion"}
-                onChange={(e) => setConfig({ ...config, tool_name: e.target.value })}
-                className="w-full rounded-xl border border-white/5 bg-black/40 px-3 py-2 text-xs text-white/80 outline-none"
-                placeholder="capturarDatosCotizacion"
-              />
-              <p className="text-[8px] text-white/30 italic">
-                En tu agente de Ultravox, asigna este mismo nombre a la Tool.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[9px] font-black tracking-widest text-white/30 uppercase">
-                Definición JSON para Ultravox (Tool Schema)
-              </label>
-              <textarea
-                readOnly
-                rows={8}
-                value={JSON.stringify(
-                  {
-                    name: (config.tool_name as string) || "capturarDatosCotizacion",
-                    description: "Captura los datos del cliente, repuestos y servicios para generar y enviar la cotización en PDF oficial por WhatsApp.",
-                    dynamicParameters: [
-                      { name: "Nombre_del_cliente", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Nombre del cliente" }, required: true },
-                      { name: "WhatsApp", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Teléfono con código de país (ej: +56912345678)" }, required: true },
-                      { name: "repuestos", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Detalle de repuestos o piezas solicitadas" }, required: true },
-                      { name: "total", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Monto o total cotizado estimado si aplica" }, required: false },
-                      { name: "Correo_electronico", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Email opcional del cliente" }, required: false }
-                    ],
-                    http: {
-                      baseUrlPattern: "https://linkstationapp.vercel.app/api/webhooks/ultravox/tools",
-                      httpMethod: "POST"
-                    }
-                  },
-                  null,
-                  2
-                )}
-                className="w-full rounded-xl border border-white/5 bg-black/40 p-3 font-mono text-[9px] text-white/60 outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const toolJson = JSON.stringify(
-                    {
-                      name: (config.tool_name as string) || "capturarDatosCotizacion",
-                      description: "Captura los datos del cliente, repuestos y servicios para generar y enviar la cotización en PDF oficial por WhatsApp.",
-                      dynamicParameters: [
-                        { name: "Nombre_del_cliente", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Nombre del cliente" }, required: true },
-                        { name: "WhatsApp", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Teléfono con código de país (ej: +56912345678)" }, required: true },
-                        { name: "repuestos", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Detalle de repuestos o piezas solicitadas" }, required: true },
-                        { name: "total", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Monto o total cotizado estimado si aplica" }, required: false },
-                        { name: "Correo_electronico", location: "PARAMETER_LOCATION_BODY", schema: { type: "string", description: "Email opcional del cliente" }, required: false }
-                      ],
-                      http: {
-                        baseUrlPattern: "https://linkstationapp.vercel.app/api/webhooks/ultravox/tools",
-                        httpMethod: "POST"
-                      }
-                    },
-                    null,
-                    2
-                  );
-                  navigator.clipboard.writeText(toolJson);
-                  alert("¡Definición de Tool copiada! Pégala en tu configuración de Ultravox.");
-                }}
-                className="w-full rounded-xl border border-violet-500/30 bg-violet-600/20 py-2.5 text-[10px] font-bold text-violet-300 hover:bg-violet-600/30"
-              >
-                Copiar Tool Schema para Ultravox
-              </button>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* VARIABLE EXPLORER (HINT) */}
         <div className="bg-primary/5 border-primary/10 space-y-2 rounded-xl border p-4 text-left">
