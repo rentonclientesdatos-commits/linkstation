@@ -471,7 +471,9 @@ export class Orchestrator {
   }
 
   /**
-   * Legacy/Graph workflow-based execution (for Constructor builder or Webhooks).
+  /**
+   * Graph & Rule-based workflow execution (Visual Canvas Walker).
+   * Walks through the visual graph from the trigger node, executing connected nodes sequentially.
    */
   public async executeWorkflow(
     workflowId: string,
@@ -481,6 +483,75 @@ export class Orchestrator {
     triggerNodeId?: string
   ) {
     const supabase = await getSupabaseServerClient();
+
+    // 1. Try to load graph from orchestration_graphs (Visual Canvas)
+    try {
+      const { data: graphRecord } = await (supabase.from("orchestration_graphs" as any) as any)
+        .select("graph_data")
+        .eq("workflow_id", workflowId)
+        .maybeSingle();
+
+      const graphData = graphRecord?.graph_data;
+      const nodes = (graphData?.nodes || []) as Array<any>;
+      const edges = (graphData?.edges || []) as Array<any>;
+
+      if (nodes.length > 0 && edges.length > 0) {
+        console.log(
+          `[ORCHESTRATOR] 🎯 Executing Visual Graph for workflow ${workflowId} (Nodes: ${nodes.length}, Edges: ${edges.length})`
+        );
+
+        // Find starting edge from triggerNodeId or first trigger node
+        let startingEdges = triggerNodeId
+          ? edges.filter((e) => e.source === triggerNodeId)
+          : [];
+
+        if (startingEdges.length === 0) {
+          const triggerTypes = [
+            "webhookTrigger",
+            "leadTrigger",
+            "flow_trigger",
+            "ultravoxTrigger",
+            "inboundWhatsApp",
+          ];
+          const triggerNodes = nodes.filter((n) => triggerTypes.includes(n.type || ""));
+          for (const trg of triggerNodes) {
+            const out = edges.filter((e) => e.source === trg.id);
+            if (out.length > 0) {
+              startingEdges = out;
+              break;
+            }
+          }
+        }
+
+        if (startingEdges.length > 0) {
+          const visitedNodes = new Set<string>();
+          for (const edge of startingEdges) {
+            const firstNode = nodes.find((n) => n.id === edge.target);
+            if (firstNode) {
+              await this.executeGraphNode(
+                firstNode,
+                lead,
+                tenantId,
+                context,
+                nodes,
+                edges,
+                visitedNodes,
+                1,
+                workflowId
+              );
+            }
+          }
+          return;
+        }
+      }
+    } catch (graphErr) {
+      console.warn(
+        "[ORCHESTRATOR] Notice: could not execute directly from visual graph, falling back to rules:",
+        graphErr
+      );
+    }
+
+    // 2. Fallback: Sequential orchestration_rules
     const { data: rules } = await (supabase.from("orchestration_rules" as any) as any)
       .select("*")
       .eq("workflow_id", workflowId)
@@ -494,6 +565,166 @@ export class Orchestrator {
       return;
     }
     await this.executeRule(rules[0] as any, lead, tenantId, context);
+  }
+
+  /**
+   * Executes a single visual node and recursively continues through outgoing edges.
+   */
+  private async executeGraphNode(
+    node: any,
+    lead: Lead,
+    tenantId: string,
+    context: Record<string, unknown>,
+    allNodes: any[],
+    allEdges: any[],
+    visitedNodes: Set<string>,
+    stepNumber: number,
+    workflowId: string
+  ): Promise<void> {
+    if (!node || visitedNodes.has(node.id)) return;
+    visitedNodes.add(node.id);
+
+    const type = node.type || "unknown";
+    const data = (node.data || {}) as Record<string, unknown>;
+    const conf = ((data.config as Record<string, unknown>) || data) as Record<string, unknown>;
+    const label = (data.label as string) || (conf.label as string) || type;
+
+    console.log(`[GRAPH_WALKER] 🚀 Executing Node [${node.id}] (${type}) - Step ${stepNumber}`);
+
+    let stepResult: "SUCCESS" | "FAILED" = "SUCCESS";
+    let stepError: string | undefined;
+
+    // Convert node to unified rule object for executeRule
+    let mappedActionType = "UNKNOWN";
+    if (["voiceCall", "flow_call"].includes(type)) mappedActionType = "VOICE_CALL";
+    else if (["whatsapp", "flow_meta_template"].includes(type))
+      mappedActionType = "WHATSAPP_TEMPLATE";
+    else if (["textAgent", "flow_ai_agent"].includes(type)) mappedActionType = "AI_AGENT";
+    else if (["timeCondition", "flow_condition"].includes(type)) mappedActionType = "CONDITION";
+    else if (["delay", "flow_wait"].includes(type)) mappedActionType = "WAIT";
+    else if (["api", "flow_http"].includes(type)) mappedActionType = "HTTP";
+    else if (["llm", "flow_ai"].includes(type)) mappedActionType = "LLM";
+    else if (["pdfGenerator", "flow_pdf_generator"].includes(type))
+      mappedActionType = "PDF_GENERATOR";
+
+    try {
+      const syntheticRule = {
+        action_type: mappedActionType,
+        config: {
+          ...conf,
+          node_id: node.id,
+        },
+        workflow_id: workflowId,
+        sequence_order: stepNumber,
+      };
+
+      await this.executeRule(syntheticRule, lead, tenantId, context);
+    } catch (err: unknown) {
+      stepResult = "FAILED";
+      stepError = err instanceof Error ? err.message : String(err);
+      console.error(`[GRAPH_WALKER] ❌ Error executing node ${node.id}:`, err);
+    }
+
+    // Registrar en los logs de orquestación
+    try {
+      await logOrchestrationStep({
+        tenantId,
+        leadId: lead.id,
+        workflowId,
+        step: stepNumber,
+        actionType: mappedActionType,
+        agentUsed: (conf.agentName as string) || (conf.agentId as string) || undefined,
+        result: stepResult,
+        errorMessage: stepError,
+        metadata: {
+          node_id: node.id,
+          node_label: label,
+          node_type: type,
+          config: conf,
+          executed_at: new Date().toISOString(),
+        },
+      });
+
+      // Actualizar metadata del lead para fallback de logs instantáneo
+      const supabase = await getSupabaseServerClient();
+      const existingMeta = (lead.metadata as Record<string, unknown>) ?? {};
+      const history = Array.isArray(existingMeta.workflow_history)
+        ? (existingMeta.workflow_history as Array<any>)
+        : [];
+      history.push({
+        step: stepNumber,
+        node_id: node.id,
+        node_label: label,
+        action_type: mappedActionType,
+        result: stepResult,
+        executed_at: new Date().toISOString(),
+      });
+      await supabase
+        .from("lead")
+        .update({
+          metadata: {
+            ...existingMeta,
+            workflow_history: history,
+            last_executed_step: label,
+          },
+        })
+        .eq("id", lead.id);
+    } catch (logErr) {
+      console.warn("[GRAPH_WALKER] Notice: logging step:", logErr);
+    }
+
+    // Branching / Next node resolution
+    if (mappedActionType === "CONDITION") {
+      const condition_variable = conf.variable as string;
+      const condition_operator = (conf.operator as string) || "equals";
+      const condition_value = conf.value;
+      const leadValue =
+        (lead as any)[condition_variable] || (lead.metadata as any)?.[condition_variable];
+      const isMet = this.evaluateCondition(leadValue, condition_operator, condition_value);
+      const handleToFollow = isMet ? "if" : "else";
+
+      const nextEdge = allEdges.find(
+        (e) =>
+          e.source === node.id &&
+          (e.sourceHandle === handleToFollow || e.sourceHandle === String(isMet))
+      );
+      if (nextEdge) {
+        const nextNode = allNodes.find((n) => n.id === nextEdge.target);
+        if (nextNode) {
+          await this.executeGraphNode(
+            nextNode,
+            lead,
+            tenantId,
+            context,
+            allNodes,
+            allEdges,
+            visitedNodes,
+            stepNumber + 1,
+            workflowId
+          );
+        }
+      }
+      return;
+    }
+
+    // Non-conditional nodes: follow all outgoing edges
+    const outgoingEdges = allEdges.filter((e) => e.source === node.id);
+    for (const edge of outgoingEdges) {
+      const nextNode = allNodes.find((n) => n.id === edge.target);
+      if (nextNode) {
+        await this.executeGraphNode(
+          nextNode,
+          lead,
+          tenantId,
+          context,
+          allNodes,
+          allEdges,
+          visitedNodes,
+          stepNumber + 1,
+          workflowId
+        );
+      }
+    }
   }
 
   // ─── STEP EXECUTORS ───────────────────────────────────────────
@@ -1003,31 +1234,83 @@ export class Orchestrator {
       case "CALL": {
         const uApiKey = tenantConf?.ultravox?.api_key;
         if (!uApiKey) {
-           console.error("Ultravox configuration missing");
-           break;
+          console.error("[ORCHESTRATOR] Ultravox API key missing for tenant", tenantId);
+          break;
         }
-        
+
+        let targetAgentId = conf?.agentId;
+        let agentName = conf?.agentName || "Sofía";
+
+        // Si agentId es UUID interno o nombre, intentar resolver provider_agent_id
+        if (targetAgentId) {
+          const { data: vAgent } = await supabase
+            .from("voice_agents")
+            .select("provider_agent_id, name")
+            .or(`id.eq.${targetAgentId},provider_agent_id.eq.${targetAgentId}`)
+            .limit(1)
+            .maybeSingle();
+          if (vAgent) {
+            targetAgentId = (vAgent as any).provider_agent_id || targetAgentId;
+            agentName = (vAgent as any).name || agentName;
+          }
+        }
+
+        const templateContext: Record<string, unknown> = {
+          lead_id: lead.id,
+          id_lead: lead.id_lead_externo || lead.id,
+          nombre: lead.nombre || "Cliente",
+          user_name: lead.nombre || "Cliente",
+          telefono: lead.telefono || "",
+          user_phone: lead.telefono || "",
+          email: lead.email || "",
+          ...context,
+          ...((lead.metadata as Record<string, unknown>) ?? {}),
+        };
+
         const ultravoxRes = await ultravoxBridge.createAgentCall(
-          conf?.agentId,
+          targetAgentId,
           {
-            templateContext: { lead_id: lead.id },
-            medium: { twilio: {} }, 
+            templateContext,
+            medium: { twilio: {} },
             recordingEnabled: true,
           },
           { apiKey: uApiKey }
         );
-        
-        if (ultravoxRes.join_url) {
-           const telephonyProvider = TelephonyFactory.getProvider(tenantConf as any);
-           const fromNum = tenantConf?.telephony?.credentials?.fromNumber;
-           if (fromNum) {
-             await telephonyProvider.triggerCall({
-               to: lead.telefono || "",
-               from: fromNum,
-               joinUrl: ultravoxRes.join_url,
-               recordingEnabled: true,
-             });
-           }
+
+        if (ultravoxRes?.join_url) {
+          const telephonyProvider = TelephonyFactory.getProvider(tenantConf as any);
+          const fromNum =
+            conf?.fromNumber ||
+            tenantConf?.telephony?.credentials?.fromNumber ||
+            tenantConf?.telephony?.fromNumber;
+          if (fromNum) {
+            await telephonyProvider.triggerCall({
+              to: lead.telefono || "",
+              from: fromNum,
+              joinUrl: ultravoxRes.join_url,
+              recordingEnabled: true,
+            });
+          }
+
+          // Registrar en la tabla llamadas para trazabilidad inmediata
+          try {
+            await supabase.from("llamadas").insert({
+              tenant_id: tenantId,
+              id_lead: lead.id,
+              tipo_agente: "VOICE",
+              nombre_agente: agentName,
+              estado_llamada: "IN_PROGRESS",
+              fecha_inicio: new Date().toISOString(),
+              metadata: {
+                workflow_id,
+                node_id: conf?.node_id,
+                phone: lead.telefono,
+                join_url: ultravoxRes.join_url,
+              },
+            });
+          } catch (e) {
+            console.warn("[ORCHESTRATOR] Notice: could not write to llamadas table:", e);
+          }
         }
         break;
       }

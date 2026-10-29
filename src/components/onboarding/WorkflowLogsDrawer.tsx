@@ -325,15 +325,37 @@ export function WorkflowLogsDrawer({
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              "rounded px-1.5 py-0.5 text-[8px] font-black uppercase",
+                              "rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-tight",
                               log.action_type === "WEBHOOK_TRIGGER"
                                 ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                                : log.action_type === "VOICE_CALL" || log.action_type === "CALL"
+                                ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                                : log.action_type === "WHATSAPP" ||
+                                  log.action_type === "WHATSAPP_TEMPLATE"
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                : log.action_type === "PDF_GENERATOR"
+                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                                 : log.action_type === "ULTRAVOX_TOOL"
                                 ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                                : log.action_type === "WAIT" || log.action_type === "DELAY"
+                                ? "bg-pink-500/20 text-pink-300 border border-pink-500/30"
+                                : log.action_type === "CONDITION"
+                                ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
                                 : "bg-white/10 text-white/60"
                             )}
                           >
-                            {method} {log.action_type === "WEBHOOK_TRIGGER" ? path || "Webhook" : log.action_type}
+                            {log.action_type === "WEBHOOK_TRIGGER"
+                              ? `${method || "POST"} ${path ? `/${path}` : "FORMULARIO"}`
+                              : log.action_type === "VOICE_CALL" || log.action_type === "CALL"
+                              ? "📞 LLAMADA DE VOZ"
+                              : log.action_type === "WHATSAPP" ||
+                                log.action_type === "WHATSAPP_TEMPLATE"
+                              ? "💬 WHATSAPP"
+                              : log.action_type === "PDF_GENERATOR"
+                              ? "📄 GENERAR PDF"
+                              : log.action_type === "ULTRAVOX_TOOL"
+                              ? "🎙️ TOOL VOZ"
+                              : log.action_type}
                           </span>
 
                           {callerName && (
