@@ -1610,18 +1610,27 @@ export class Orchestrator {
         const pdfUrl = (context.pdf_url || (lead.metadata as any)?.last_pdf_url) as string | undefined;
         const template = conf?.templateId || "";
 
+        const targetPhone =
+          (lead.telefono || "") ||
+          String((lead.metadata as any)?.celular || "") ||
+          String((lead.metadata as any)?.phone || "") ||
+          String(context.celular || "") ||
+          String(context.telefono || "");
+
         if (pdfUrl && (!template || conf?.send_pdf)) {
           const docName = conf?.pdf_filename || "Cotizacion.pdf";
-          const caption = conf?.caption || `Hola *${lead.nombre || "Cliente"}*, aquí tienes tu cotización en PDF.`;
+          const caption = conf?.caption
+            ? this.resolveTemplateString(conf.caption, lead, context)
+            : `Hola *${lead.nombre || "Cliente"}*, aquí tienes tu cotización en PDF.`;
           try {
             await whatsappBridge.sendDocumentMessage(
-              lead.telefono || "",
+              targetPhone,
               pdfUrl,
               docName,
               caption,
               waConfig
             );
-            console.log(`[ORCHESTRATOR] ✅ WhatsApp PDF Document sent to ${lead.telefono}`);
+            console.log(`[ORCHESTRATOR] ✅ WhatsApp PDF Document sent to ${targetPhone}`);
           } catch (waDocErr) {
             console.error("[ORCHESTRATOR] ❌ Error sending WhatsApp document:", waDocErr);
           }
@@ -1634,13 +1643,16 @@ export class Orchestrator {
         const sortedIndices = Object.keys(mappings).sort((a, b) => parseInt(a) - parseInt(b));
 
         for (const idx of sortedIndices) {
-          let value = mappings[idx];
-          if (value === "lead.nombre") value = lead.nombre || "Cliente";
-          else if (value === "lead.apellido") value = lead.apellido || "";
-          else if (value === "lead.email") value = lead.email || "";
-          else if (value === "pdf_url" || value === "context.pdf_url") value = pdfUrl || "";
+          let rawVal = mappings[idx];
+          let value = this.resolveTemplateString(rawVal, lead, context);
+          if (!value || value === rawVal) {
+            if (rawVal === "lead.nombre") value = lead.nombre || "Cliente";
+            else if (rawVal === "lead.apellido") value = lead.apellido || "";
+            else if (rawVal === "lead.email") value = lead.email || "";
+            else if (rawVal === "pdf_url" || rawVal === "context.pdf_url") value = pdfUrl || "";
+          }
 
-          const paramObj: any = { type: "text", text: value };
+          const paramObj: any = { type: "text", text: value || "" };
           if (isNaN(Number(idx))) {
             paramObj.parameter_name = idx;
           }
