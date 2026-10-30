@@ -1617,65 +1617,229 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="vc-vars" className="text-[10px] font-bold text-white/40 uppercase">
-                Variables Dinámicas (JSON)
+            {/* ── 1. TELÉFONO DESTINO (A quién llamar) ──────────────── */}
+            <div className="space-y-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3.5">
+              <label htmlFor="vc-dest-phone" className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-emerald-400" />
+                Teléfono Destino (A quién llamar)
               </label>
-              <textarea
-                id="vc-vars"
-                value={(config.dynamicVariables as string) || ""}
-                onChange={(e) => setConfig({ ...config, dynamicVariables: e.target.value })}
-                rows={3}
-                className="focus:ring-primary/20 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm text-emerald-300 focus:ring-2 focus:outline-none"
-                placeholder='{"nombre_lead": "{{lead.nombre}}"}'
+              <input
+                id="vc-dest-phone"
+                value={(config.destination_phone as string) ?? "{{lead.telefono}}"}
+                onChange={(e) => setConfig({ ...config, destination_phone: e.target.value })}
+                placeholder="{{lead.telefono}}"
+                className="w-full h-10 rounded-xl border border-emerald-500/30 bg-black/50 px-4 font-mono text-xs text-emerald-200 outline-none focus:ring-1 focus:ring-emerald-500/40"
               />
+              <div className="space-y-1">
+                <p className="text-[9px] text-white/40">
+                  Selecciona la variable que contiene el teléfono desde el formulario o nodo anterior:
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {[
+                    { label: "Teléfono", val: "{{lead.telefono}}" },
+                    { label: "Celular", val: "{{lead.celular}}" },
+                    { label: "Móvil", val: "{{lead.phone}}" },
+                    { label: "WhatsApp", val: "{{lead.whatsapp}}" },
+                  ].map((item) => (
+                    <button
+                      key={item.val}
+                      type="button"
+                      onClick={() => setConfig({ ...config, destination_phone: item.val })}
+                      className={cn(
+                        "rounded-lg border px-2 py-1 text-[9px] font-mono transition-all",
+                        (config.destination_phone ?? "{{lead.telefono}}") === item.val
+                          ? "border-emerald-500 bg-emerald-500/20 text-emerald-200 font-bold"
+                          : "border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                      )}
+                    >
+                      {item.label}: <span className="text-emerald-400">{item.val}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-              {/* Diccionario de Variables */}
-              <div className="mt-3 space-y-2 rounded-xl border border-white/5 bg-black/40 p-3">
-                <p className="flex items-center gap-1.5 text-[9px] font-black text-white/40 uppercase">
-                  <Database className="h-3 w-3" /> Diccionario del Sistema
+            {/* ── 2. MAPEO E INDEXACIÓN DE VARIABLES DEL NODO ANTERIOR ──────────────── */}
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
+                    <Database className="h-3.5 w-3.5 text-cyan-400" />
+                    Indexar Datos del Nodo Anterior (Variables del Agente)
+                  </label>
+                  <p className="text-[9px] text-white/35">
+                    Pasa los datos del formulario (nombre, celular, etc.) al agente de Ultravox
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = Array.isArray(config.variableMapping)
+                      ? [...(config.variableMapping as Array<{ key: string; value: string }>)]
+                      : [
+                          { key: "nombre", value: "{{lead.nombre}}" },
+                          { key: "celular", value: "{{lead.telefono}}" },
+                        ];
+                    current.push({ key: "", value: "{{lead.telefono}}" });
+                    const jsonOut: Record<string, string> = {};
+                    current.forEach((m) => {
+                      if (m.key.trim()) jsonOut[m.key.trim()] = m.value.trim();
+                    });
+                    setConfig({
+                      ...config,
+                      variableMapping: current,
+                      dynamicVariables: JSON.stringify(jsonOut, null, 2),
+                    });
+                  }}
+                  className="rounded-lg bg-cyan-600/30 border border-cyan-500/30 px-2 py-1 text-[9px] font-bold text-cyan-300 hover:bg-cyan-500/30 transition-all flex items-center gap-1"
+                >
+                  <Plus className="h-3 w-3" /> Agregar
+                </button>
+              </div>
+
+              {/* Lista visual de variables */}
+              <div className="space-y-2">
+                {(() => {
+                  let mappingList: Array<{ key: string; value: string }> = [];
+                  if (Array.isArray(config.variableMapping) && config.variableMapping.length > 0) {
+                    mappingList = config.variableMapping as Array<{ key: string; value: string }>;
+                  } else if (typeof config.dynamicVariables === "string" && config.dynamicVariables.trim()) {
+                    try {
+                      const parsed = JSON.parse(config.dynamicVariables);
+                      mappingList = Object.entries(parsed).map(([k, v]) => ({ key: k, value: String(v) }));
+                    } catch {
+                      const lines = config.dynamicVariables.split("\n");
+                      for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed) continue;
+                        try {
+                          const p = JSON.parse(trimmed);
+                          for (const [k, v] of Object.entries(p)) {
+                            mappingList.push({ key: k, value: String(v) });
+                          }
+                        } catch {
+                          const m = trimmed.match(/^["']?([^:"'=]+)["']?\s*[:=]\s*["']?([^"']+)["']?$/);
+                          if (m) mappingList.push({ key: m[1].trim(), value: m[2].trim() });
+                        }
+                      }
+                    }
+                  }
+
+                  if (mappingList.length === 0) {
+                    mappingList = [
+                      { key: "nombre", value: "{{lead.nombre}}" },
+                      { key: "celular", value: "{{lead.telefono}}" },
+                    ];
+                  }
+
+                  return mappingList.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        value={item.key}
+                        onChange={(e) => {
+                          const updated = [...mappingList];
+                          updated[idx] = { ...updated[idx], key: e.target.value };
+                          const jsonOut: Record<string, string> = {};
+                          updated.forEach((m) => {
+                            if (m.key.trim()) jsonOut[m.key.trim()] = m.value.trim();
+                          });
+                          setConfig({
+                            ...config,
+                            variableMapping: updated,
+                            dynamicVariables: JSON.stringify(jsonOut, null, 2),
+                          });
+                        }}
+                        placeholder="Variable agente (ej: nombre)"
+                        className="w-1/3 h-9 rounded-xl border border-white/10 bg-black/40 px-3 font-mono text-xs text-cyan-300 outline-none placeholder:text-white/20 focus:border-cyan-500/40"
+                      />
+                      <span className="text-white/30 text-xs">➔</span>
+                      <input
+                        value={item.value}
+                        onChange={(e) => {
+                          const updated = [...mappingList];
+                          updated[idx] = { ...updated[idx], value: e.target.value };
+                          const jsonOut: Record<string, string> = {};
+                          updated.forEach((m) => {
+                            if (m.key.trim()) jsonOut[m.key.trim()] = m.value.trim();
+                          });
+                          setConfig({
+                            ...config,
+                            variableMapping: updated,
+                            dynamicVariables: JSON.stringify(jsonOut, null, 2),
+                          });
+                        }}
+                        placeholder="{{lead.telefono}}"
+                        className="flex-1 h-9 rounded-xl border border-white/10 bg-black/40 px-3 font-mono text-xs text-emerald-300 outline-none placeholder:text-white/20 focus:border-emerald-500/40"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = mappingList.filter((_, i) => i !== idx);
+                          const jsonOut: Record<string, string> = {};
+                          updated.forEach((m) => {
+                            if (m.key.trim()) jsonOut[m.key.trim()] = m.value.trim();
+                          });
+                          setConfig({
+                            ...config,
+                            variableMapping: updated,
+                            dynamicVariables: JSON.stringify(jsonOut, null, 2),
+                          });
+                        }}
+                        className="h-9 w-9 shrink-0 flex items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              {/* Botones de Inserción Rápida desde el Diccionario */}
+              <div className="space-y-1.5 pt-2 border-t border-white/5">
+                <p className="text-[9px] font-black tracking-widest text-white/40 uppercase">
+                  Variables disponibles para indexar:
                 </p>
-                <p className="mb-2 text-[9px] leading-relaxed text-white/30">
-                  Usa estos códigos para inyectar los datos del Lead que entraron por el Disparador
-                  (ZOHO/Webhook) hacia tu agente de voz:
-                </p>
-                <div className="grid grid-cols-2 gap-2 font-mono text-[10px] text-cyan-300/70">
-                  <div
-                    className="truncate rounded border border-white/5 bg-white/5 p-1.5"
-                    title="{{lead.nombre}}"
-                  >
-                    {"{{lead.nombre}}"}
-                  </div>
-                  <div
-                    className="truncate rounded border border-white/5 bg-white/5 p-1.5"
-                    title="{{lead.apellido}}"
-                  >
-                    {"{{lead.apellido}}"}
-                  </div>
-                  <div
-                    className="truncate rounded border border-white/5 bg-white/5 p-1.5"
-                    title="{{lead.telefono}}"
-                  >
-                    {"{{lead.telefono}}"}
-                  </div>
-                  <div
-                    className="truncate rounded border border-white/5 bg-white/5 p-1.5"
-                    title="{{lead.email}}"
-                  >
-                    {"{{lead.email}}"}
-                  </div>
-                  <div
-                    className="truncate rounded border border-white/5 bg-white/5 p-1.5"
-                    title="{{lead.pais}}"
-                  >
-                    {"{{lead.pais}}"}
-                  </div>
-                  <div
-                    className="truncate rounded border border-white/5 bg-white/5 p-1.5"
-                    title="{{lead.curso}}"
-                  >
-                    {"{{lead.curso}}"}
-                  </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { key: "nombre", val: "{{lead.nombre}}" },
+                    { key: "celular", val: "{{lead.telefono}}" },
+                    { key: "email", val: "{{lead.email}}" },
+                    { key: "apellido", val: "{{lead.apellido}}" },
+                    { key: "curso", val: "{{lead.curso}}" },
+                    { key: "pais", val: "{{lead.pais}}" },
+                  ].map((v) => (
+                    <button
+                      key={v.key}
+                      type="button"
+                      onClick={() => {
+                        const current = Array.isArray(config.variableMapping)
+                          ? [...(config.variableMapping as Array<{ key: string; value: string }>)]
+                          : [
+                              { key: "nombre", value: "{{lead.nombre}}" },
+                              { key: "celular", value: "{{lead.telefono}}" },
+                            ];
+                        // Si ya existe la clave, actualizarla; si no, agregarla
+                        const existingIdx = current.findIndex((m) => m.key === v.key);
+                        if (existingIdx >= 0) {
+                          current[existingIdx].value = v.val;
+                        } else {
+                          current.push({ key: v.key, value: v.val });
+                        }
+                        const jsonOut: Record<string, string> = {};
+                        current.forEach((m) => {
+                          if (m.key.trim()) jsonOut[m.key.trim()] = m.value.trim();
+                        });
+                        setConfig({
+                          ...config,
+                          variableMapping: current,
+                          dynamicVariables: JSON.stringify(jsonOut, null, 2),
+                        });
+                      }}
+                      className="rounded-lg border border-white/5 bg-black/40 px-2 py-1 text-[9px] font-mono text-cyan-300/80 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all"
+                    >
+                      + {v.key}: <span className="text-white/60">{v.val}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1758,7 +1922,7 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                     <input
                       id="sip-domain"
                       value={(config.sip_domain as string) || ""}
-                      onChange={(e) => setConfig({ ...config, sip_domain: e.target.value })}
+                      onChange={(e) => setConfig({ ...config, sip_domain: e.target.value.trim() })}
                       placeholder="ultravox.conecta-bit.com:7560"
                       className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                     />
@@ -1776,7 +1940,7 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                       <input
                         id="sip-username"
                         value={(config.sip_username as string) || ""}
-                        onChange={(e) => setConfig({ ...config, sip_username: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, sip_username: e.target.value.trim() })}
                         placeholder="Renzo319"
                         className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                       />
@@ -1789,7 +1953,7 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                         id="sip-password"
                         type="password"
                         value={(config.sip_password as string) || ""}
-                        onChange={(e) => setConfig({ ...config, sip_password: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, sip_password: e.target.value.trim() })}
                         placeholder="••••••••"
                         className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                       />
@@ -1804,7 +1968,7 @@ export function NodeConfigSidebar({ node, tenantId, workflowId, onSave, onClose 
                     <input
                       id="sip-caller-id"
                       value={(config.sip_caller_id as string) || ""}
-                      onChange={(e) => setConfig({ ...config, sip_caller_id: e.target.value })}
+                      onChange={(e) => setConfig({ ...config, sip_caller_id: e.target.value.trim() })}
                       placeholder="+569XXXXXXXX"
                       className="h-10 w-full rounded-xl border border-violet-500/20 bg-black/40 px-4 font-mono text-xs text-violet-300 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-violet-500/30"
                     />

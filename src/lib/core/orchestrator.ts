@@ -1215,6 +1215,56 @@ export class Orchestrator {
     );
   }
 
+  // ─── HELPER: Resuelve variables de plantilla como {{lead.nombre}} o {{celular}} ───
+  private resolveTemplateString(
+    template: string,
+    lead: Lead,
+    context: Record<string, unknown> = {}
+  ): string {
+    if (!template || typeof template !== "string") return template;
+    const meta = (lead.metadata || {}) as Record<string, unknown>;
+
+    return template.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, path) => {
+      // 1) Si empieza por lead.
+      if (path.startsWith("lead.")) {
+        const field = path.replace(/^lead\./, "");
+        if (field in lead) {
+          const v = (lead as any)[field];
+          if (v !== undefined && v !== null && v !== "") return String(v);
+        }
+        if (field in meta) {
+          const v = meta[field];
+          if (v !== undefined && v !== null && v !== "") return String(v);
+        }
+      }
+
+      // 2) Si empieza por context. o form.
+      if (path.startsWith("context.") || path.startsWith("form.")) {
+        const field = path.replace(/^(context|form)\./, "");
+        if (field in context) {
+          const v = context[field];
+          if (v !== undefined && v !== null && v !== "") return String(v);
+        }
+      }
+
+      // 3) Búsqueda directa
+      if (path in lead) {
+        const v = (lead as any)[path];
+        if (v !== undefined && v !== null && v !== "") return String(v);
+      }
+      if (path in meta) {
+        const v = meta[path];
+        if (v !== undefined && v !== null && v !== "") return String(v);
+      }
+      if (path in context) {
+        const v = context[path];
+        if (v !== undefined && v !== null && v !== "") return String(v);
+      }
+
+      return "";
+    });
+  }
+
   // ─── LEGACY SUPPORT (Constructor Builder) ─────────────────────
 
   private async executeRule(
@@ -1268,49 +1318,124 @@ export class Orchestrator {
           }
         }
 
+        // 1. Resolver Teléfono Destino: buscar en conf.destination_phone o lead / metadata
+        let rawPhone = "";
+        if (conf?.destination_phone) {
+          const resolved = this.resolveTemplateString(String(conf.destination_phone), lead, context);
+          if (resolved && !resolved.includes("{{")) {
+            rawPhone = resolved;
+          }
+        }
+        if (!rawPhone) {
+          const meta = (lead.metadata || {}) as Record<string, unknown>;
+          rawPhone =
+            lead.telefono ||
+            String(meta.celular || "") ||
+            String(meta.phone || "") ||
+            String(meta.telefono || "") ||
+            String(meta.whatsapp || "") ||
+            String(context.celular || "") ||
+            String(context.phone || "") ||
+            String(context.telefono || "") ||
+            "";
+        }
+        const toPhone = rawPhone.replace(/[^0-9+]/g, "");
+
+        // 2. Parsear y Resolver Variables Dinámicas (Mapeo de datos del nodo anterior)
+        const parsedDynamicVars: Record<string, unknown> = {};
+
+        // A) Mapeo estructurado si viene de variableMapping
+        if (Array.isArray(conf?.variableMapping)) {
+          for (const item of conf.variableMapping as Array<{ key: string; value: string }>) {
+            if (item.key && item.value) {
+              parsedDynamicVars[item.key.trim()] = this.resolveTemplateString(item.value, lead, context);
+            }
+          }
+        }
+
+        // B) Si viene como texto en dynamicVariables (soporta tanto JSON único como múltiples líneas)
+        if (typeof conf?.dynamicVariables === "string" && conf.dynamicVariables.trim()) {
+          const rawStr = conf.dynamicVariables.trim();
+          try {
+            const obj = JSON.parse(rawStr);
+            for (const [k, v] of Object.entries(obj)) {
+              parsedDynamicVars[k] =
+                typeof v === "string" ? this.resolveTemplateString(v, lead, context) : v;
+            }
+          } catch {
+            // Múltiples JSONs separados por nueva línea tipo {"celular":"..."}\n{"nombre":"..."}
+            const lines = rawStr.split("\n");
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed) continue;
+              try {
+                const lineObj = JSON.parse(trimmed);
+                for (const [k, v] of Object.entries(lineObj)) {
+                  parsedDynamicVars[k] =
+                    typeof v === "string" ? this.resolveTemplateString(v, lead, context) : v;
+                }
+              } catch {
+                const match = trimmed.match(/^["']?([^:"'=]+)["']?\s*[:=]\s*["']?([^"']+)["']?$/);
+                if (match) {
+                  parsedDynamicVars[match[1].trim()] = this.resolveTemplateString(match[2].trim(), lead, context);
+                }
+              }
+            }
+          }
+        }
+
         const templateContext: Record<string, unknown> = {
           lead_id: lead.id,
           id_lead: lead.id_lead_externo || lead.id,
           nombre: lead.nombre || "Cliente",
           user_name: lead.nombre || "Cliente",
-          telefono: lead.telefono || "",
-          user_phone: lead.telefono || "",
+          telefono: toPhone || lead.telefono || "",
+          user_phone: toPhone || lead.telefono || "",
           email: lead.email || "",
           ...context,
           ...((lead.metadata as Record<string, unknown>) ?? {}),
+          ...parsedDynamicVars,
         };
 
         // ── SIP DIRECTO (sin Twilio) ────────────────────────────────────────
         const sipEnabled = Boolean(conf?.sip_enabled) || Boolean(tenantConf?.conectabit?.sip_domain) || Boolean(process.env.CONECTABIT_SIP_DOMAIN);
-        const sipDomain =
+        const sipDomain = (
           (conf?.sip_domain as string) ||
           tenantConf?.conectabit?.sip_domain ||
           tenantConf?.telephony?.sip?.domain ||
           process.env.CONECTABIT_SIP_DOMAIN ||
-          "ultravox.conecta-bit.com:7560";
-        const sipUsername =
+          "ultravox.conecta-bit.com:7560"
+        ).trim();
+
+        const sipUsername = (
           (conf?.sip_username as string) ||
           tenantConf?.conectabit?.sip_username ||
           tenantConf?.telephony?.sip?.username ||
           process.env.CONECTABIT_SIP_USERNAME ||
-          "Renzo319";
-        const sipPassword =
+          "Renzo319"
+        ).trim();
+
+        const rawPassword =
           (conf?.sip_password as string) ||
           tenantConf?.conectabit?.sip_password ||
           tenantConf?.telephony?.sip?.password ||
-          process.env.CONECTABIT_SIP_PASSWORD;
-        const sipCallerId =
+          process.env.CONECTABIT_SIP_PASSWORD ||
+          "";
+        const sipPassword = rawPassword.trim();
+
+        const rawCallerId =
           (conf?.sip_caller_id as string) ||
           tenantConf?.jorklif?.caller_id ||
           tenantConf?.telephony?.fromNumber ||
           process.env.JORKLIF_CALLER_ID ||
-          process.env.TWILIO_PHONE_NUMBER;
+          process.env.TWILIO_PHONE_NUMBER ||
+          "";
+        const sipCallerId = rawCallerId.trim();
+
         const sipFirstSpeaker = (conf?.sip_first_speaker as string) || "user";
 
         if (sipEnabled && sipDomain) {
-          // Build SIP URI:  sip:+56912345678@ultravox.conecta-bit.com:7560
-          const rawPhone = lead.telefono || "";
-          const toPhone = rawPhone.replace(/[^0-9+]/g, "");
+          // Build SIP URI:  sip:+56912345678@compulan.3nx.co
           const sipUri = `sip:${toPhone}@${sipDomain}`;
 
           console.log(
