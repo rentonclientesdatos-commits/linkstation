@@ -93,32 +93,44 @@ export async function POST(req: Request) {
     }
 
     // 4. Resolver parámetros SIP (Conectabit)
-    const sipDomain =
+    // ⚠️  IMPORTANTE: username = usuario SIP (ej: "65312352624")
+    //                 password = contraseña SIP (ej: "w655318M")
+    // Los valores se leen con .trim() para evitar espacios involuntarios.
+
+    const rawSipDomain =
       body.sip_domain ||
       tenantConfig?.conectabit?.sip_domain ||
       tenantConfig?.telephony?.sip?.domain ||
       process.env.CONECTABIT_SIP_DOMAIN ||
       "ultravox.conecta-bit.com:7560";
+    const sipDomain = String(rawSipDomain).trim();
 
-    const sipUsername =
+    // sip_username → campo "username" del outgoing SIP
+    const rawSipUsername =
       body.sip_username ||
       tenantConfig?.conectabit?.sip_username ||
       tenantConfig?.telephony?.sip?.username ||
       process.env.CONECTABIT_SIP_USERNAME ||
-      "Renzo319";
+      "";
+    const sipUsername = String(rawSipUsername).trim();
 
-    const sipPassword =
+    // sip_password → campo "password" del outgoing SIP
+    const rawSipPassword =
       body.sip_password ||
       tenantConfig?.conectabit?.sip_password ||
       tenantConfig?.telephony?.sip?.password ||
-      process.env.CONECTABIT_SIP_PASSWORD;
+      process.env.CONECTABIT_SIP_PASSWORD ||
+      "";
+    const sipPassword = String(rawSipPassword).trim();
 
-    const sipCallerId =
+    const rawSipCallerId =
       body.sip_caller_id ||
       tenantConfig?.jorklif?.caller_id ||
       tenantConfig?.telephony?.fromNumber ||
       process.env.JORKLIF_CALLER_ID ||
-      process.env.TWILIO_PHONE_NUMBER;
+      process.env.TWILIO_PHONE_NUMBER ||
+      "";
+    const sipCallerId = String(rawSipCallerId).trim();
 
     const sipFirstSpeaker = body.sip_first_speaker || "user";
 
@@ -127,9 +139,14 @@ export async function POST(req: Request) {
     const cleanPhone = rawPhone.replace(/[^0-9+]/g, "");
     const sipUri = `sip:${cleanPhone}@${sipDomain}`;
 
-    console.log(
-      `[TEST_VOICE_CALL] 📞 Disparando prueba SIP → Agente: ${targetAgentId || "INLINE"} | Destino: ${sipUri} | CallerID: ${sipCallerId} | User: ${sipUsername}`
-    );
+    // ── DIAGNÓSTICO COMPLETO ──────────────────────────────────────────────────
+    console.log("[TEST_VOICE_CALL] 🔍 SIP Credential Diagnostic:");
+    console.log(`  sip_domain   : "${sipDomain}" (source: ${body.sip_domain ? "body" : tenantConfig?.conectabit?.sip_domain ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.domain ? "tenant.telephony" : "env/default"})`);
+    console.log(`  sip_username : "${sipUsername}" (source: ${body.sip_username ? "body" : tenantConfig?.conectabit?.sip_username ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.username ? "tenant.telephony" : "env/default"})`);
+    console.log(`  sip_password : [length ${sipPassword.length}] (source: ${body.sip_password ? "body" : tenantConfig?.conectabit?.sip_password ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.password ? "tenant.telephony" : "env/default"})`);
+    console.log(`  caller_id    : "${sipCallerId}"`);
+    console.log(`  sip_uri      : "${sipUri}"`);
+    // ─────────────────────────────────────────────────────────────────────────
 
     const ultravoxConfig: UltravoxConfig = { apiKey };
 

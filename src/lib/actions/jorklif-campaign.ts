@@ -545,13 +545,19 @@ export async function triggerJorklifCallAction(leadId: string): Promise<{ succes
       tenantConfig?.telephony?.sip?.domain ||
       process.env.CONECTABIT_SIP_DOMAIN;
 
-    const sipUsername =
+    const rawSipUsername =
       tenantConfig?.telephony?.sip?.username ||
-      process.env.CONECTABIT_SIP_USERNAME;
+      process.env.CONECTABIT_SIP_USERNAME ||
+      "";
+    const sipUsername = String(rawSipUsername).trim();
 
-    const sipPassword =
+    const rawSipPassword =
       tenantConfig?.telephony?.sip?.password ||
-      process.env.CONECTABIT_SIP_PASSWORD;
+      process.env.CONECTABIT_SIP_PASSWORD ||
+      "";
+    const sipPassword = String(rawSipPassword).trim();
+
+    console.log(`[JORKLIF_SIP] Credenciales → username: "${sipUsername}" | password length: ${sipPassword.length}`);
 
     const fromNumber =
       tenantConfig?.telephony?.fromNumber ||

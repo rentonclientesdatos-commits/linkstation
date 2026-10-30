@@ -34,6 +34,15 @@ interface TelephonyConfig {
   };
 }
 
+interface ConectabitConfig {
+  sip_domain?: string;
+  /** Usuario SIP de la troncal (número de extensión/DID) */
+  sip_username?: string;
+  /** Contraseña SIP de la troncal */
+  sip_password?: string;
+  caller_id?: string;
+}
+
 interface WhatsAppTemplate {
   name: string;
   language: string;
@@ -83,6 +92,9 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
 
   // ── Telephony Config ──
   const telephony = (config?.telephony as TelephonyConfig) || {};
+
+  // ── Conectabit SIP Config ──
+  const conectabit = (config?.conectabit as ConectabitConfig) || {};
 
   const updateField = (category: string, fields: Record<string, unknown>) => {
     const categoryData = { ...((config[category] as Record<string, unknown>) || {}), ...fields };
@@ -227,6 +239,128 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── SECTION: CONECTABIT SIP ── */}
+      {matchesFilter("conectabit sip troncal outbound voz llamadas salientes telefonia") && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-[rgba(139,92,246,0.2)] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-500/30 bg-[rgba(139,92,246,0.12)] text-violet-400 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+                <PhoneCall className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black tracking-tight text-white uppercase">
+                  Conectabit SIP — Troncal Saliente
+                </h3>
+                <p className="text-left text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                  Credenciales de la troncal SIP para llamadas outbound via Ultravox
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Warning: explain field semantics to prevent swapping */}
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+            <p className="font-black uppercase tracking-widest text-amber-400 text-[9px] mb-1">⚠️ Mapeo correcto de credenciales</p>
+            <p><strong className="text-amber-300">Usuario SIP</strong> = identificador de la extensión/troncal (ej: <code className="font-mono text-amber-300">65312352624</code>)</p>
+            <p><strong className="text-amber-300">Contraseña SIP</strong> = clave secreta de autenticación (ej: <code className="font-mono text-amber-300">w655318M</code>)</p>
+            <p className="mt-1 text-[9px] text-amber-300/60">Estos valores se envían directamente al campo <code>medium.sip.outgoing</code> de Ultravox.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* SIP Domain */}
+            <div className="md:col-span-2 space-y-2">
+              <Label className="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                Dominio SIP
+              </Label>
+              <Input
+                id="conectabit-sip-domain"
+                value={conectabit.sip_domain || ""}
+                onChange={(e) =>
+                  updateField("conectabit", { ...conectabit, sip_domain: e.target.value.trim() })
+                }
+                placeholder="ultravox.conecta-bit.com:7560"
+                className="h-11 rounded-xl border-[rgba(139,92,246,0.2)] bg-[rgba(4,8,20,0.8)] font-mono text-xs text-violet-300 placeholder-slate-500 focus:border-[rgba(139,92,246,0.5)] focus:shadow-[0_0_8px_rgba(139,92,246,0.15)]"
+              />
+              <p className="text-[9px] text-slate-500">Por defecto: <code className="text-violet-400">ultravox.conecta-bit.com:7560</code></p>
+            </div>
+
+            {/* SIP Username — Usuario de troncal */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                👤 Usuario SIP (extensión/DID)
+              </Label>
+              <Input
+                id="conectabit-sip-username"
+                value={conectabit.sip_username || ""}
+                onChange={(e) =>
+                  updateField("conectabit", { ...conectabit, sip_username: e.target.value.trim() })
+                }
+                placeholder="ej: 65312352624"
+                className="h-11 rounded-xl border-[rgba(139,92,246,0.2)] bg-[rgba(4,8,20,0.8)] font-mono text-xs text-violet-300 placeholder-slate-500 focus:border-[rgba(139,92,246,0.5)] focus:shadow-[0_0_8px_rgba(139,92,246,0.15)]"
+              />
+              {conectabit.sip_username && (
+                <p className="text-[9px] text-violet-400/70">Guardado: <code className="font-mono">{conectabit.sip_username}</code></p>
+              )}
+            </div>
+
+            {/* SIP Password — Contraseña de troncal */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                🔑 Contraseña SIP
+              </Label>
+              <Input
+                id="conectabit-sip-password"
+                type="password"
+                value={conectabit.sip_password || ""}
+                onChange={(e) =>
+                  updateField("conectabit", { ...conectabit, sip_password: e.target.value.trim() })
+                }
+                placeholder="••••••••"
+                className="h-11 rounded-xl border-[rgba(139,92,246,0.2)] bg-[rgba(4,8,20,0.8)] font-mono text-xs text-violet-300 placeholder-slate-500 focus:border-[rgba(139,92,246,0.5)] focus:shadow-[0_0_8px_rgba(139,92,246,0.15)]"
+              />
+              {conectabit.sip_password && (
+                <p className="text-[9px] text-violet-400/70">Longitud guardada: <code className="font-mono">{conectabit.sip_password.length} caracteres</code></p>
+              )}
+            </div>
+
+            {/* Caller ID */}
+            <div className="md:col-span-2 space-y-2">
+              <Label className="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-500 uppercase">
+                Caller ID (Número de salida visible)
+              </Label>
+              <Input
+                id="conectabit-caller-id"
+                value={conectabit.caller_id || ""}
+                onChange={(e) =>
+                  updateField("conectabit", { ...conectabit, caller_id: e.target.value.trim() })
+                }
+                placeholder="+569XXXXXXXX"
+                className="h-11 rounded-xl border-[rgba(139,92,246,0.2)] bg-[rgba(4,8,20,0.8)] font-mono text-xs text-violet-300 placeholder-slate-500 focus:border-[rgba(139,92,246,0.5)] focus:shadow-[0_0_8px_rgba(139,92,246,0.15)]"
+              />
+            </div>
+          </div>
+
+          {/* Diagnóstico visual del mapeo actual */}
+          {(conectabit.sip_username || conectabit.sip_password) && (
+            <div className="rounded-xl border border-violet-500/10 bg-black/40 p-4 space-y-2">
+              <p className="text-[9px] font-black tracking-widest text-violet-400/60 uppercase">Payload SIP que se enviará a Ultravox</p>
+              <pre className="font-mono text-[10px] text-slate-300 whitespace-pre-wrap">{JSON.stringify({
+                medium: {
+                  sip: {
+                    outgoing: {
+                      to: `sip:{{lead.telefono}}@${conectabit.sip_domain || "ultravox.conecta-bit.com:7560"}`,
+                      from: conectabit.caller_id || "(caller_id)",
+                      username: conectabit.sip_username || "(vacío)",
+                      password: conectabit.sip_password ? `[${conectabit.sip_password.length} chars]` : "(vacío)",
+                    }
+                  }
+                }
+              }, null, 2)}</pre>
+            </div>
+          )}
         </div>
       )}
 
