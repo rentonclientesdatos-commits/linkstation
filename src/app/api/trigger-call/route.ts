@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getAdminSupabaseClient } from "@/lib/supabase/server";
-import { ultravoxBridge, UltravoxConfig } from "@/lib/integrations/ultravox";
+import { ultravoxBridge, UltravoxConfig, formatSipUri } from "@/lib/integrations/ultravox";
 import { TelephonyFactory } from "@/lib/integrations/telephony/factory";
 import { createLogger } from "@/lib/utils/logger";
 import { normalizeWhatsAppNumber } from "@/lib/utils/phone-helper";
@@ -135,11 +135,70 @@ export async function POST(req: Request) {
 
     const ultravoxConfig: UltravoxConfig = { apiKey };
 
-    // 5. Iniciar llamada en Ultravox inyectando contexto para tools y webhooks
+    // 5. Resolver medium: SIP saliente directo si está configurado para el tenant, o Twilio fallback
+    const sipDomain = (
+      rawBody.sip_domain ||
+      tenantConfig?.sip?.domain ||
+      tenantConfig?.conectabit?.sip_domain ||
+      tenantConfig?.telephony?.sip?.domain ||
+      process.env.SIP_DOMAIN ||
+      process.env.CONECTABIT_SIP_DOMAIN ||
+      ""
+    ).trim();
+
+    const sipUsername = (
+      rawBody.sip_username ||
+      tenantConfig?.sip?.username ||
+      tenantConfig?.conectabit?.sip_username ||
+      tenantConfig?.telephony?.sip?.username ||
+      process.env.SIP_USERNAME ||
+      process.env.CONECTABIT_SIP_USERNAME ||
+      ""
+    ).trim();
+
+    const sipPassword = (
+      rawBody.sip_password ||
+      tenantConfig?.sip?.password ||
+      tenantConfig?.conectabit?.sip_password ||
+      tenantConfig?.telephony?.sip?.password ||
+      process.env.SIP_PASSWORD ||
+      process.env.CONECTABIT_SIP_PASSWORD ||
+      ""
+    ).trim();
+
+    const sipCallerId = (
+      rawBody.sip_caller_id ||
+      rawBody.caller_id ||
+      tenantConfig?.sip?.caller_id ||
+      tenantConfig?.conectabit?.caller_id ||
+      tenantConfig?.telephony?.credentials?.fromNumber ||
+      tenantConfig?.telephony?.fromNumber ||
+      process.env.SIP_CALLER_ID ||
+      process.env.CONECTABIT_SIP_CALLER_ID ||
+      process.env.TELEPHONY_FROM_NUMBER ||
+      ""
+    ).trim();
+
+    const useSip = Boolean(sipDomain);
+    const callMedium = useSip
+      ? {
+          sip: {
+            outgoing: {
+              to: formatSipUri(normalizedPhone, sipDomain),
+              from: formatSipUri(sipCallerId || normalizedPhone, sipDomain),
+              ...(sipUsername ? { username: sipUsername } : {}),
+              ...(sipPassword ? { password: sipPassword } : {}),
+            },
+          },
+        }
+      : { twilio: {} };
+
+    // 6. Iniciar llamada en Ultravox inyectando contexto para tools y webhooks
     log.info("Creating Ultravox Agent Call", {
       agentId: targetAgentId,
       leadId: effectiveLeadId,
       phone: normalizedPhone,
+      mode: useSip ? "SIP_OUTBOUND" : "TWILIO",
     });
 
     const ultravoxRes = await ultravoxBridge.createAgentCall(
@@ -155,17 +214,18 @@ export async function POST(req: Request) {
           send_whatsapp: sendWhatsApp,
           source: "trigger_call_endpoint",
         },
-        medium: { twilio: {} },
+        medium: callMedium,
+        firstSpeakerSettings: { user: {} },
         recordingEnabled: true,
       },
       ultravoxConfig
     );
 
-    let telephonyTriggered = false;
+    let telephonyTriggered = useSip; // SIP directo en Ultravox dispara la llamada saliente de forma nativa
     let telephonyError: string | null = null;
 
-    // 6. Si se obtuvo join_url y hay proveedor de telefonía configurado, realizar la llamada saliente
-    if (ultravoxRes?.join_url) {
+    // 7. Si no es SIP directo y se obtuvo join_url con Twilio/Telefonía configurado, realizar la llamada saliente
+    if (!useSip && ultravoxRes?.join_url) {
       try {
         const fromNumber =
           tenantConfig?.telephony?.credentials?.fromNumber ||

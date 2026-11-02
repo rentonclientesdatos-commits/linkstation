@@ -540,36 +540,50 @@ export async function triggerJorklifCallAction(leadId: string): Promise<{ succes
       };
     }
 
-    // ── 3. Resolver credenciales SIP de Conectabit ───────────────────────────
+    // ── 3. Resolver credenciales SIP (Compulan / Conectabit / Proveedor Dinámico) ──
     const sipDomain =
+      tenantConfig?.sip?.domain ||
+      tenantConfig?.conectabit?.sip_domain ||
       tenantConfig?.telephony?.sip?.domain ||
-      process.env.CONECTABIT_SIP_DOMAIN;
+      process.env.SIP_DOMAIN ||
+      process.env.CONECTABIT_SIP_DOMAIN ||
+      "compulan.3nx.co";
 
     const rawSipUsername =
+      tenantConfig?.sip?.username ||
+      tenantConfig?.conectabit?.sip_username ||
       tenantConfig?.telephony?.sip?.username ||
+      process.env.SIP_USERNAME ||
       process.env.CONECTABIT_SIP_USERNAME ||
       "";
     const sipUsername = String(rawSipUsername).trim();
 
     const rawSipPassword =
+      tenantConfig?.sip?.password ||
+      tenantConfig?.conectabit?.sip_password ||
       tenantConfig?.telephony?.sip?.password ||
+      process.env.SIP_PASSWORD ||
       process.env.CONECTABIT_SIP_PASSWORD ||
       "";
     const sipPassword = String(rawSipPassword).trim();
 
-    console.log(`[JORKLIF_SIP] Credenciales → username: "${sipUsername}" | password length: ${sipPassword.length}`);
+    console.log(`[JORKLIF_SIP] Credenciales → domain: "${sipDomain}" | username: "${sipUsername}" | password length: ${sipPassword.length}`);
 
     const fromNumber =
+      tenantConfig?.sip?.caller_id ||
+      tenantConfig?.conectabit?.caller_id ||
       tenantConfig?.telephony?.fromNumber ||
       tenantConfig?.jorklif?.caller_id ||
+      process.env.SIP_CALLER_ID ||
+      process.env.CONECTABIT_SIP_CALLER_ID ||
       process.env.JORKLIF_CALLER_ID;
 
     if (!fromNumber) {
-      return { success: false, message: "Número emisor no configurado. Agrega JORKLIF_CALLER_ID al entorno." };
+      return { success: false, message: "Número emisor no configurado. Agrega SIP_CALLER_ID o JORKLIF_CALLER_ID al entorno o tenant." };
     }
 
     if (!sipDomain) {
-      return { success: false, message: "Dominio SIP de Conectabit no configurado. Agrega CONECTABIT_SIP_DOMAIN al entorno." };
+      return { success: false, message: "Dominio SIP no configurado. Agrega SIP_DOMAIN o CONECTABIT_SIP_DOMAIN al entorno o tenant." };
     }
 
     const toNumber = lead.telefono;
@@ -617,7 +631,7 @@ export async function triggerJorklifCallAction(leadId: string): Promise<{ succes
       tipoGestion,
     });
 
-    const { ultravoxBridge } = await import("@/lib/integrations/ultravox");
+    const { ultravoxBridge, formatSipUri } = await import("@/lib/integrations/ultravox");
 
     const callResult = await ultravoxBridge.createAgentCall(
       agentId,
@@ -629,11 +643,11 @@ export async function triggerJorklifCallAction(leadId: string): Promise<{ succes
         medium: {
           sip: {
             outgoing: {
-              // SIP URI destino: sip:+56912345678@sip.conectabit.com
-              to: `sip:${toNumber}@${sipDomain}`,
-              // Caller ID que verá el cliente (número oficial Jorklif)
-              from: fromNumber,
-              // Credenciales de autenticación de la troncal Conectabit
+              // SIP URI destino: sip:+56912345678@compulan.3nx.co
+              to: formatSipUri(toNumber, sipDomain),
+              // SIP URI emisor (caller ID): sip:+56233857269@compulan.3nx.co
+              from: formatSipUri(fromNumber, sipDomain),
+              // Credenciales de autenticación de la troncal SIP
               ...(sipUsername ? { username: sipUsername } : {}),
               ...(sipPassword ? { password: sipPassword } : {}),
             },

@@ -5,6 +5,7 @@
 
 export interface UltravoxConfig {
   apiKey: string;
+  baseUrl?: string;
 }
 
 export interface UltravoxCallParams {
@@ -20,12 +21,12 @@ export interface UltravoxCallParams {
       accountSid?: string;
       authToken?: string;
     };
-    /** SIP trunk outbound (Conectabit / Telnyx / any SIP provider) */
+    /** SIP trunk outbound (Compulan / 3nx / Conectabit / Telnyx / any SIP provider) */
     sip?: {
       outgoing?: {
-        /** SIP URI destino: sip:+56912345678@sip.conectabit.com */
+        /** SIP URI destino: sip:+56950715750@compulan.3nx.co */
         to: string;
-        /** Caller ID (número emisor) */
+        /** SIP URI origen (caller ID): sip:+56233857269@compulan.3nx.co */
         from: string;
         username?: string;
         password?: string;
@@ -39,8 +40,136 @@ export interface UltravoxCallParams {
   recordingEnabled?: boolean;
 }
 
+/**
+ * Normaliza cualquier string a una URI SIP válida completa:
+ * Ejemplos:
+ *  - "+56950715750", "compulan.3nx.co" -> "sip:+56950715750@compulan.3nx.co"
+ *  - "56233857269", "compulan.3nx.co"  -> "sip:+56233857269@compulan.3nx.co"
+ *  - "sip:+56233857269@compulan.3nx.co" -> "sip:+56233857269@compulan.3nx.co" (se conserva intacto)
+ */
+export function formatSipUri(rawAddress: string, defaultDomain?: string): string {
+  if (!rawAddress) return "";
+  const trimmed = String(rawAddress).trim();
+
+  // Si ya es una URI SIP completa con dominio (ej: sip:+56233857269@compulan.3nx.co)
+  if (/^sips?:.+@.+/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const cleanDomain = defaultDomain ? String(defaultDomain).replace(/^@+/, "").trim() : "";
+
+  // Si inicia con sip: pero le falta el dominio (ej: sip:+56950715750)
+  if (/^sips?:/i.test(trimmed)) {
+    const withoutScheme = trimmed.replace(/^sips?:/i, "").trim();
+    if (cleanDomain && !withoutScheme.includes("@")) {
+      return `sip:${withoutScheme}@${cleanDomain}`;
+    }
+    return trimmed;
+  }
+
+  // Si ya contiene @ pero no tiene el prefijo sip:
+  if (trimmed.includes("@")) {
+    return `sip:${trimmed}`;
+  }
+
+  // Si es un número telefónico o identificador
+  const hasPlus = trimmed.startsWith("+");
+  const digitsOnly = trimmed.replace(/[^\d]/g, "");
+  let formattedUser = trimmed;
+
+  // Si es puramente numérico (ej. 56912345678 o +56912345678)
+  if (digitsOnly.length > 0 && /^[+\d\s().-]+$/.test(trimmed)) {
+    if (hasPlus) {
+      formattedUser = `+${digitsOnly}`;
+    } else if (digitsOnly.length >= 8) {
+      formattedUser = `+${digitsOnly}`;
+    } else {
+      formattedUser = digitsOnly;
+    }
+  }
+
+  if (cleanDomain) {
+    return `sip:${formattedUser}@${cleanDomain}`;
+  }
+
+  return `sip:${formattedUser}`;
+}
+
+export interface SipOutgoingOptions {
+  to: string;
+  from: string;
+  domain?: string;
+  username?: string;
+  password?: string;
+}
+
+/**
+ * Constructor dinámico del objeto SIP Outgoing para Ultravox.
+ * Permite que cualquier tenant o cliente arme su payload sin hardcodear credenciales.
+ */
+export function buildSipOutgoingMedium(options: SipOutgoingOptions) {
+  const domain = (
+    options.domain ||
+    process.env.SIP_DOMAIN ||
+    process.env.CONECTABIT_SIP_DOMAIN ||
+    ""
+  ).trim();
+
+  const toUri = formatSipUri(options.to, domain);
+  const fromUri = formatSipUri(options.from, domain);
+
+  return {
+    sip: {
+      outgoing: {
+        to: toUri,
+        from: fromUri,
+        ...(options.username ? { username: String(options.username).trim() } : {}),
+        ...(options.password ? { password: String(options.password).trim() } : {}),
+      },
+    },
+  };
+}
+
+/**
+ * Sanitiza el medium garantizando que tanto `to` como `from` sean URIs SIP completas.
+ */
+function sanitizeMedium(medium?: UltravoxCallParams["medium"]): UltravoxCallParams["medium"] {
+  if (!medium) return { twilio: {} };
+
+  if (medium.sip?.outgoing) {
+    const outgoing = medium.sip.outgoing;
+    let domain = "";
+
+    if (outgoing.to && outgoing.to.includes("@")) {
+      domain = outgoing.to.split("@")[1].trim();
+    } else if (outgoing.from && outgoing.from.includes("@")) {
+      domain = outgoing.from.split("@")[1].trim();
+    }
+
+    const sanitizedTo = formatSipUri(outgoing.to, domain);
+    const sanitizedFrom = formatSipUri(outgoing.from, domain);
+
+    return {
+      sip: {
+        outgoing: {
+          to: sanitizedTo,
+          from: sanitizedFrom,
+          ...(outgoing.username ? { username: String(outgoing.username).trim() } : {}),
+          ...(outgoing.password ? { password: String(outgoing.password).trim() } : {}),
+        },
+      },
+    };
+  }
+
+  return medium;
+}
+
 export class UltravoxBridge {
-  private baseUrl = "https://api.ultravox.ai"; // Base URL for Ultravox API
+  private baseUrl = process.env.ULTRAVOX_API_URL || "https://api.ultravox.ai"; // Base URL for Ultravox API
+
+  private getEffectiveBaseUrl(config?: UltravoxConfig): string {
+    return (config?.baseUrl || this.baseUrl).replace(/\/+$/, "");
+  }
 
   /**
    * Initiates a new AI voice call for a specific agent.
@@ -53,8 +182,11 @@ export class UltravoxBridge {
   ) {
     if (!config.apiKey) throw new Error("Missing Ultravox API Key");
 
+    const effectiveBaseUrl = this.getEffectiveBaseUrl(config);
+    const medium = sanitizeMedium(params.medium);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/agents/${agentId}/calls`, {
+      const response = await fetch(`${effectiveBaseUrl}/api/agents/${agentId}/calls`, {
         method: "POST",
         headers: {
           "X-API-Key": config.apiKey,
@@ -62,7 +194,7 @@ export class UltravoxBridge {
         },
         body: JSON.stringify({
           templateContext: params.templateContext || {},
-          medium: params.medium || { twilio: {} },
+          medium: medium || { twilio: {} },
           firstSpeakerSettings: params.firstSpeakerSettings || { user: {} },
           maxDuration: params.maxDuration || "900s",
           recordingEnabled: params.recordingEnabled ?? true,
@@ -99,8 +231,11 @@ export class UltravoxBridge {
   ) {
     if (!config.apiKey) throw new Error("Missing Ultravox API Key");
 
+    const effectiveBaseUrl = this.getEffectiveBaseUrl(config);
+    const medium = sanitizeMedium(params.medium);
+
     try {
-      const response = await fetch(`${this.baseUrl}/api/calls`, {
+      const response = await fetch(`${effectiveBaseUrl}/api/calls`, {
         method: "POST",
         headers: {
           "X-API-Key": config.apiKey,
@@ -108,11 +243,11 @@ export class UltravoxBridge {
         },
         body: JSON.stringify({
           systemPrompt: params.systemPrompt,
-          model: params.model,
+          model: params.model || "fixie-ai/ultravox",
           voice: params.voice,
           temperature: params.temperature,
           templateContext: params.templateContext || {},
-          medium: params.medium || { twilio: {} },
+          medium: medium || { twilio: {} },
           firstSpeakerSettings: params.firstSpeakerSettings || { user: {} },
           maxDuration: params.maxDuration || "900s",
           recordingEnabled: params.recordingEnabled ?? true,

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getAdminSupabaseClient } from "@/lib/supabase/server";
-import { ultravoxBridge, UltravoxConfig } from "@/lib/integrations/ultravox";
+import { ultravoxBridge, UltravoxConfig, formatSipUri } from "@/lib/integrations/ultravox";
 
 /**
  * POST /api/orchestration/test-voice-call
@@ -92,24 +92,29 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Resolver parámetros SIP (Conectabit)
-    // ⚠️  IMPORTANTE: username = usuario SIP (ej: "65312352624")
-    //                 password = contraseña SIP (ej: "w655318M")
+    // 4. Resolver parámetros SIP (Compulan / Conectabit / Proveedor dinámico)
+    // ⚠️  IMPORTANTE: username = usuario SIP (ej: "65312352624" o "65312352624D")
+    //                 password = contraseña SIP (leída de tenant config o variable de entorno)
+    //                 to / from = URIs SIP completas (ej: sip:+56950715750@compulan.3nx.co)
     // Los valores se leen con .trim() para evitar espacios involuntarios.
 
     const rawSipDomain =
       body.sip_domain ||
+      tenantConfig?.sip?.domain ||
       tenantConfig?.conectabit?.sip_domain ||
       tenantConfig?.telephony?.sip?.domain ||
+      process.env.SIP_DOMAIN ||
       process.env.CONECTABIT_SIP_DOMAIN ||
-      "ultravox.conecta-bit.com:7560";
+      "compulan.3nx.co";
     const sipDomain = String(rawSipDomain).trim();
 
     // sip_username → campo "username" del outgoing SIP
     const rawSipUsername =
       body.sip_username ||
+      tenantConfig?.sip?.username ||
       tenantConfig?.conectabit?.sip_username ||
       tenantConfig?.telephony?.sip?.username ||
+      process.env.SIP_USERNAME ||
       process.env.CONECTABIT_SIP_USERNAME ||
       "";
     const sipUsername = String(rawSipUsername).trim();
@@ -117,16 +122,23 @@ export async function POST(req: Request) {
     // sip_password → campo "password" del outgoing SIP
     const rawSipPassword =
       body.sip_password ||
+      tenantConfig?.sip?.password ||
       tenantConfig?.conectabit?.sip_password ||
       tenantConfig?.telephony?.sip?.password ||
+      process.env.SIP_PASSWORD ||
       process.env.CONECTABIT_SIP_PASSWORD ||
       "";
     const sipPassword = String(rawSipPassword).trim();
 
     const rawSipCallerId =
       body.sip_caller_id ||
+      body.caller_id ||
+      tenantConfig?.sip?.caller_id ||
+      tenantConfig?.conectabit?.caller_id ||
       tenantConfig?.jorklif?.caller_id ||
       tenantConfig?.telephony?.fromNumber ||
+      process.env.SIP_CALLER_ID ||
+      process.env.CONECTABIT_SIP_CALLER_ID ||
       process.env.JORKLIF_CALLER_ID ||
       process.env.TWILIO_PHONE_NUMBER ||
       "";
@@ -134,34 +146,38 @@ export async function POST(req: Request) {
 
     const sipFirstSpeaker = body.sip_first_speaker || "user";
 
-    // 5. Formatear y sanitizar teléfono
+    // 5. Formatear números a URIs SIP completas
+    // "medium.sip.outgoing.to":   sip:+56950715750@compulan.3nx.co
+    // "medium.sip.outgoing.from": sip:+56233857269@compulan.3nx.co
     const rawPhone = String(phone);
-    const cleanPhone = rawPhone.replace(/[^0-9+]/g, "");
-    const sipUri = `sip:${cleanPhone}@${sipDomain}`;
+    const toSipUri = formatSipUri(rawPhone, sipDomain);
+    const fromSipUri = formatSipUri(sipCallerId || rawPhone, sipDomain);
 
     // ── DIAGNÓSTICO COMPLETO ──────────────────────────────────────────────────
     console.log("[TEST_VOICE_CALL] 🔍 SIP Credential Diagnostic:");
-    console.log(`  sip_domain   : "${sipDomain}" (source: ${body.sip_domain ? "body" : tenantConfig?.conectabit?.sip_domain ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.domain ? "tenant.telephony" : "env/default"})`);
-    console.log(`  sip_username : "${sipUsername}" (source: ${body.sip_username ? "body" : tenantConfig?.conectabit?.sip_username ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.username ? "tenant.telephony" : "env/default"})`);
-    console.log(`  sip_password : [length ${sipPassword.length}] (source: ${body.sip_password ? "body" : tenantConfig?.conectabit?.sip_password ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.password ? "tenant.telephony" : "env/default"})`);
+    console.log(`  sip_domain   : "${sipDomain}" (source: ${body.sip_domain ? "body" : tenantConfig?.sip?.domain ? "tenant.sip" : tenantConfig?.conectabit?.sip_domain ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.domain ? "tenant.telephony" : "env/default"})`);
+    console.log(`  sip_username : "${sipUsername}" (source: ${body.sip_username ? "body" : tenantConfig?.sip?.username ? "tenant.sip" : tenantConfig?.conectabit?.sip_username ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.username ? "tenant.telephony" : "env/default"})`);
+    console.log(`  sip_password : [length ${sipPassword.length}] (source: ${body.sip_password ? "body" : tenantConfig?.sip?.password ? "tenant.sip" : tenantConfig?.conectabit?.sip_password ? "tenant.conectabit" : tenantConfig?.telephony?.sip?.password ? "tenant.telephony" : "env/default"})`);
     console.log(`  caller_id    : "${sipCallerId}"`);
-    console.log(`  sip_uri      : "${sipUri}"`);
+    console.log(`  sip_to       : "${toSipUri}"`);
+    console.log(`  sip_from     : "${fromSipUri}"`);
     // ─────────────────────────────────────────────────────────────────────────
 
     const ultravoxConfig: UltravoxConfig = { apiKey };
 
     const callPayload = {
       templateContext: {
-        nombre: "Prueba Conectabit SIP",
-        telefono: cleanPhone,
+        nombre: "Prueba Outbound SIP",
+        telefono: rawPhone,
         test_mode: true,
         fecha: new Date().toISOString(),
       },
+      model: body.model || tenantConfig?.ultravox?.model || process.env.ULTRAVOX_MODEL || "fixie-ai/ultravox",
       medium: {
         sip: {
           outgoing: {
-            to: sipUri,
-            from: sipCallerId || cleanPhone,
+            to: toSipUri,
+            from: fromSipUri,
             ...(sipUsername ? { username: sipUsername } : {}),
             ...(sipPassword ? { password: sipPassword } : {}),
           },
@@ -180,7 +196,7 @@ export async function POST(req: Request) {
         {
           systemPrompt:
             prompt ||
-            "Eres un asistente de voz de prueba conectado vía Ultravox y Conectabit SIP. Saluda cordialmente al usuario y dile que la prueba de conexión telefónica fue un éxito.",
+            "Eres un asistente de voz de prueba conectado vía Ultravox y SIP Trunk. Saluda cordialmente al usuario y dile que la prueba de conexión telefónica fue un éxito.",
           ...callPayload,
         },
         ultravoxConfig
@@ -199,8 +215,10 @@ export async function POST(req: Request) {
         fecha_inicio: new Date().toISOString(),
         metadata: {
           test: true,
-          phone: cleanPhone,
-          sip_uri: sipUri,
+          phone: rawPhone,
+          sip_uri: toSipUri,
+          sip_to: toSipUri,
+          sip_from: fromSipUri,
           sip_domain: sipDomain,
           call_id: result.call_id,
         },
@@ -213,9 +231,11 @@ export async function POST(req: Request) {
       success: true,
       call_id: result.call_id,
       join_url: result.join_url,
-      sip_uri: sipUri,
+      sip_uri: toSipUri,
+      sip_to: toSipUri,
+      sip_from: fromSipUri,
       caller_id: sipCallerId,
-      message: `¡Llamada SIP disparada exitosamente hacia ${cleanPhone}!`,
+      message: `¡Llamada SIP disparada exitosamente hacia ${rawPhone}!`,
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);

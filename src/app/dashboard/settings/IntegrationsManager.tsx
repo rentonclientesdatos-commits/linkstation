@@ -351,8 +351,8 @@ export function IntegrationsManager({ tenantId, config, onChange }: Integrations
                 medium: {
                   sip: {
                     outgoing: {
-                      to: `sip:{{lead.telefono}}@${conectabit.sip_domain || "ultravox.conecta-bit.com:7560"}`,
-                      from: conectabit.caller_id || "(caller_id)",
+                      to: `sip:{{lead.telefono}}@${conectabit.sip_domain || "compulan.3nx.co"}`,
+                      from: `sip:${conectabit.caller_id || "+56XXXXXXXX"}@${conectabit.sip_domain || "compulan.3nx.co"}`,
                       username: conectabit.sip_username || "(vacío)",
                       password: conectabit.sip_password ? `[${conectabit.sip_password.length} chars]` : "(vacío)",
                     }

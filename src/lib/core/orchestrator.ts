@@ -4,7 +4,7 @@ import { isFeatureEnabled } from "./feature-flags";
 import { buildComplianceDecision } from "./compliance";
 import { whatsappBridge, WhatsAppConfig } from "../integrations/whatsapp";
 
-import { ultravoxBridge } from "../integrations/ultravox";
+import { ultravoxBridge, formatSipUri } from "../integrations/ultravox";
 import { PdfService } from "../services/pdf-service";
 import { getAgentVariants } from "../actions/agents";
 import {
@@ -1397,36 +1397,53 @@ export class Orchestrator {
           ...parsedDynamicVars,
         };
 
-        // ── SIP DIRECTO (sin Twilio) ────────────────────────────────────────
-        const sipEnabled = Boolean(conf?.sip_enabled) || Boolean(tenantConf?.conectabit?.sip_domain) || Boolean(process.env.CONECTABIT_SIP_DOMAIN);
+        // ── SIP DIRECTO (Compulan / Conectabit / Proveedor Dinámico) ────────
+        const sipEnabled =
+          Boolean(conf?.sip_enabled) ||
+          Boolean(tenantConf?.sip?.domain) ||
+          Boolean(tenantConf?.conectabit?.sip_domain) ||
+          Boolean(process.env.SIP_DOMAIN) ||
+          Boolean(process.env.CONECTABIT_SIP_DOMAIN);
+
         const sipDomain = (
           (conf?.sip_domain as string) ||
+          tenantConf?.sip?.domain ||
           tenantConf?.conectabit?.sip_domain ||
           tenantConf?.telephony?.sip?.domain ||
+          process.env.SIP_DOMAIN ||
           process.env.CONECTABIT_SIP_DOMAIN ||
-          "ultravox.conecta-bit.com:7560"
+          "compulan.3nx.co"
         ).trim();
 
         const sipUsername = (
           (conf?.sip_username as string) ||
+          tenantConf?.sip?.username ||
           tenantConf?.conectabit?.sip_username ||
           tenantConf?.telephony?.sip?.username ||
+          process.env.SIP_USERNAME ||
           process.env.CONECTABIT_SIP_USERNAME ||
-          "Renzo319"
+          ""
         ).trim();
 
         const rawPassword =
           (conf?.sip_password as string) ||
+          tenantConf?.sip?.password ||
           tenantConf?.conectabit?.sip_password ||
           tenantConf?.telephony?.sip?.password ||
+          process.env.SIP_PASSWORD ||
           process.env.CONECTABIT_SIP_PASSWORD ||
           "";
         const sipPassword = rawPassword.trim();
 
         const rawCallerId =
           (conf?.sip_caller_id as string) ||
+          conf?.caller_id ||
+          tenantConf?.sip?.caller_id ||
+          tenantConf?.conectabit?.caller_id ||
           tenantConf?.jorklif?.caller_id ||
           tenantConf?.telephony?.fromNumber ||
+          process.env.SIP_CALLER_ID ||
+          process.env.CONECTABIT_SIP_CALLER_ID ||
           process.env.JORKLIF_CALLER_ID ||
           process.env.TWILIO_PHONE_NUMBER ||
           "";
@@ -1435,20 +1452,24 @@ export class Orchestrator {
         const sipFirstSpeaker = (conf?.sip_first_speaker as string) || "user";
 
         if (sipEnabled && sipDomain) {
-          // Build SIP URI:  sip:+56912345678@compulan.3nx.co
-          const sipUri = `sip:${toPhone}@${sipDomain}`;
+          // Build complete SIP URIs:
+          // to:   sip:+56950715750@compulan.3nx.co
+          // from: sip:+56233857269@compulan.3nx.co
+          const toSipUri = formatSipUri(toPhone, sipDomain);
+          const fromSipUri = formatSipUri(sipCallerId || toPhone, sipDomain);
 
           console.log(
-            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId || "INLINE"} | URI: ${sipUri} | From: ${sipCallerId} | User: ${sipUsername}`
+            `[ORCHESTRATOR] 📞 SIP Outbound → Agent: ${targetAgentId || "INLINE"} | To: ${toSipUri} | From: ${fromSipUri} | User: ${sipUsername}`
           );
 
           const callPayload = {
             templateContext,
+            model: (conf?.model as string) || tenantConf?.ultravox?.model || process.env.ULTRAVOX_MODEL || "fixie-ai/ultravox",
             medium: {
               sip: {
                 outgoing: {
-                  to: sipUri,
-                  from: sipCallerId || toPhone,
+                  to: toSipUri,
+                  from: fromSipUri,
                   ...(sipUsername ? { username: sipUsername } : {}),
                   ...(sipPassword ? { password: sipPassword } : {}),
                 },
@@ -1488,7 +1509,9 @@ export class Orchestrator {
                 workflow_id,
                 node_id: conf?.node_id,
                 phone: toPhone,
-                sip_uri: sipUri,
+                sip_uri: toSipUri,
+                sip_to: toSipUri,
+                sip_from: fromSipUri,
                 sip_domain: sipDomain,
                 call_id: sipCallResult?.call_id,
               },
