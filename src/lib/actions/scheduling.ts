@@ -80,11 +80,48 @@ export async function saveAdvisor(advisor: Partial<Advisor>) {
   if (!tenantId) return { error: "No hay un cliente seleccionado." };
 
   const supabase = await getAdminSupabaseClient();
-  const { data, error } = await supabase
-    .from("advisors" as never)
-    .upsert({ ...advisor, tenant_id: tenantId } as never)
+  const payload: Record<string, unknown> = { ...advisor, tenant_id: tenantId };
+
+  let { data, error } = await (supabase.from("advisors" as any) as any)
+    .upsert(payload)
     .select()
     .single();
+
+  // If Supabase schema cache does not have handled_lead_types or specialties columns,
+  // gracefully remove them and fallback so the advisor is saved without blocking the user.
+  if (
+    error &&
+    (error.code === "PGRST204" ||
+      error.message?.includes("schema cache") ||
+      error.message?.includes("handled_lead_types") ||
+      error.message?.includes("specialties"))
+  ) {
+    const fallbackPayload: Record<string, unknown> = { ...payload };
+    delete fallbackPayload.handled_lead_types;
+    delete fallbackPayload.specialties;
+    delete fallbackPayload.specialty;
+
+    // If courses is empty but specialties has values, save them into courses
+    if (
+      (!fallbackPayload.courses ||
+        (Array.isArray(fallbackPayload.courses) && fallbackPayload.courses.length === 0)) &&
+      advisor.specialties
+    ) {
+      fallbackPayload.courses = advisor.specialties;
+    }
+
+    const retry = await (supabase.from("advisors" as any) as any)
+      .upsert(fallbackPayload)
+      .select()
+      .single();
+
+    if (!retry.error) {
+      data = retry.data;
+      error = null;
+    } else {
+      error = retry.error;
+    }
+  }
 
   if (error) return { error: error.message };
   return { success: true, data: data as unknown as Advisor };
