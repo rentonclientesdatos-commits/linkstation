@@ -16,6 +16,7 @@ import {
   formatOperatingHoursText,
   formatDaysText,
 } from "@/lib/utils/operating-hours";
+import { MultiAgentService } from "@/lib/services/multi-agent-service";
 
 /**
  * WHATSAPP AI PROCESSOR (CEREBRO v3.0)
@@ -348,6 +349,8 @@ export async function generateAIWhatsAppResponse(
         )
         .join("\n");
     }
+
+    const availableAgents = await MultiAgentService.getAvailableAgents(tenantId, agentId);
 
     const tenantConfig = (
       tenantData?.data as unknown as {
@@ -946,6 +949,60 @@ export async function generateAIWhatsAppResponse(
       });
     }
 
+    if (availableAgents.length > 0) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "transfer_to_agent",
+          description:
+            "Transfiere la conversación a otro agente especialista del equipo. Úsala cuando el cliente requiera un área distinta (ej: soporte técnico especializado, ventas avanzadas, reclamos o cotizaciones complejas) que otro agente atiende mejor.",
+          parameters: {
+            type: "object",
+            properties: {
+              targetAgentId: {
+                type: "string",
+                description:
+                  "ID único del agente especialista al cual transferir la conversación.",
+              },
+              reason: {
+                type: "string",
+                description: "Motivo concreto de la transferencia.",
+              },
+              handoffMessage: {
+                type: "string",
+                description:
+                  "Mensaje cordial de transición que le dices al cliente para explicar la transferencia.",
+              },
+            },
+            required: ["targetAgentId", "reason"],
+          },
+        },
+      });
+
+      tools.push({
+        type: "function",
+        function: {
+          name: "consult_specialist_agent",
+          description:
+            "Consulta internamente a otro agente especialista de tu equipo para obtener una respuesta técnica o de negocio exacta, SIN transferir al cliente. El cliente seguirá hablando contigo, pero tú tendrás la respuesta precisa del especialista.",
+          parameters: {
+            type: "object",
+            properties: {
+              targetAgentId: {
+                type: "string",
+                description: "ID exacto del agente especialista a consultar.",
+              },
+              query: {
+                type: "string",
+                description: "Pregunta técnica o comercial interna para el especialista.",
+              },
+            },
+            required: ["targetAgentId", "query"],
+          },
+        },
+      });
+    }
+
     // 8. Build System Prompt
     const restaurantPromptSection = isRestaurant
       ? `
@@ -1062,7 +1119,20 @@ ${
         .join("\n")
     : "No hay citas programadas activas para este lead."
 }
-${restaurantPromptSection}`;
+${restaurantPromptSection}
+${
+  availableAgents.length > 0
+    ? `
+### RED DE AGENTES ESPECIALISTAS (COLABORACIÓN MULTI-AGENTE):
+Cuentas con un equipo de agentes especialistas disponibles para colaborar en tiempo real:
+${availableAgents.map((a) => `- ID: "${a.id}" | Nombre: ${a.name} | Especialidad: ${a.description}`).join("\n")}
+
+REGLAS DE COMUNICACIÓN INTER-AGENTES:
+1. Si el cliente requiere un área o servicio que corresponde a otro especialista de la lista anterior, DEBES llamar a 'transfer_to_agent' pasando el 'targetAgentId' correspondiente, el motivo y un mensaje amable de transición.
+2. Si solo requieres un dato puntual que maneja un especialista y deseas responderle tú mismo al cliente, llama a 'consult_specialist_agent'. Recibirás la respuesta técnica interna para sintetizarla en tu respuesta final.
+`
+    : ""
+}`;
 
     // 9. Call OpenAI with Tools
     let modelName = activeVariant.model_name || "gpt-4o";
@@ -1447,6 +1517,26 @@ ${restaurantPromptSection}`;
                   "Confírmale de forma cálida, cercana y con buena onda al cliente que le acabas de adjuntar la carta en PDF aquí en el chat para que la revise con calma.",
               });
             }
+          } else if (name === "transfer_to_agent") {
+            const res = await MultiAgentService.transferLeadToAgent({
+              tenantId,
+              leadId,
+              currentAgentId: agentId,
+              targetAgentId: args.targetAgentId,
+              reason: args.reason,
+              handoffMessage: args.handoffMessage,
+            });
+            result = JSON.stringify(res);
+          } else if (name === "consult_specialist_agent") {
+            const res = await MultiAgentService.consultSpecialistAgent({
+              tenantId,
+              leadId,
+              currentAgentId: agentId,
+              targetAgentId: args.targetAgentId,
+              query: args.query || args.query_for_specialist || "",
+              userContext: `Mensaje del usuario: "${incomingMessage}" | Datos del lead: ${JSON.stringify(lead)}`,
+            });
+            result = JSON.stringify(res);
           }
         } catch (e) {
           console.error(`[AI PROCESSOR] ❌ Error executing tool ${name}:`, e);

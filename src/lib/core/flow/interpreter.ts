@@ -426,6 +426,53 @@ ${instructions}
             break;
           }
 
+          case "flow_ai_agent": {
+            const agentId =
+              (node.data.agentId as string) ||
+              (node.data.agent_id as string) ||
+              "";
+            const agentName =
+              (node.data.agentName as string) ||
+              (node.data.agent_name as string) ||
+              "";
+
+            if (agentId) {
+              const currentMeta = (currentLead.metadata as Record<string, unknown>) || {};
+              const updatedPayload = {
+                ai_agent_id: agentId,
+                inactivity_sent_count: 0,
+                metadata: {
+                  ...currentMeta,
+                  current_agent_id: agentId,
+                  current_agent_name: agentName || undefined,
+                  last_agent_handoff: {
+                    from_agent_id: currentLead.ai_agent_id || null,
+                    to_agent_id: agentId,
+                    to_agent_name: agentName || null,
+                    via_flow_node: node.id,
+                    timestamp: new Date().toISOString(),
+                  },
+                },
+              };
+
+              const { data: updatedLead } = await db
+                .from("lead")
+                .update(updatedPayload)
+                .eq("id", leadId)
+                .select("*")
+                .single();
+
+              if (updatedLead) {
+                currentLead = updatedLead as unknown as LeadLike;
+              }
+
+              console.log(
+                `[FLOW INTERPRETER] Lead ${leadId} assigned to agent ${agentName || agentId} at node ${node.id}`
+              );
+            }
+            break;
+          }
+
           default: {
             console.warn(`[FLOW INTERPRETER] Unsupported node type: ${node.type}`);
             break;

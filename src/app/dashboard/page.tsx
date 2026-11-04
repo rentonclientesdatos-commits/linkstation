@@ -18,6 +18,7 @@ import { DEFAULT_SUMMARY_KPIS, DEFAULT_CHARTS, DEFAULT_FUNNEL } from "@/lib/cons
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { parseFilters } from "@/lib/utils/date-filters";
 import { Filter } from "lucide-react";
+import { PipelineSection, PipelineSkeleton } from "@/components/dashboard/pipeline/PipelineSection";
 
 // ─── KPI SUMMARY SECTION ──────────────────────────────────────────────────────
 
@@ -205,6 +206,13 @@ export default async function DashboardPage({
         }
       >
         <SummarySection from={from} to={to} isAdmin={isAdmin} filters={filters} />
+      </Suspense>
+
+      <Suspense
+        key={`pipeline-${from}-${to}-${JSON.stringify(filters)}`}
+        fallback={<PipelineSkeleton />}
+      >
+        <PipelineSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
       </Suspense>
 
       <Suspense

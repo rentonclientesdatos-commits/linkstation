@@ -316,4 +316,62 @@ describe("FlowInterpreter Core Execution", () => {
       })
     );
   });
+
+  it("should successfully execute a flow_ai_agent node and reassign lead to the new agent", async () => {
+    const mockNodes = [
+      { node_id: "start", type: "flow_trigger", data: {}, position: {} },
+      {
+        node_id: "agent_node_1",
+        type: "flow_ai_agent",
+        data: {
+          agentId: "agent-target-uuid",
+          agentName: "Agente Especialista Cierre",
+        },
+        position: {},
+      },
+    ];
+    const mockEdges = [
+      { edge_id: "e1", source: "start", target: "agent_node_1", source_handle: null, target_handle: null },
+    ];
+    const mockLead = {
+      id: "lead-123",
+      nombre: "Carlos",
+      ai_agent_id: "agent-initial-uuid",
+      metadata: {},
+    };
+
+    let updatedLeadData: any = null;
+
+    vi.spyOn(mockSupabaseClient, "from").mockImplementation((table: string) => {
+      if (table === "flow_nodes") {
+        return createMockQuery({ data: mockNodes, error: null });
+      }
+      if (table === "flow_edges") {
+        return createMockQuery({ data: mockEdges, error: null });
+      }
+      if (table === "lead") {
+        const query = createMockQuery({ data: mockLead, error: null });
+        query.update = vi.fn().mockImplementation((payload) => {
+          updatedLeadData = payload;
+          return createMockQuery({ data: { ...mockLead, ...payload }, error: null });
+        });
+        return query;
+      }
+      return createMockQuery({ data: null, error: null });
+    });
+
+    const result = await FlowInterpreter.execute({
+      tenantId: "tenant-123",
+      leadId: "lead-123",
+      flowId: "flow-123",
+    });
+
+    expect(result.status).toBe("COMPLETED");
+    expect(updatedLeadData).not.toBeNull();
+    expect(updatedLeadData.ai_agent_id).toBe("agent-target-uuid");
+    expect(updatedLeadData.inactivity_sent_count).toBe(0);
+    expect(updatedLeadData.metadata.current_agent_name).toBe("Agente Especialista Cierre");
+    expect(updatedLeadData.metadata.last_agent_handoff.to_agent_id).toBe("agent-target-uuid");
+  });
 });
+

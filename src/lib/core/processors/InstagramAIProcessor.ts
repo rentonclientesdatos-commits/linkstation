@@ -20,6 +20,7 @@ import OpenAI from "openai";
 import { ChatMemoryService } from "@/lib/services/chat-memory";
 import { KnowledgeBaseService, ChatSummaryService } from "@/lib/services/knowledge-base";
 import { FactExtractionService } from "@/lib/services/fact-extractor";
+import { MultiAgentService } from "@/lib/services/multi-agent-service";
 import { GlobalLogger } from "../logger";
 import { getAuthServiceRoleKey } from "@/lib/auth-config";
 
@@ -152,6 +153,8 @@ export async function generateAIInstagramResponse(
       }
     );
 
+    const availableAgents = await MultiAgentService.getAvailableAgents(tenantId, agentId);
+
     let finalPrompt = activeVariant.prompt_text as string;
     Object.keys(variableMap).forEach((key) => {
       const regex = new RegExp(`{{\\s*${key}\\s*}}`, "gi");
@@ -178,7 +181,20 @@ ${localKnowledge || "No hay información adicional específica."}
 ${chatSummary || "Primera interacción."}
 
 ### CONTEXTO RECIENTE:
-${conversationContext || "No hay mensajes previos."}`;
+${conversationContext || "No hay mensajes previos."}
+${
+  availableAgents.length > 0
+    ? `
+### RED DE AGENTES ESPECIALISTAS (COLABORACIÓN MULTI-AGENTE):
+Cuentas con agentes especialistas disponibles en tu equipo:
+${availableAgents.map((a) => `- ID: "${a.id}" | Nombre: ${a.name} | Especialidad: ${a.description}`).join("\n")}
+
+REGLAS DE COMUNICACIÓN INTER-AGENTES:
+1. Si el usuario necesita un área que atiende un especialista (ventas avanzadas, soporte técnico, reclamos), llama a 'transfer_to_agent'.
+2. Si solo requieres consultar un dato puntual a un especialista para responderle tú mismo al usuario, llama a 'consult_specialist_agent'.
+`
+    : ""
+}`;
 
     // 6. Build tools (appointment booking)
     const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
@@ -212,6 +228,58 @@ ${conversationContext || "No hay mensajes previos."}`;
         },
       },
     ];
+
+    if (availableAgents.length > 0) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "transfer_to_agent",
+          description:
+            "Transfiere la conversación a otro agente especialista del equipo. Úsala cuando el cliente requiera un área distinta que otro agente atiende mejor.",
+          parameters: {
+            type: "object",
+            properties: {
+              targetAgentId: {
+                type: "string",
+                description: "ID único del agente especialista destino.",
+              },
+              reason: {
+                type: "string",
+                description: "Motivo concreto de la transferencia.",
+              },
+              handoffMessage: {
+                type: "string",
+                description: "Mensaje cordial de transición para el usuario en Instagram.",
+              },
+            },
+            required: ["targetAgentId", "reason"],
+          },
+        },
+      });
+
+      tools.push({
+        type: "function",
+        function: {
+          name: "consult_specialist_agent",
+          description:
+            "Consulta internamente a otro agente especialista de tu equipo sin transferir al usuario.",
+          parameters: {
+            type: "object",
+            properties: {
+              targetAgentId: {
+                type: "string",
+                description: "ID exacto del agente especialista a consultar.",
+              },
+              query: {
+                type: "string",
+                description: "Pregunta técnica o de negocio interna para el especialista.",
+              },
+            },
+            required: ["targetAgentId", "query"],
+          },
+        },
+      });
+    }
 
     // 7. Call OpenAI
     const openai = new OpenAI({ apiKey });
@@ -275,6 +343,26 @@ ${conversationContext || "No hay mensajes previos."}`;
               args.date,
               "Europe/Madrid"
             );
+            result = JSON.stringify(res);
+          } else if (name === "transfer_to_agent") {
+            const res = await MultiAgentService.transferLeadToAgent({
+              tenantId,
+              leadId,
+              currentAgentId: agentId,
+              targetAgentId: args.targetAgentId,
+              reason: args.reason,
+              handoffMessage: args.handoffMessage,
+            });
+            result = JSON.stringify(res);
+          } else if (name === "consult_specialist_agent") {
+            const res = await MultiAgentService.consultSpecialistAgent({
+              tenantId,
+              leadId,
+              currentAgentId: agentId,
+              targetAgentId: args.targetAgentId,
+              query: args.query || args.query_for_specialist || "",
+              userContext: `Mensaje de Instagram: "${incomingMessage}"`,
+            });
             result = JSON.stringify(res);
           }
         } catch (e: any) {
