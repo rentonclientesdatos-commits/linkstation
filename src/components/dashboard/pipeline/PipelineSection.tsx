@@ -1,11 +1,13 @@
 import React from "react";
 import { getPipelineData } from "@/lib/actions/pipeline";
+import { DEFAULT_PIPELINE_STAGES } from "@/lib/actions/pipeline.types";
+import { getActiveTenantConfig } from "@/lib/actions/tenant";
 import { PipelineManager } from "./PipelineManager";
 import type { AnalyticsFilters } from "@/lib/actions/analytics";
 
 export function PipelineSkeleton() {
   return (
-    <div className="w-full rounded-[32px] border border-white/10 bg-slate-950/40 p-6 backdrop-blur-xl animate-pulse">
+    <div className="w-full rounded-[32px] border border-white/10 bg-slate-950/40 p-6 backdrop-blur-xl animate-pulse my-8">
       <div className="flex items-center justify-between pb-6 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-2xl bg-white/5" />
@@ -48,22 +50,22 @@ export async function PipelineSection({
   isAdmin: boolean;
   filters?: AnalyticsFilters;
 }) {
-  const result = await getPipelineData({
-    from,
-    to,
-    campaign: filters?.campana,
-  });
-
-  if (!result.success || !result.tenantId) {
+  const tenant = await getActiveTenantConfig();
+  if (!tenant?.id) {
     return null;
   }
+
+  // Load pipeline data. We pass campaign if filtered, and fetch current active leads.
+  const result = await getPipelineData({
+    campaign: filters?.campana,
+  });
 
   return (
     <div className="w-full my-8">
       <PipelineManager
-        initialStages={result.stages}
-        initialLeads={result.leads}
-        tenantId={result.tenantId}
+        initialStages={result?.stages || DEFAULT_PIPELINE_STAGES}
+        initialLeads={result?.leads || []}
+        tenantId={tenant.id}
         isAdmin={isAdmin}
       />
     </div>

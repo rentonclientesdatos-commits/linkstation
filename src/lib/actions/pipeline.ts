@@ -84,23 +84,23 @@ export async function getPipelineData(options?: {
     let query = supabase
       .from("lead")
       .select(
-        "id, nombre, apellido, telefono, email, segmentacion, tipo_lead, origen, campana, fecha_creacion, fecha_actualizacion, last_interaction_at, is_ai_enabled, is_ai_paused, metadata"
+        "id, nombre, apellido, telefono, email, pais, tipo_lead, origen, campana, status, is_ai_enabled, segmentacion, metadata, fecha_ingreso_crm, fecha_actualizacion, fecha_creacion"
       )
       .eq("tenant_id", tenant.id)
-      .order("fecha_actualizacion", { ascending: false })
+      .order("fecha_creacion", { ascending: false })
       .limit(options?.limit || 200);
 
     if (options?.campaign && options.campaign !== "all") {
       query = query.eq("campana", options.campaign);
     }
     if (options?.from) {
-      query = query.gte("fecha_ingreso_crm", options.from);
+      query = query.gte("fecha_creacion", options.from);
     }
     if (options?.to) {
-      query = query.lte("fecha_ingreso_crm", options.to);
+      query = query.lte("fecha_creacion", options.to);
     }
 
-    const { data: leads, error } = await query;
+    const { data: rawLeads, error } = await query;
     if (error) {
       log.error("Error fetching pipeline leads", { error });
       return {
@@ -112,11 +112,36 @@ export async function getPipelineData(options?: {
       };
     }
 
+    const mappedLeads: PipelineLead[] = ((rawLeads || []) as any[]).map((l) => {
+      const meta = (l.metadata || {}) as Record<string, unknown>;
+      return {
+        id: l.id,
+        nombre: l.nombre || null,
+        apellido: l.apellido || null,
+        telefono: l.telefono || null,
+        email: l.email || null,
+        segmentacion: l.segmentacion || null,
+        tipo_lead: l.tipo_lead || null,
+        origen: l.origen || null,
+        campana: l.campana || null,
+        fecha_creacion: l.fecha_creacion || l.fecha_ingreso_crm || null,
+        fecha_actualizacion: l.fecha_actualizacion || l.fecha_creacion || null,
+        last_interaction_at:
+          (meta.last_interaction_at as string) ||
+          l.fecha_actualizacion ||
+          l.fecha_creacion ||
+          null,
+        is_ai_enabled: l.is_ai_enabled ?? true,
+        is_ai_paused: Boolean(meta.is_ai_paused),
+        metadata: l.metadata || null,
+      };
+    });
+
     return {
       success: true,
       tenantId: tenant.id,
       stages,
-      leads: (leads || []) as PipelineLead[],
+      leads: mappedLeads,
     };
   } catch (err) {
     log.error("Exception in getPipelineData", { err });
