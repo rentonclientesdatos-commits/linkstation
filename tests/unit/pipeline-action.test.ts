@@ -4,9 +4,11 @@ import {
   getPipelineData,
   updateLeadStage,
   savePipelineStages,
+} from "@/lib/actions/pipeline";
+import {
   DEFAULT_PIPELINE_STAGES,
   type PipelineStage,
-} from "@/lib/actions/pipeline";
+} from "@/lib/actions/pipeline.types";
 
 const { mockFrom, mockGetActiveTenantConfig } = vi.hoisted(() => {
   return {

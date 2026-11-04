@@ -3,77 +3,23 @@
 import { getAdminSupabaseClient } from "@/lib/supabase/server";
 import { getActiveTenantConfig } from "./tenant";
 import { createLogger } from "@/lib/utils/logger";
+import {
+  DEFAULT_PIPELINE_STAGES,
+  type PipelineStage,
+  type PipelineLead,
+} from "./pipeline.types";
+
+// Re-export types so existing imports keep working
+export type { PipelineStage, PipelineLead } from "./pipeline.types";
 
 const log = createLogger("pipeline.action");
-
-export interface PipelineStage {
-  id: string;
-  name: string;
-  segmentKey: string;
-  color: "blue" | "indigo" | "purple" | "emerald" | "amber" | "rose" | "teal" | "cyan" | "slate";
-  order: number;
-}
-
-export interface PipelineLead {
-  id: string;
-  nombre: string | null;
-  apellido: string | null;
-  telefono: string | null;
-  email: string | null;
-  segmentacion: string | null;
-  tipo_lead: string | null;
-  origen: string | null;
-  campana: string | null;
-  fecha_creacion: string | null;
-  fecha_actualizacion: string | null;
-  last_interaction_at: string | null;
-  is_ai_enabled: boolean;
-  is_ai_paused: boolean;
-  metadata?: Record<string, unknown> | null;
-}
-
-export const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
-  {
-    id: "stage-puesto-1",
-    name: "Entrada / Nuevo",
-    segmentKey: "PUESTO 1",
-    color: "blue",
-    order: 0,
-  },
-  {
-    id: "stage-revisado",
-    name: "En Conversación",
-    segmentKey: "REVISADO",
-    color: "indigo",
-    order: 1,
-  },
-  {
-    id: "stage-cualificado",
-    name: "Cualificado",
-    segmentKey: "CUALIFICADO",
-    color: "amber",
-    order: 2,
-  },
-  {
-    id: "stage-agendado",
-    name: "Cita Agendada",
-    segmentKey: "AGENDADO",
-    color: "emerald",
-    order: 3,
-  },
-  {
-    id: "stage-descartado",
-    name: "Sin Interés",
-    segmentKey: "SIN INTERÉS",
-    color: "rose",
-    order: 4,
-  },
-];
 
 /**
  * Resolves stages from tenant configuration, building from custom segmentations or defaults.
  */
-export async function getPipelineStages(tenantConfig?: Record<string, unknown>): Promise<PipelineStage[]> {
+export async function getPipelineStages(
+  tenantConfig?: Record<string, unknown>
+): Promise<PipelineStage[]> {
   const config = tenantConfig || {};
   const savedStages = config.pipeline_stages as PipelineStage[] | undefined;
 
@@ -84,7 +30,15 @@ export async function getPipelineStages(tenantConfig?: Record<string, unknown>):
   // Check if tenant has custom segmentations array
   const customSegmentations = config.segmentations as string[] | undefined;
   if (Array.isArray(customSegmentations) && customSegmentations.length > 0) {
-    const palette: PipelineStage["color"][] = ["blue", "indigo", "amber", "emerald", "purple", "teal", "rose"];
+    const palette: PipelineStage["color"][] = [
+      "blue",
+      "indigo",
+      "amber",
+      "emerald",
+      "purple",
+      "teal",
+      "rose",
+    ];
     return customSegmentations.map((seg, idx) => ({
       id: `stage-${idx}-${seg.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
       name: seg,
@@ -115,7 +69,12 @@ export async function getPipelineData(options?: {
   try {
     const tenant = await getActiveTenantConfig();
     if (!tenant?.id) {
-      return { success: false, stages: DEFAULT_PIPELINE_STAGES, leads: [], error: "No hay tenant activo" };
+      return {
+        success: false,
+        stages: DEFAULT_PIPELINE_STAGES,
+        leads: [],
+        error: "No hay tenant activo",
+      };
     }
 
     const tenantConfig = (tenant.config as Record<string, unknown>) || {};
@@ -144,7 +103,13 @@ export async function getPipelineData(options?: {
     const { data: leads, error } = await query;
     if (error) {
       log.error("Error fetching pipeline leads", { error });
-      return { success: false, tenantId: tenant.id, stages, leads: [], error: error.message };
+      return {
+        success: false,
+        tenantId: tenant.id,
+        stages,
+        leads: [],
+        error: error.message,
+      };
     }
 
     return {
@@ -197,7 +162,10 @@ export async function updateLeadStage(
     return { success: true };
   } catch (err) {
     log.error("Exception in updateLeadStage", { err });
-    return { success: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
 
@@ -216,7 +184,9 @@ export async function savePipelineStages(
     const supabase = await getAdminSupabaseClient();
 
     // Fetch current tenant config to preserve other keys
-    const { data: currentTenant, error: fetchErr } = await (supabase.from("tenants" as any) as any)
+    const { data: currentTenant, error: fetchErr } = await (
+      supabase.from("tenants" as any) as any
+    )
       .select("config")
       .eq("id", tenant.id)
       .single();
@@ -225,7 +195,8 @@ export async function savePipelineStages(
       return { success: false, error: fetchErr.message };
     }
 
-    const currentConfig = (currentTenant?.config as Record<string, unknown>) || {};
+    const currentConfig =
+      (currentTenant?.config as Record<string, unknown>) || {};
 
     // Sort stages by order
     const sortedStages = [...stages].map((s, idx) => ({
@@ -255,10 +226,15 @@ export async function savePipelineStages(
       return { success: false, error: updateErr.message };
     }
 
-    log.info(`[PIPELINE] Saved ${sortedStages.length} stages for tenant ${tenant.id}`);
+    log.info(
+      `[PIPELINE] Saved ${sortedStages.length} stages for tenant ${tenant.id}`
+    );
     return { success: true, stages: sortedStages };
   } catch (err) {
     log.error("Exception in savePipelineStages", { err });
-    return { success: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
