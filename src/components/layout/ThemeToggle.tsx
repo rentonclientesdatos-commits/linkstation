@@ -40,9 +40,9 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <div className="relative">
-        <button className="group relative flex h-10 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 opacity-50 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900">
-          <div className="h-4 w-4 rounded-full bg-slate-200 dark:bg-slate-700" />
-          <span className="text-[11px] font-black tracking-widest text-slate-500 uppercase dark:text-slate-400">
+        <button className="group relative flex h-10 items-center gap-2 rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] px-3 opacity-50 shadow-sm transition-all">
+          <div className="h-4 w-4 rounded-full bg-slate-700" />
+          <span className="text-[11px] font-black tracking-widest text-slate-400 uppercase">
             Cargando...
           </span>
         </button>
@@ -55,8 +55,8 @@ export function ThemeToggle() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "group hover:border-primary/40 relative flex h-10 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 shadow-sm transition-all dark:border-slate-800 dark:bg-slate-900",
-          isOpen && "ring-primary/20 ring-2"
+          "group relative flex h-10 items-center gap-2 rounded-2xl border border-[rgba(0,229,255,0.12)] bg-[rgba(255,255,255,0.03)] px-3 shadow-sm transition-all hover:border-[rgba(0,229,255,0.3)] hover:bg-[rgba(255,255,255,0.06)]",
+          isOpen && "ring-primary/20 ring-2 border-[rgba(0,229,255,0.35)]"
         )}
         title="Cambiar tema visual"
         aria-label="Abrir selector de temas"
@@ -69,13 +69,13 @@ export function ThemeToggle() {
         >
           <activeTheme.icon className="h-2.5 w-2.5" />
         </div>
-        <span className="group-hover:text-primary text-[11px] font-black tracking-widest text-slate-500 uppercase transition-colors dark:text-slate-400">
+        <span className="text-[11px] font-black tracking-widest text-slate-300 uppercase transition-colors group-hover:text-[#00e5ff]">
           Tema: {activeTheme.name}
         </span>
       </button>
 
       {isOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 absolute top-full right-0 z-[100] mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        <div className="animate-in fade-in slide-in-from-top-2 absolute top-full right-0 z-[100] mt-2 w-48 overflow-hidden rounded-2xl border border-[rgba(0,229,255,0.15)] bg-[rgba(8,12,24,0.95)] shadow-2xl backdrop-blur-2xl">
           <div className="space-y-1 p-2">
             {THEMES.map((t) => (
               <button

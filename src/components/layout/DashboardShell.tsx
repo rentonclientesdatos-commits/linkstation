@@ -36,7 +36,7 @@ export function DashboardShell({
 
   return (
     <div
-      className="relative flex h-screen overflow-hidden transition-all duration-500"
+      className="dark relative flex h-screen overflow-hidden transition-all duration-500"
       style={{ background: "#030712" }}
     >
       {/* Ambient background aura behind floating macOS sidebar */}

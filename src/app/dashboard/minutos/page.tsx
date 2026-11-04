@@ -91,14 +91,14 @@ async function MinutosKpis({
       title={
         <div className="mb-2">
           <div className="mb-4 flex items-center gap-4">
-            <div className="rounded-[20px] bg-blue-50 p-3 dark:bg-blue-900/20">
-              <Bot className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <div className="rounded-[20px] border border-blue-500/20 bg-blue-500/10 p-3">
+              <Bot className="h-8 w-8 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-[32px] leading-tight font-bold tracking-tight text-slate-900 dark:text-white">
-                Agente de <span className="text-blue-600 dark:text-blue-400">voz</span>
+              <h1 className="text-[32px] leading-tight font-bold tracking-tight text-white">
+                Agente de <span className="text-blue-400">voz</span>
               </h1>
-              <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400">
+              <p className="text-[15px] font-medium text-slate-400">
                 Rendimiento del ciclo de contacto automatizado
               </p>
             </div>
@@ -111,13 +111,13 @@ async function MinutosKpis({
                 Total minutos
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-7xl leading-none font-black tracking-tighter text-slate-900 dark:text-white">
+                <span className="text-7xl leading-none font-black tracking-tighter text-white">
                   {Math.floor(kpi.total_segundos / 60).toLocaleString("es-ES")}
                 </span>
                 <span className="text-2xl font-black text-slate-400">min</span>
                 {kpi.total_segundos % 60 > 0 && (
                   <>
-                    <span className="ml-2 text-4xl font-black tracking-tighter text-slate-700 dark:text-slate-300">
+                    <span className="ml-2 text-4xl font-black tracking-tighter text-slate-300">
                       {kpi.total_segundos % 60}
                     </span>
                     <span className="text-lg font-bold text-slate-400">seg</span>
@@ -131,13 +131,13 @@ async function MinutosKpis({
                   Duración media
                 </p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
+                  <span className="text-2xl font-black text-blue-400">
                     {Math.floor(kpi.duracion_media_segundos / 60)}
                   </span>
                   <span className="text-sm font-bold text-slate-400">min</span>
                   {kpi.duracion_media_segundos % 60 > 0 && (
                     <>
-                      <span className="ml-1 text-xl font-black text-blue-500/80 dark:text-blue-400/80">
+                      <span className="ml-1 text-xl font-black text-blue-400/80">
                         {kpi.duracion_media_segundos % 60}
                       </span>
                       <span className="text-xs font-bold text-slate-400">seg</span>
@@ -149,7 +149,7 @@ async function MinutosKpis({
                 <p className="mb-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
                   Llamadas
                 </p>
-                <p className="text-2xl font-black text-slate-700 dark:text-slate-200">
+                <p className="text-2xl font-black text-slate-200">
                   {kpi.total_llamadas.toLocaleString("es-ES")}
                 </p>
               </div>

@@ -385,15 +385,15 @@ export function ChartManager({
       <div className="mb-8 flex items-center justify-between">
         {title === undefined ? (
           <div className="flex items-center gap-4">
-            <div className="rounded-[20px] bg-indigo-50 p-3 dark:bg-indigo-900/20">
-              <PieChart className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+            <div className="rounded-[20px] border border-indigo-500/20 bg-indigo-500/10 p-3">
+              <PieChart className="h-8 w-8 text-indigo-400" />
             </div>
             <div>
               {/* Sprint 3 SP-4-WCAG-09: h1→h2 para heading hierarchy correcta (un único h1 por página, el del dashboard). */}
-              <h2 className="text-[32px] leading-tight font-bold tracking-tight text-slate-900 dark:text-white">
-                Análisis <span className="text-indigo-600 dark:text-indigo-400">Visual</span>
+              <h2 className="text-[32px] leading-tight font-bold tracking-tight text-white">
+                Análisis <span className="text-indigo-400">Visual</span>
               </h2>
-              <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400">
+              <p className="text-[15px] font-medium text-slate-400">
                 Histogramas, tendencias y distribución de datos
               </p>
             </div>

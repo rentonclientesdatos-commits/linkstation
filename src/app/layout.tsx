@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={`${inter.variable} bg-background text-foreground font-sans antialiased`}>
         {/* Sprint 3 SP-4-WCAG-10: skip-link al inicio del body (WCAG 2.4.1 Bypass Blocks). */}
         <SkipLink />
-        <ThemeProvider defaultTheme="system" storageKey="ui-theme">
+        <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
           <ToastProvider>{children}</ToastProvider>
         </ThemeProvider>
       </body>

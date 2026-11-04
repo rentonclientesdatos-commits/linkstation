@@ -395,7 +395,7 @@ export function FunnelChartComponent({
         </div>
       )}
       <ResponsiveContainer width="100%" height={320}>
-        <FunnelChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+        <FunnelChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }} style={{ background: 'transparent' }}>
           <Tooltip content={<CustomTooltipBar />} cursor={{ fill: "transparent" }} />
           <Funnel dataKey="value" data={data} isAnimationActive>
             <LabelList

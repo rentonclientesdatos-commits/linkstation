@@ -288,11 +288,11 @@ export default function CostsPage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
-          <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+          <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-white">
             <Coins className="h-10 w-10 text-blue-500" />
             Centro de Costes
           </h1>
-          <p className="mt-2 font-medium text-slate-500">
+          <p className="mt-2 font-medium text-slate-400">
             Inversión real auditada por lead y categoría.
           </p>
         </div>
@@ -368,8 +368,8 @@ export default function CostsPage() {
         <div className="rounded-[32px] border border-slate-200 bg-white p-8 lg:col-span-2 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white">Flujo de Gastos</h3>
-              <p className="mt-1 text-xs font-medium tracking-widest text-slate-500 uppercase">
+              <h3 className="text-xl font-black text-white">Flujo de Gastos</h3>
+              <p className="mt-1 text-xs font-medium tracking-widest text-slate-400 uppercase">
                 Histórico diario real
               </p>
             </div>
