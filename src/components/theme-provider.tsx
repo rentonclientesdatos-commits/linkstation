@@ -31,7 +31,13 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
       try {
-        return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+        const stored = localStorage.getItem(storageKey) as Theme;
+        // Solo permitir temas oscuros: dark, space. Rechazar light, aqua, esmeralda.
+        const allowedDarkThemes: Theme[] = ["dark", "space"];
+        if (stored && allowedDarkThemes.includes(stored)) return stored;
+        // Cualquier otro valor → forzar dark y limpiar storage
+        localStorage.setItem(storageKey, defaultTheme);
+        return defaultTheme;
       } catch (error) {
         return defaultTheme;
       }

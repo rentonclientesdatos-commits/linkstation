@@ -19,6 +19,7 @@ import { FilterBar } from "@/components/dashboard/FilterBar";
 import { parseFilters } from "@/lib/utils/date-filters";
 import { Filter } from "lucide-react";
 import { PipelineSection, PipelineSkeleton } from "@/components/dashboard/pipeline/PipelineSection";
+import { DashboardTabs, TabKey } from "@/components/dashboard/DashboardTabs";
 
 // ─── KPI SUMMARY SECTION ──────────────────────────────────────────────────────
 
@@ -174,6 +175,7 @@ export default async function DashboardPage({
   const params = await searchParams;
   const { from, to, filters } = parseFilters(params);
   const [availableCampaigns, isAdmin] = await Promise.all([getUniqueCampaigns(), getAdminStatus()]);
+  const initialTab = (typeof params.tab === "string" ? params.tab : "overview") as TabKey;
 
   return (
     <div className="w-full space-y-6 pb-10">
@@ -181,59 +183,67 @@ export default async function DashboardPage({
 
       <FilterBar availableCampaigns={availableCampaigns} />
 
-      {/* Sprint 2B: Overview cross-canal (NUEVO, encima de SummarySection) */}
-      <Suspense
-        key={`overview-${from}-${to}-${JSON.stringify(filters)}`}
-        fallback={
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <KpiSkeleton key={i} />
-            ))}
-          </div>
+      <DashboardTabs
+        initialTab={initialTab}
+        overviewSlot={
+          <Suspense
+            key={`overview-${from}-${to}-${JSON.stringify(filters)}`}
+            fallback={
+              <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <KpiSkeleton key={i} />
+                ))}
+              </div>
+            }
+          >
+            <OverviewSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
+          </Suspense>
         }
-      >
-        <OverviewSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
-      </Suspense>
-
-      <Suspense
-        key={`summary-${from}-${to}-${JSON.stringify(filters)}`}
-        fallback={
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <KpiSkeleton key={i} />
-            ))}
-          </div>
+        summarySlot={
+          <Suspense
+            key={`summary-${from}-${to}-${JSON.stringify(filters)}`}
+            fallback={
+              <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <KpiSkeleton key={i} />
+                ))}
+              </div>
+            }
+          >
+            <SummarySection from={from} to={to} isAdmin={isAdmin} filters={filters} />
+          </Suspense>
         }
-      >
-        <SummarySection from={from} to={to} isAdmin={isAdmin} filters={filters} />
-      </Suspense>
-
-      <Suspense
-        key={`pipeline-${from}-${to}-${JSON.stringify(filters)}`}
-        fallback={<PipelineSkeleton />}
-      >
-        <PipelineSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
-      </Suspense>
-
-      <Suspense
-        key={`funnel-${from}-${to}-${JSON.stringify(filters)}`}
-        fallback={<ChartSkeleton />}
-      >
-        <FunnelSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
-      </Suspense>
-
-      <Suspense
-        key={`charts-${from}-${to}-${JSON.stringify(filters)}`}
-        fallback={
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <ChartSkeleton key={i} />
-            ))}
-          </div>
+        pipelineSlot={
+          <Suspense
+            key={`pipeline-${from}-${to}-${JSON.stringify(filters)}`}
+            fallback={<PipelineSkeleton />}
+          >
+            <PipelineSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
+          </Suspense>
         }
-      >
-        <ChartsSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
-      </Suspense>
+        funnelSlot={
+          <Suspense
+            key={`funnel-${from}-${to}-${JSON.stringify(filters)}`}
+            fallback={<ChartSkeleton />}
+          >
+            <FunnelSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
+          </Suspense>
+        }
+        chartsSlot={
+          <Suspense
+            key={`charts-${from}-${to}-${JSON.stringify(filters)}`}
+            fallback={
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <ChartSkeleton key={i} />
+                ))}
+              </div>
+            }
+          >
+            <ChartsSection from={from} to={to} isAdmin={isAdmin} filters={filters} />
+          </Suspense>
+        }
+      />
     </div>
   );
 }
