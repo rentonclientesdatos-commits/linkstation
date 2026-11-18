@@ -22,16 +22,16 @@ import {
 import type { ChartRow } from "@/lib/actions/analytics";
 import { cn } from "@/lib/utils";
 
-// Vibrant Neon Futuristic color palette
+// Professional B2B SaaS color palette
 const PALETTE = [
-  "#00e5ff", // Neon Cyan
-  "#8b5cf6", // Neon Purple
-  "#10b981", // Neon Emerald
-  "#f59e0b", // Neon Amber
-  "#ff2d55", // Neon Rose
-  "#06b6d4", // Electric Teal
-  "#ec4899", // Neon Pink
-  "#3b82f6", // Electric Blue
+  "#3b82f6", // Blue
+  "#8b5cf6", // Purple
+  "#10b981", // Emerald
+  "#f59e0b", // Amber
+  "#ec4899", // Pink
+  "#06b6d4", // Teal
+  "#6366f1", // Indigo
+  "#38bdf8", // Sky
 ];
 
 import type { TooltipProps } from "recharts";
@@ -40,9 +40,9 @@ import type { TooltipProps } from "recharts";
 const CustomTooltipBar = ({ active, payload, label }: TooltipProps<number, string> | any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-[rgba(0,229,255,0.25)] bg-[rgba(6,11,26,0.92)] px-4 py-3 text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_15px_rgba(0,229,255,0.15)] backdrop-blur-xl">
-      <p className="mb-1 font-bold text-slate-200">{label}</p>
-      <p className="font-black text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]">
+    <div className="rounded-xl border border-[#272935] bg-[#16171d] px-3.5 py-2.5 text-xs shadow-xl">
+      <p className="mb-0.5 font-medium text-[#8a8f9d]">{label}</p>
+      <p className="font-bold text-white">
         {payload[0].value?.toLocaleString()} llamadas
       </p>
     </div>
@@ -53,9 +53,9 @@ const CustomTooltipBar = ({ active, payload, label }: TooltipProps<number, strin
 const CustomTooltipPie = ({ active, payload }: TooltipProps<number, string> | any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-[rgba(0,229,255,0.25)] bg-[rgba(6,11,26,0.92)] px-4 py-3 text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_15px_rgba(0,229,255,0.15)] backdrop-blur-xl">
-      <p className="font-bold text-slate-200">{payload[0].name}</p>
-      <p className="font-black text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.6)]">
+    <div className="rounded-xl border border-[#272935] bg-[#16171d] px-3.5 py-2.5 text-xs shadow-xl">
+      <p className="font-medium text-[#8a8f9d]">{payload[0].name}</p>
+      <p className="font-bold text-white">
         {payload[0].value?.toLocaleString()} ({payload[0].payload?.pct}%)
       </p>
     </div>
@@ -123,35 +123,47 @@ interface SummaryCardProps {
 
 export function SummaryCard({ label, value, sub, icon }: SummaryCardProps) {
   return (
-    <div className="group relative flex h-full items-center gap-5 overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.25)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_24px_rgba(0,229,255,0.12)]">
-      {/* Top subtle glow line */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
-
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[rgba(0,229,255,0.15)] bg-[rgba(0,229,255,0.06)] shadow-[0_0_15px_rgba(0,229,255,0.15)] transition-all duration-300 group-hover:border-[rgba(0,229,255,0.35)] group-hover:bg-[rgba(0,229,255,0.12)] group-hover:shadow-[0_0_20px_rgba(0,229,255,0.3)]">
-        {/* Clone the icon to ensure it has the right size and maintains its own colors/bg */}
-        {isValidElement(icon) ? (
-          <div className="flex items-center justify-center text-[#00e5ff]">
-            {cloneElement(icon as React.ReactElement<{ className?: string }>, {
-              className: cn(
-                (icon as React.ReactElement<{ className?: string }>).props?.className,
-                "h-7 w-7 text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.7)]"
-              ),
-            })}
-          </div>
-        ) : (
-          icon
-        )}
-      </div>
-      <div className="flex min-w-0 flex-col">
-        <p className="mb-1 truncate text-[13px] leading-tight font-semibold tracking-wide text-slate-400">
+    <div className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[#23252e] bg-[#121317] p-5 shadow-sm transition-all duration-200 hover:border-[#2e313d]">
+      <div className="flex items-start justify-between gap-3">
+        <p className="truncate text-xs font-semibold tracking-wider text-[#8a8f9d] uppercase">
           {label}
         </p>
-        <div className="text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[#272935] bg-[#181920] text-zinc-300 transition-colors group-hover:border-[#3b82f6]/30 group-hover:text-white">
+          {isValidElement(icon) ? (
+            <div className="flex items-center justify-center">
+              {cloneElement(icon as React.ReactElement<{ className?: string }>, {
+                className: cn(
+                  (icon as React.ReactElement<{ className?: string }>).props?.className,
+                  "h-4 w-4"
+                ),
+              })}
+            </div>
+          ) : (
+            icon
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <div className="text-2xl font-bold tracking-tight text-white md:text-3xl">
           {value}
         </div>
         {sub && (
-          <p className="mt-1 text-xs font-medium text-slate-500">{sub}</p>
+          <p className="mt-1 text-xs font-medium text-[#71717a]">{sub}</p>
         )}
+      </div>
+
+      {/* Subtle bottom sparkline curve accent (Linear / Modern SaaS style) */}
+      <div className="pointer-events-none mt-3 -mx-5 -mb-5 h-6 overflow-hidden opacity-25 transition-opacity group-hover:opacity-40">
+        <svg viewBox="0 0 100 25" preserveAspectRatio="none" className="h-full w-full">
+          <path
+            d="M0 20 Q 25 5, 50 15 T 100 8"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-blue-500"
+          />
+        </svg>
       </div>
     </div>
   );
@@ -493,14 +505,11 @@ export function HeatmapChartComponent({
   );
 }
 
-/* ── Chart Card wrapper ────────────────────── */
+/* ── Chart Card wrapper (Linear Minimalist) ────────────────────── */
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 hover:border-[rgba(0,229,255,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(0,229,255,0.08)]">
-      {/* Top subtle glow line */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
-
-      <h3 className="mb-6 text-xs font-bold tracking-[0.2em] uppercase text-slate-400">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#23252e] bg-[#121317] p-6 shadow-sm transition-all duration-200 hover:border-[#2e313d]">
+      <h3 className="mb-5 text-xs font-semibold tracking-wider uppercase text-[#8a8f9d]">
         {title}
       </h3>
       <div className="min-h-[260px] flex-1">{children}</div>
@@ -511,19 +520,19 @@ function ChartCard({ title, children }: { title: string; children: ReactNode }) 
 /* ── Skeleton ──────────────────────────────── */
 export function ChartSkeleton() {
   return (
-    <div className="animate-pulse rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.4)] p-7 shadow-sm">
-      <div className="mb-6 h-4 w-40 rounded-lg bg-[rgba(0,229,255,0.08)]" />
-      <div className="h-[220px] rounded-xl bg-[rgba(255,255,255,0.03)]" />
+    <div className="animate-pulse rounded-2xl border border-[#23252e] bg-[#121317] p-6 shadow-sm">
+      <div className="mb-5 h-4 w-40 rounded-lg bg-white/5" />
+      <div className="h-[220px] rounded-xl bg-white/[0.02]" />
     </div>
   );
 }
 
 export function KpiSkeleton() {
   return (
-    <div className="animate-pulse rounded-2xl border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.4)] p-6 shadow-sm">
-      <div className="h-3 w-24 rounded-lg bg-[rgba(0,229,255,0.08)]" />
-      <div className="mt-4 h-10 w-20 rounded-xl bg-[rgba(255,255,255,0.05)]" />
-      <div className="mt-3 h-3 w-32 rounded-lg bg-[rgba(255,255,255,0.03)]" />
+    <div className="animate-pulse rounded-2xl border border-[#23252e] bg-[#121317] p-5 shadow-sm">
+      <div className="h-3 w-24 rounded-lg bg-white/5" />
+      <div className="mt-4 h-9 w-20 rounded-xl bg-white/[0.04]" />
+      <div className="mt-3 h-3 w-32 rounded-lg bg-white/[0.02]" />
     </div>
   );
 }

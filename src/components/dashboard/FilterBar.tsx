@@ -77,12 +77,9 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
   }
 
   return (
-    <div className="relative mb-6 flex flex-col gap-3 rounded-[24px] border border-[rgba(0,229,255,0.08)] bg-[rgba(10,15,30,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300 md:p-5">
-      {/* Top subtle glow line */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.25)] to-transparent" />
-
+    <div className="relative mb-6 flex flex-col gap-3 rounded-2xl border border-[#23252e] bg-[#121317] p-3.5 shadow-sm transition-all duration-200 md:p-4">
       {/* Row 1: Quick Presets */}
-      <div className="custom-scrollbar no-scrollbar flex items-center gap-1 overflow-x-auto rounded-xl border border-[rgba(0,229,255,0.08)] bg-[rgba(4,8,20,0.7)] p-1">
+      <div className="custom-scrollbar no-scrollbar flex items-center gap-1 overflow-x-auto rounded-xl border border-[#23252e] bg-[#0d0e12] p-1">
         {DATE_PRESETS.map((p) => (
           <button
             key={p.value}
@@ -92,10 +89,10 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
               setDraftTo("");
             }}
             className={cn(
-              "flex-shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200",
+              "flex-shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all duration-150",
               draftPreset === p.value
-                ? "border border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.25)]"
-                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                ? "bg-[#1c1d25] border border-[#2e313d] text-white shadow-sm"
+                : "text-[#8a8f9d] hover:bg-white/[0.04] hover:text-white"
             )}
           >
             {p.label}
@@ -106,7 +103,7 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
       {/* Row 2: Search + actions */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-[#8a8f9d]" />
           <input
             type="text"
             placeholder="Buscar teléfono / ID..."
@@ -115,25 +112,25 @@ export function FilterBar({ availableCampaigns = [] }: { availableCampaigns?: st
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-            className="w-full rounded-xl border border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] py-2.5 pr-4 pl-10 text-sm font-medium text-slate-100 placeholder:text-slate-500 transition-all outline-none focus:border-[#00e5ff] focus:bg-[rgba(255,255,255,0.05)] focus:shadow-[0_0_15px_rgba(0,229,255,0.2)]"
+            className="w-full rounded-xl border border-[#272935] bg-[#181920] py-2 pr-4 pl-10 text-xs font-medium text-white placeholder:text-[#52525b] transition-all outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
           />
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
-            "flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-200",
+            "flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-all duration-150",
             isExpanded
-              ? "border-[rgba(0,229,255,0.35)] bg-[rgba(0,229,255,0.12)] text-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,0.2)]"
-              : "border-[rgba(0,229,255,0.1)] bg-[rgba(255,255,255,0.03)] text-slate-300 hover:border-[rgba(0,229,255,0.2)] hover:bg-white/[0.05] hover:text-white"
+              ? "border-[#2e313d] bg-[#1c1d25] text-white shadow-sm"
+              : "border-[#272935] bg-[#181920] text-[#8a8f9d] hover:border-[#383a48] hover:text-white"
           )}
         >
-          <Filter className="h-4 w-4 text-[#00e5ff]" />
+          <Filter className="h-3.5 w-3.5 text-[#8a8f9d]" />
           <span className="hidden sm:inline">Filtros</span>
-          <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isExpanded && "rotate-180")} />
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-150", isExpanded && "rotate-180")} />
         </button>
         <button
           onClick={applyFilters}
-          className="flex-shrink-0 rounded-xl bg-[#00e5ff] px-4 py-2.5 text-sm font-bold text-[#000d14] shadow-[0_0_15px_rgba(0,229,255,0.35)] transition-all hover:bg-[#38bdf8] hover:shadow-[0_0_24px_rgba(0,229,255,0.6)] active:scale-95 sm:px-6"
+          className="flex-shrink-0 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-zinc-950 transition-all hover:bg-zinc-200 active:scale-95 sm:px-5"
         >
           Aplicar
         </button>

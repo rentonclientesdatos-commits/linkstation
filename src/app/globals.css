@@ -53,76 +53,76 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   THEME: NEON DARK (Default — Futuristic / Glassmorphism)
+   THEME: CHARCOAL MINIMALIST (Linear / Vercel Pro B2B SaaS)
 ═══════════════════════════════════════════════════════════════ */
 :root {
-  --radius: 0.875rem;
+  --radius: 0.75rem;
 
   /* Base */
-  --background: #030712;
-  --foreground: #e2e8f0;
+  --background: #090a0d;
+  --foreground: #f4f4f5;
 
-  /* Cards — glass panels */
-  --card: rgba(10, 15, 30, 0.55);
-  --card-foreground: #e2e8f0;
+  /* Cards — Solid Matte Charcoal Surfaces */
+  --card: #121317;
+  --card-foreground: #f4f4f5;
 
-  /* Popovers */
-  --popover: rgba(8, 12, 24, 0.92);
-  --popover-foreground: #e2e8f0;
+  /* Popovers / Dropdowns */
+  --popover: #16171d;
+  --popover-foreground: #f4f4f5;
 
-  /* Primary — Neon Cyan */
-  --primary: #00e5ff;
-  --primary-foreground: #000d14;
+  /* Primary — Crisp Clean Blue / Indigo Accent */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
 
   /* Secondary */
-  --secondary: rgba(0, 229, 255, 0.06);
-  --secondary-foreground: #94a3b8;
+  --secondary: #1a1b22;
+  --secondary-foreground: #e4e4e7;
 
   /* Muted */
-  --muted: rgba(255, 255, 255, 0.04);
-  --muted-foreground: #64748b;
+  --muted: #16171d;
+  --muted-foreground: #8a8f9d;
 
-  /* Accent — Neon Purple */
-  --accent: rgba(139, 92, 246, 0.12);
-  --accent-foreground: #a78bfa;
+  /* Accent */
+  --accent: #22232c;
+  --accent-foreground: #ffffff;
 
   /* Destructive */
-  --destructive: #ff2d55;
+  --destructive: #ef4444;
 
-  /* Borders — subtle glass */
-  --border: rgba(0, 229, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.05);
-  --ring: #00e5ff;
+  /* Borders & Inputs — Ultra Clean Thin Charcoal Borders */
+  --border: #23252e;
+  --input: #1a1b22;
+  --ring: #3b82f6;
 
   /* Charts */
-  --chart-1: #00e5ff;
-  --chart-2: #7c3aed;
+  --chart-1: #3b82f6;
+  --chart-2: #8b5cf6;
   --chart-3: #10b981;
   --chart-4: #f59e0b;
-  --chart-5: #ff2d55;
+  --chart-5: #ec4899;
 
   /* Sidebar */
-  --sidebar: rgba(4, 8, 20, 0.80);
-  --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #00e5ff;
-  --sidebar-primary-foreground: #000d14;
-  --sidebar-accent: rgba(0, 229, 255, 0.08);
-  --sidebar-accent-foreground: #00e5ff;
-  --sidebar-border: rgba(0, 229, 255, 0.07);
-  --sidebar-ring: #00e5ff;
+  --sidebar: #0d0e12;
+  --sidebar-foreground: #9ca3af;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #090a0d;
+  --sidebar-accent: #171820;
+  --sidebar-accent-foreground: #f4f4f5;
+  --sidebar-border: #1e2027;
+  --sidebar-ring: #3b82f6;
 
-  /* Neon glow tokens */
-  --neon-cyan: #00e5ff;
-  --neon-purple: #8b5cf6;
+  /* Clean accent tokens */
+  --neon-cyan: #38bdf8;
+  --neon-purple: #a855f7;
   --neon-green: #10b981;
   --neon-amber: #f59e0b;
-  --neon-rose: #ff2d55;
+  --neon-rose: #f43f5e;
 
   /* Gradients */
-  --grad-primary: linear-gradient(135deg, #00e5ff 0%, #7c3aed 100%);
-  --grad-surface: linear-gradient(160deg, rgba(0,229,255,0.05) 0%, rgba(139,92,246,0.04) 50%, rgba(0,0,0,0) 100%);
-  --grad-sidebar: linear-gradient(180deg, rgba(0,229,255,0.03) 0%, rgba(0,0,0,0) 100%);
-  --grad-neon-border: linear-gradient(135deg, rgba(0,229,255,0.3), rgba(139,92,246,0.2), rgba(0,229,255,0.1));
+  --grad-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --grad-surface: #121317;
+  --grad-sidebar: #0d0e12;
+  --grad-neon-border: #23252e;
 }
 
 /* ── THEME: AQUA (Light — kept for compatibility) ─────────── */
@@ -167,12 +167,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-    /* Subtle animated gradient background */
-    background-image:
-      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0, 229, 255, 0.04) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
-    background-attachment: fixed;
+    @apply bg-background text-foreground antialiased;
+    background-color: #090a0d;
   }
 }
 

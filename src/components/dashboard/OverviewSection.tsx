@@ -61,19 +61,16 @@ export async function OverviewSection({
 
   return (
     <section aria-labelledby="overview-heading" className="mt-2 mb-8">
-      <div className="mb-6 flex items-center gap-4">
-        <div className="bg-primary/10 rounded-[20px] p-3">
-          <LayoutDashboard className="text-primary h-8 w-8" aria-hidden="true" />
-        </div>
+      <div className="mb-5 flex items-center justify-between">
         <div>
           <h2
             id="overview-heading"
-            className="text-foreground text-[32px] leading-tight font-bold tracking-tight"
+            className="text-base font-semibold tracking-tight text-white md:text-lg"
           >
-            Resumen <span className="text-primary">general</span>
+            Resumen General
           </h2>
-          <p className="text-muted-foreground text-[15px] font-medium">
-            KPIs cross-canal: llamadas, WhatsApp y web consolidados
+          <p className="text-xs text-[#8a8f9d]">
+            Métricas consolidadas de llamadas, WhatsApp y canales web
           </p>
         </div>
       </div>

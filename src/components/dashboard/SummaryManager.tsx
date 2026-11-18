@@ -453,19 +453,13 @@ export function SummaryManager({
       {layout !== "funnel" ? (
         <div className="mb-8 flex items-center justify-between">
           {title === undefined ? (
-            <div className="flex items-center gap-4">
-              <div className="rounded-[20px] border border-blue-500/20 bg-blue-500/10 p-3">
-                <TrendingUp className="h-8 w-8 text-blue-400" />
-              </div>
-              <div>
-                {/* Sprint 3 SP-4-WCAG-09: h1→h2 para heading hierarchy correcta. */}
-                <h2 className="text-[32px] leading-tight font-bold tracking-tight text-white">
-                  Métricas <span className="text-blue-400">Generales</span>
-                </h2>
-                <p className="text-[15px] font-medium text-slate-400">
-                  Rendimiento global y estadísticas del sistema
-                </p>
-              </div>
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-white md:text-lg">
+                Métricas Generales
+              </h2>
+              <p className="text-xs text-[#8a8f9d]">
+                Rendimiento global y estadísticas del sistema
+              </p>
             </div>
           ) : (
             title || null
@@ -627,8 +621,7 @@ export function SummaryManager({
           }
 
           return (
-            <div className="relative mx-auto mb-12 flex w-full max-w-[900px] flex-col items-center overflow-hidden rounded-[40px] border border-[rgba(0,229,255,0.12)] bg-[rgba(10,15,30,0.65)] px-6 py-12 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,229,255,0.06),transparent_70%)] opacity-100" />
+            <div className="relative mx-auto mb-8 flex w-full max-w-[900px] flex-col items-center overflow-hidden rounded-2xl border border-[#23252e] bg-[#121317] px-6 py-10 shadow-sm">
 
               {/* SVG Funnel */}
               <div className="relative flex w-full justify-center">
@@ -885,28 +878,28 @@ export function SummaryManager({
               )}
 
               {/* Effectiveness footer */}
-              <div className="mt-10 flex w-full max-w-[520px] flex-col items-center gap-1 border-t border-[rgba(0,229,255,0.12)] pt-6">
+              <div className="mt-8 flex w-full max-w-[520px] flex-col items-center gap-1 border-t border-[#23252e] pt-6">
                 {isEditing ? (
                   /* ── Edit mode: configure which steps to compare ── */
                   <div className="w-full space-y-3">
-                    <p className="text-center text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
+                    <p className="text-center text-[10px] font-bold tracking-[0.2em] text-[#8a8f9d] uppercase">
                       Configurar Efectividad
                     </p>
 
                     {/* From step */}
-                    <div className="flex items-center gap-3 rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.8)] px-4 py-3 shadow-sm">
-                      <span className="w-16 shrink-0 text-[11px] font-bold text-slate-400">
+                    <div className="flex items-center gap-3 rounded-xl border border-[#23252e] bg-[#16171d] px-4 py-3 shadow-sm">
+                      <span className="w-16 shrink-0 text-[11px] font-medium text-[#8a8f9d]">
                         Desde
                       </span>
                       <select
                         value={effFromId}
                         onChange={(e) => setEffFromId(e.target.value)}
-                        className="flex-1 cursor-pointer bg-transparent text-[12px] font-semibold text-slate-200 outline-none"
+                        className="flex-1 cursor-pointer bg-transparent text-[12px] font-medium text-zinc-200 outline-none"
                         title="Paso inicial de efectividad"
                       >
-                        <option value="__first__" className="bg-slate-900 text-white">— Primer paso (automático)</option>
+                        <option value="__first__" className="bg-[#121317] text-white">— Primer paso (automático)</option>
                         {steps.map((s) => (
-                          <option key={s.id} value={s.id} className="bg-slate-900 text-white">
+                          <option key={s.id} value={s.id} className="bg-[#121317] text-white">
                             {s.label}
                           </option>
                         ))}
@@ -914,19 +907,19 @@ export function SummaryManager({
                     </div>
 
                     {/* To step */}
-                    <div className="flex items-center gap-3 rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.8)] px-4 py-3 shadow-sm">
-                      <span className="w-16 shrink-0 text-[11px] font-bold text-slate-400">
+                    <div className="flex items-center gap-3 rounded-xl border border-[#23252e] bg-[#16171d] px-4 py-3 shadow-sm">
+                      <span className="w-16 shrink-0 text-[11px] font-medium text-[#8a8f9d]">
                         Hasta
                       </span>
                       <select
                         value={effToId}
                         onChange={(e) => setEffToId(e.target.value)}
-                        className="flex-1 cursor-pointer bg-transparent text-[12px] font-semibold text-slate-200 outline-none"
+                        className="flex-1 cursor-pointer bg-transparent text-[12px] font-medium text-zinc-200 outline-none"
                         title="Paso final de efectividad"
                       >
-                        <option value="__last__" className="bg-slate-900 text-white">— Último paso (automático)</option>
+                        <option value="__last__" className="bg-[#121317] text-white">— Último paso (automático)</option>
                         {steps.map((s) => (
-                          <option key={s.id} value={s.id} className="bg-slate-900 text-white">
+                          <option key={s.id} value={s.id} className="bg-[#121317] text-white">
                             {s.label}
                           </option>
                         ))}
@@ -934,8 +927,8 @@ export function SummaryManager({
                     </div>
 
                     {/* Description */}
-                    <div className="flex items-center gap-3 rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.8)] px-4 py-3 shadow-sm">
-                      <span className="w-16 shrink-0 text-[11px] font-bold text-slate-400">
+                    <div className="flex items-center gap-3 rounded-xl border border-[#23252e] bg-[#16171d] px-4 py-3 shadow-sm">
+                      <span className="w-16 shrink-0 text-[11px] font-medium text-[#8a8f9d]">
                         Texto
                       </span>
                       <input
@@ -944,19 +937,19 @@ export function SummaryManager({
                         onChange={(e) => setEffLabel(e.target.value)}
                         placeholder="Descripción de la conversión..."
                         title="Etiqueta de efectividad"
-                        className="flex-1 bg-transparent text-[12px] font-semibold text-slate-200 outline-none placeholder:text-slate-600"
+                        className="flex-1 bg-transparent text-[12px] font-medium text-zinc-200 outline-none placeholder:text-[#52525b]"
                       />
                     </div>
 
                     {/* Live preview */}
                     <div className="flex flex-col items-center pt-2">
-                      <div className="flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-[#00e5ff] uppercase">
+                      <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase">
                         <Target className="h-4 w-4" /> Efectividad del Embudo
                       </div>
                       <div className="font-outfit text-3xl font-black text-white">
                         {eff.toFixed(1)}%
                       </div>
-                      <div className="text-center text-[11px] font-medium tracking-wide text-slate-400">
+                      <div className="text-center text-[11px] font-medium tracking-wide text-[#8a8f9d]">
                         {effLabel}
                       </div>
                     </div>
@@ -964,13 +957,13 @@ export function SummaryManager({
                 ) : (
                   /* ── View mode ── */
                   <>
-                    <div className="flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-[#00e5ff] uppercase">
+                    <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-blue-400 uppercase">
                       <Target className="h-4 w-4" /> Efectividad del Embudo
                     </div>
                     <div className="font-outfit text-4xl font-black text-white">
                       {eff.toFixed(1)}%
                     </div>
-                    <div className="text-center text-[11px] font-medium tracking-wide text-slate-400">
+                    <div className="text-center text-[11px] font-medium tracking-wide text-[#8a8f9d]">
                       {effLabel}
                     </div>
                   </>

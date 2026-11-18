@@ -99,12 +99,9 @@ export function DashboardTabs({
 
   return (
     <div className="w-full space-y-6">
-      {/* ── Modern Futuristic Segmented Tabs Bar ── */}
-      <div className="relative flex flex-col gap-3 rounded-[24px] border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.65)] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl md:p-2.5">
-        {/* Subtle cyan glow line */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
-
-        <div className="custom-scrollbar no-scrollbar flex items-center gap-1.5 overflow-x-auto p-0.5">
+      {/* ── Linear / Vercel Charcoal Minimalist Segmented Tabs Bar ── */}
+      <div className="relative flex flex-col gap-2 rounded-2xl border border-[#23252e] bg-[#121317] p-1.5 shadow-sm">
+        <div className="custom-scrollbar no-scrollbar flex items-center gap-1 overflow-x-auto p-0.5">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -115,10 +112,10 @@ export function DashboardTabs({
                 onClick={() => handleSelectTab(tab.id)}
                 type="button"
                 className={cn(
-                  "group relative flex flex-shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-200 select-none",
+                  "group relative flex flex-shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all duration-150 select-none",
                   isActive
-                    ? "border border-[rgba(0,229,255,0.35)] bg-gradient-to-r from-[rgba(0,229,255,0.16)] via-[rgba(0,229,255,0.08)] to-transparent text-[#00e5ff] shadow-[0_0_16px_rgba(0,229,255,0.2)]"
-                    : "border border-transparent text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.04] hover:text-slate-100"
+                    ? "bg-[#1c1d25] border border-[#2e313d] text-white shadow-sm"
+                    : "border border-transparent text-[#8a8f9d] hover:bg-white/[0.04] hover:text-[#f4f4f5]"
                 )}
                 aria-selected={isActive}
                 role="tab"
@@ -126,7 +123,7 @@ export function DashboardTabs({
                 <Icon
                   className={cn(
                     "h-4 w-4 transition-colors",
-                    isActive ? "text-[#00e5ff]" : "text-slate-400 group-hover:text-slate-200"
+                    isActive ? "text-white" : "text-[#8a8f9d] group-hover:text-[#f4f4f5]"
                   )}
                   strokeWidth={isActive ? 2 : 1.75}
                 />
@@ -135,19 +132,14 @@ export function DashboardTabs({
                 {tab.tag && (
                   <span
                     className={cn(
-                      "ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-black tracking-wider uppercase",
+                      "ml-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase",
                       isActive
-                        ? "bg-[#00e5ff]/20 text-[#00e5ff]"
-                        : "bg-white/5 text-slate-400 group-hover:bg-white/10 group-hover:text-slate-300"
+                        ? "bg-blue-500/15 text-blue-400 border border-blue-500/20"
+                        : "bg-white/5 text-[#8a8f9d] group-hover:text-zinc-300"
                     )}
                   >
                     {tab.tag}
                   </span>
-                )}
-
-                {/* Active bottom micro-indicator */}
-                {isActive && (
-                  <span className="pointer-events-none absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
                 )}
               </button>
             );

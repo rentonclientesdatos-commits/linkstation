@@ -36,31 +36,21 @@ export function DashboardShell({
 
   return (
     <div
-      className="dark relative flex h-screen overflow-hidden transition-all duration-500"
-      style={{ background: "#030712" }}
+      className="dark relative flex h-screen overflow-hidden bg-[#090a0d] transition-all duration-300"
     >
-      {/* Ambient background aura behind floating macOS sidebar */}
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/[0.035] blur-3xl transform-gpu" />
-      <div className="pointer-events-none absolute top-1/2 -left-20 h-64 w-64 rounded-full bg-violet-600/[0.025] blur-3xl transform-gpu" />
-
       <Sidebar
         isAdmin={isAdmin}
         isSuperAdmin={isSuperAdmin}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-[#090a0d]">
         <Topbar title="Panel General" onMenuClick={() => setMobileOpen(true)} />
         {/* Sprint 3 SP-4-WCAG-10: id="main-content" target del skip-link. tabIndex=-1 permite que el foco lo reciba programáticamente. */}
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex-1 overflow-y-auto p-4 pb-24 focus:outline-none md:p-5 md:pb-6 custom-scrollbar"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 40% at 10% 0%, rgba(0,229,255,0.025) 0%, transparent 60%), " +
-              "radial-gradient(ellipse 50% 40% at 90% 100%, rgba(139,92,246,0.03) 0%, transparent 60%)",
-          }}
+          className="flex-1 overflow-y-auto p-4 pb-24 focus:outline-none md:p-6 md:pb-8 custom-scrollbar bg-[#090a0d]"
         >
           {children}
         </main>

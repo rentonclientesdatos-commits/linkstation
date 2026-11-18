@@ -35,44 +35,24 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header
-      className="relative z-[50] flex h-14 shrink-0 items-center justify-between px-4 transition-all duration-300 md:h-[52px] md:px-5"
-      style={{
-        background: "rgba(3, 7, 18, 0.7)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        borderBottom: "1px solid rgba(0, 229, 255, 0.07)",
-        boxShadow: "0 1px 0 rgba(0,229,255,0.04), 0 4px 20px rgba(0,0,0,0.3)",
-      }}
-    >
-      {/* Subtle neon top border glow */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,229,255,0.3)] to-transparent" />
-
+    <header className="relative z-[50] flex h-14 shrink-0 items-center justify-between border-b border-[#1e2027] bg-[#0d0e12] px-4 transition-all duration-200 md:h-[52px] md:px-5">
       {/* Left: Hamburger (mobile) + Title */}
       <div className="flex items-center gap-3">
         {/* Mobile menu button */}
         <button
           onClick={onMenuClick}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-white/5 hover:text-slate-300 lg:hidden"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#8a8f9d] transition-all hover:bg-white/5 hover:text-white lg:hidden"
           aria-label="Abrir menú"
         >
           <Menu className="h-4 w-4" />
         </button>
 
-        <div className="flex flex-col">
-          <h1
-            className="text-xs leading-tight font-bold tracking-[0.1em] uppercase md:text-sm"
-            style={{ color: "#e2e8f0" }}
-          >
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-xs font-semibold tracking-tight text-white md:text-sm">
             {(config?.dashboard_title as string) || title}
           </h1>
           {tenantName && (
-            <span
-              className="mt-0.5 text-[9px] leading-none font-bold tracking-[0.2em] uppercase"
-              style={{
-                color: "#00e5ff",
-                textShadow: "0 0 8px rgba(0, 229, 255, 0.5)",
-              }}
-            >
+            <span className="rounded-md border border-[#272935] bg-[#171820] px-2 py-0.5 text-[10px] font-medium tracking-wide text-zinc-300">
               {tenantName}
             </span>
           )}
@@ -81,16 +61,10 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
 
       {/* Right controls */}
       <div className="flex items-center gap-1.5">
-        {/* Restaurant Role Quick Switcher — neon pill style */}
+        {/* Restaurant Role Quick Switcher */}
         {isRestaurant && (
-          <div
-            className="hidden sm:flex items-center gap-0.5 p-1 rounded-xl"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(0,229,255,0.08)",
-            }}
-          >
-            <span className="text-[9px] font-bold text-slate-600 px-2 uppercase tracking-widest hidden md:inline">
+          <div className="hidden sm:flex items-center gap-0.5 rounded-xl border border-[#23252e] bg-[#121317] p-1">
+            <span className="px-2 text-[9px] font-semibold text-[#8a8f9d] uppercase tracking-wider hidden md:inline">
               Turno:
             </span>
 
@@ -99,19 +73,13 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
               type="button"
               onClick={() => setRestaurantRole("admin")}
               title="Vista Dueño / Administrador"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
-              style={
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
                 currentRole === "admin"
-                  ? {
-                      background: "rgba(0,229,255,0.12)",
-                      color: "#00e5ff",
-                      border: "1px solid rgba(0,229,255,0.2)",
-                      boxShadow: "0 0 10px rgba(0,229,255,0.12)",
-                    }
-                  : { color: "#4b5563", border: "1px solid transparent" }
-              }
+                  ? "bg-white text-zinc-950 shadow-sm"
+                  : "text-[#8a8f9d] hover:text-white"
+              }`}
             >
-              👑 Admin
+              Admin
             </button>
 
             {/* Mesero */}
@@ -119,19 +87,13 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
               type="button"
               onClick={() => setRestaurantRole("mesero")}
               title="Vista Mesero"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
-              style={
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
                 currentRole === "mesero"
-                  ? {
-                      background: "rgba(16,185,129,0.15)",
-                      color: "#10b981",
-                      border: "1px solid rgba(16,185,129,0.25)",
-                      boxShadow: "0 0 10px rgba(16,185,129,0.12)",
-                    }
-                  : { color: "#4b5563", border: "1px solid transparent" }
-              }
+                  ? "bg-emerald-500 text-white shadow-sm"
+                  : "text-[#8a8f9d] hover:text-white"
+              }`}
             >
-              🍽️ Mesero
+              Mesero
             </button>
 
             {/* Caja */}
@@ -139,19 +101,13 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
               type="button"
               onClick={() => setRestaurantRole("cajero")}
               title="Vista Caja"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
-              style={
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
                 currentRole === "cajero"
-                  ? {
-                      background: "rgba(245,158,11,0.15)",
-                      color: "#f59e0b",
-                      border: "1px solid rgba(245,158,11,0.25)",
-                      boxShadow: "0 0 10px rgba(245,158,11,0.12)",
-                    }
-                  : { color: "#4b5563", border: "1px solid transparent" }
-              }
+                  ? "bg-amber-500 text-white shadow-sm"
+                  : "text-[#8a8f9d] hover:text-white"
+              }`}
             >
-              💼 Caja
+              Caja
             </button>
 
             {/* Cocina */}
@@ -159,19 +115,13 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
               type="button"
               onClick={() => setRestaurantRole("cocina")}
               title="Vista Cocina / KDS"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
-              style={
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
                 currentRole === "cocina"
-                  ? {
-                      background: "rgba(255,45,85,0.15)",
-                      color: "#ff2d55",
-                      border: "1px solid rgba(255,45,85,0.25)",
-                      boxShadow: "0 0 10px rgba(255,45,85,0.12)",
-                    }
-                  : { color: "#4b5563", border: "1px solid transparent" }
-              }
+                  ? "bg-rose-500 text-white shadow-sm"
+                  : "text-[#8a8f9d] hover:text-white"
+              }`}
             >
-              👨‍🍳 Cocina
+              Cocina
             </button>
           </div>
         )}
@@ -179,16 +129,16 @@ export function Topbar({ title, onMenuClick }: TopbarProps) {
         <ThemeToggle />
 
         {/* Separator */}
-        <div className="mx-0.5 h-5 w-px bg-[rgba(255,255,255,0.06)]" />
+        <div className="mx-1 h-4 w-px bg-[#23252e]" />
 
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 transition-all hover:bg-[rgba(255,45,85,0.08)] hover:text-[#ff2d55] md:px-2.5"
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[#8a8f9d] transition-all hover:bg-red-500/10 hover:text-red-400"
           aria-label="Cerrar sesión"
         >
           <LogOut className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline tracking-wide">Salir</span>
+          <span className="hidden sm:inline">Salir</span>
         </button>
       </div>
     </header>

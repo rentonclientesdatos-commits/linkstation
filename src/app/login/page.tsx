@@ -9,27 +9,23 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 function LinkStationLogo({ size = "md" }: { size?: "sm" | "md" }) {
-  const textSize = size === "sm" ? "text-2xl" : "text-3xl";
-  const subSize = size === "sm" ? "text-[10px]" : "text-[11px]";
-  const iconSize = size === "sm" ? 28 : 36;
+  const textSize = size === "sm" ? "text-xl" : "text-2xl";
+  const iconSize = size === "sm" ? 28 : 34;
   return (
     <div className="flex items-center gap-3">
-      <svg width={iconSize} height={iconSize} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="18" cy="18" r="16" stroke="#3b82f6" strokeWidth="1.5" opacity="0.6" />
-        <circle cx="18" cy="9"  r="2.5" fill="#60a5fa" />
-        <circle cx="27" cy="23" r="2.5" fill="#60a5fa" />
-        <circle cx="9"  cy="23" r="2.5" fill="#60a5fa" />
-        <circle cx="18" cy="18" r="2" fill="white" />
-        <line x1="18" y1="9" x2="18" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="27" y1="23" x2="18" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="9" y1="23" x2="18" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="18" y1="9" x2="27" y2="23" stroke="#3b82f6" strokeWidth="0.8" opacity="0.4" />
-        <line x1="18" y1="9" x2="9" y2="23" stroke="#3b82f6" strokeWidth="0.8" opacity="0.4" />
-        <line x1="9" y1="23" x2="27" y2="23" stroke="#3b82f6" strokeWidth="0.8" opacity="0.4" />
-      </svg>
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#272935] bg-[#181920] text-blue-500 shadow-sm">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m4.93 4.93 4.24 4.24" />
+          <path d="m14.83 9.17 4.24-4.24" />
+          <path d="m14.83 14.83 4.24 4.24" />
+          <path d="m9.17 14.83-4.24 4.24" />
+          <circle cx="12" cy="12" r="4" />
+        </svg>
+      </div>
       <div>
-        <p className={`${textSize} font-black tracking-tight text-white leading-none`}>LinkStation</p>
-        <p className={`${subSize} font-bold tracking-[0.2em] text-blue-400 uppercase mt-0.5`}>AI Platform</p>
+        <p className={`${textSize} font-bold tracking-tight text-white leading-none`}>LinkStation</p>
+        <p className="text-[10px] font-semibold tracking-[0.2em] text-[#8a8f9d] uppercase mt-1">Enterprise Platform</p>
       </div>
     </div>
   );
@@ -76,76 +72,74 @@ export default function LoginPage() {
 
   if (isForgotPassword) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-black">
-        <div className="w-full max-w-[440px] px-6 py-12">
-          <div className="mb-10 flex items-center justify-start">
+      <div className="relative flex min-h-screen items-center justify-center bg-[#090a0d] p-4 antialiased">
+        <div className="w-full max-w-[420px] rounded-2xl border border-[#23252e] bg-[#121317] p-8 shadow-2xl">
+          <div className="mb-8 flex items-center justify-start">
             <LinkStationLogo size="sm" />
           </div>
 
           {resetSuccess ? (
             <div className="text-center">
-              <div className="mb-6 flex justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
-                  <CheckCircle2 className="h-10 w-10" />
+              <div className="mb-5 flex justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                  <CheckCircle2 className="h-7 w-7" />
                 </div>
               </div>
-              <h1 className="mb-3 text-2xl font-black tracking-tight text-white">
-                ¡Correo enviado!
+              <h1 className="mb-2 text-xl font-bold tracking-tight text-white">
+                Correo enviado
               </h1>
-              <p className="mb-8 font-medium text-slate-500">
-                Si el correo <b>{email}</b> existe en nuestro sistema, recibirás instrucciones para
-                restablecer tu contraseña en unos minutos.
+              <p className="mb-6 text-sm font-normal text-[#8a8f9d]">
+                Si el correo <strong className="text-white">{email}</strong> está registrado, recibirás un enlace seguro para restablecer tu acceso.
               </p>
               <Button
                 onClick={() => {
                   setIsForgotPassword(false);
                   setResetSuccess(false);
                 }}
-                className="h-12 w-full rounded-xl bg-[#0ea5e9] text-base font-black text-white shadow-lg shadow-blue-200/50 transition-all hover:bg-[#0284c7]"
+                className="h-11 w-full rounded-xl bg-white text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-200"
               >
-                Volver al inicio
+                Volver a Iniciar Sesión
               </Button>
             </div>
           ) : (
             <>
-              <div className="mb-10">
+              <div className="mb-6">
                 <button
                   onClick={() => {
                     setIsForgotPassword(false);
                     setError(null);
                   }}
-                  className="group mb-4 flex items-center gap-2 text-sm font-bold text-slate-400 transition-colors hover:text-slate-600"
+                  className="group mb-4 flex items-center gap-2 text-xs font-semibold text-[#8a8f9d] transition-colors hover:text-white"
                 >
-                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                  Volver atrás
+                  <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+                  Volver al login
                 </button>
-                <h1 className="text-3xl font-black tracking-tight text-white">
+                <h1 className="text-xl font-bold tracking-tight text-white">
                   Recuperar contraseña
                 </h1>
-                <p className="mt-2 text-base font-medium text-slate-500">
-                  Control total sobre tus agentes de IA de llamadas, agendamiento automatizado y
-                  métricas de contactabilidad en un solo lugar.
+                <p className="mt-1.5 text-xs text-[#8a8f9d]">
+                  Ingresa tu correo para recibir las instrucciones de recuperación.
                 </p>
               </div>
 
-              <form onSubmit={handleResetPassword} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="reset-email" className="text-sm font-bold text-slate-300">
-                    Email Registrado
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="reset-email" className="text-xs font-medium text-zinc-300">
+                    Correo Electrónico
                   </Label>
                   <Input
                     id="reset-email"
                     type="email"
-                    placeholder="nombre@ejemplo.com"
+                    placeholder="nombre@empresa.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-12 rounded-xl border-slate-700 bg-slate-800/50 text-white transition-all placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20"
+                    className="h-11 rounded-xl border border-[#272935] bg-[#181920] px-3.5 text-sm text-white placeholder:text-[#52525b] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
                   />
                 </div>
 
                 {error && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs font-medium text-red-400">
                     {error}
                   </div>
                 )}
@@ -153,27 +147,16 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-12 w-full rounded-xl bg-[#0ea5e9] text-base font-black text-white shadow-lg shadow-blue-200/50 transition-all hover:bg-[#0284c7] active:scale-[0.98]"
+                  className="h-11 w-full rounded-xl bg-white text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-200 active:scale-[0.99]"
                 >
-                  {loading ? "Enviando..." : "Enviar link de recuperación"}
+                  {loading ? "Enviando..." : "Enviar enlace de recuperación"}
                 </Button>
               </form>
             </>
           )}
 
-          <p className="mt-6 text-center text-xs text-slate-400">
-            Al continuar, aceptas nuestra{" "}
-            <Link
-              href="/privacy-policy"
-              className="font-bold text-[#0ea5e9] transition-colors hover:text-[#0284c7] hover:underline"
-            >
-              Política de Privacidad
-            </Link>
-          </p>
-
-          <p className="mt-8 text-center text-xs font-medium text-slate-500">
-            © {new Date().getFullYear()} Derechos reservados · LinkStation by{" "}
-            <span className="font-bold text-slate-400">Renton Connective</span>
+          <p className="mt-8 text-center text-xs text-[#52525b]">
+            © {new Date().getFullYear()} LinkStation Platform. Todos los derechos reservados.
           </p>
         </div>
       </div>
@@ -181,38 +164,38 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-black">
-      <div className="w-full max-w-[440px] px-6 py-12">
+    <div className="relative flex min-h-screen items-center justify-center bg-[#090a0d] p-4 antialiased">
+      <div className="w-full max-w-[420px] rounded-2xl border border-[#23252e] bg-[#121317] p-8 shadow-2xl">
         <div className="mb-8 flex items-center justify-center">
           <LinkStationLogo size="md" />
         </div>
 
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl font-black tracking-tight text-white">Bienvenido de nuevo</h1>
-          <p className="mt-2 text-base font-medium text-slate-400">
-            Ingresa tus credenciales para acceder a tu cuenta
+        <div className="mb-6 text-center">
+          <h1 className="text-xl font-bold tracking-tight text-white">Iniciar Sesión</h1>
+          <p className="mt-1.5 text-xs text-[#8a8f9d]">
+            Ingresa tus credenciales para acceder a la plataforma
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-bold text-slate-300">
-              Email
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium text-zinc-300">
+              Correo Electrónico
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="nombre@ejemplo.com"
+              placeholder="nombre@empresa.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-12 rounded-xl border-slate-700 bg-slate-800/50 text-white transition-all placeholder:text-slate-500 focus:border-amber-400 focus:ring-amber-400/20"
+              className="h-11 rounded-xl border border-[#272935] bg-[#181920] px-3.5 text-sm text-white placeholder:text-[#52525b] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-sm font-bold text-slate-300">
+              <Label htmlFor="password" className="text-xs font-medium text-zinc-300">
                 Contraseña
               </Label>
               <button
@@ -221,7 +204,7 @@ export default function LoginPage() {
                   setIsForgotPassword(true);
                   setError(null);
                 }}
-                className="text-sm font-bold text-amber-400 transition-colors hover:text-amber-300"
+                className="text-xs font-medium text-[#8a8f9d] transition-colors hover:text-white"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -233,12 +216,12 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required={!isForgotPassword}
-              className="h-12 rounded-xl border-slate-700 bg-slate-800/50 text-white transition-all placeholder:text-slate-500 focus:border-amber-400 focus:ring-amber-400/20"
+              className="h-11 rounded-xl border border-[#272935] bg-[#181920] px-3.5 text-sm text-white placeholder:text-[#52525b] focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
             />
           </div>
 
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs font-medium text-red-400">
               {error}
             </div>
           )}
@@ -246,11 +229,11 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="h-12 w-full rounded-xl bg-amber-400 text-base font-black text-slate-900 shadow-lg shadow-amber-200/50 transition-all hover:bg-amber-500 active:scale-[0.98]"
+            className="h-11 w-full rounded-xl bg-white text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-200 active:scale-[0.99] disabled:opacity-50"
           >
             {loading ? (
               <span className="flex items-center gap-2">
-                <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -264,24 +247,23 @@ export default function LoginPage() {
                 Iniciando sesión...
               </span>
             ) : (
-              "Iniciar sesión"
+              "Continuar"
             )}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Al iniciar sesión, aceptas nuestra{" "}
+        <p className="mt-6 text-center text-xs text-[#52525b]">
+          Al continuar, aceptas nuestros{" "}
           <Link
             href="/privacy-policy"
-            className="font-bold text-amber-400 transition-colors hover:text-amber-300 hover:underline"
+            className="text-zinc-400 underline underline-offset-4 hover:text-white"
           >
-            Política de Privacidad
+            Términos y Privacidad
           </Link>
         </p>
 
-        <p className="mt-8 text-center text-xs font-medium text-slate-500">
-          © {new Date().getFullYear()} Derechos reservados · LinkStation by{" "}
-          <span className="font-bold text-slate-400">Renton Connective</span>
+        <p className="mt-6 text-center text-[11px] text-[#52525b]">
+          © {new Date().getFullYear()} LinkStation Platform
         </p>
       </div>
     </div>

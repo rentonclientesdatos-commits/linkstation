@@ -384,19 +384,13 @@ export function ChartManager({
     <div className="relative mb-10">
       <div className="mb-8 flex items-center justify-between">
         {title === undefined ? (
-          <div className="flex items-center gap-4">
-            <div className="rounded-[20px] border border-indigo-500/20 bg-indigo-500/10 p-3">
-              <PieChart className="h-8 w-8 text-indigo-400" />
-            </div>
-            <div>
-              {/* Sprint 3 SP-4-WCAG-09: h1→h2 para heading hierarchy correcta (un único h1 por página, el del dashboard). */}
-              <h2 className="text-[32px] leading-tight font-bold tracking-tight text-white">
-                Análisis <span className="text-indigo-400">Visual</span>
-              </h2>
-              <p className="text-[15px] font-medium text-slate-400">
-                Histogramas, tendencias y distribución de datos
-              </p>
-            </div>
+          <div>
+            <h2 className="text-base font-semibold tracking-tight text-white md:text-lg">
+              Análisis Visual
+            </h2>
+            <p className="text-xs text-[#8a8f9d]">
+              Histogramas, tendencias y distribución de datos
+            </p>
           </div>
         ) : title === false || title === null ? null : typeof title === "string" ? (
           <h2 className="text-[12px] font-bold tracking-[0.15em] text-slate-400 uppercase">

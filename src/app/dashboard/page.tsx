@@ -132,19 +132,14 @@ async function FunnelSection({
   ]);
 
   return (
-    <div className="mt-8 mb-8">
-      <div className="mb-8 flex items-center gap-4">
-        <div className="bg-primary/10 rounded-[20px] p-3">
-          <Filter className="text-primary h-8 w-8" />
-        </div>
-        <div>
-          <h2 className="text-foreground text-[32px] leading-tight font-bold tracking-tight">
-            Embudo de <span className="text-primary">Conversi&#xF3;n</span>
-          </h2>
-          <p className="text-muted-foreground text-[15px] font-medium">
-            Tasa de conversi&#xF3;n y progreso por etapa
-          </p>
-        </div>
+    <div className="mt-4 mb-6">
+      <div className="mb-5">
+        <h2 className="text-base font-semibold tracking-tight text-white md:text-lg">
+          Embudo de Conversión
+        </h2>
+        <p className="text-xs text-[#8a8f9d]">
+          Tasa de conversión y avance por cada etapa del embudo
+        </p>
       </div>
       <SummaryManager
         tenant={tenantConfig}

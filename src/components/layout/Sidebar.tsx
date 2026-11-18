@@ -540,19 +540,19 @@ export function Sidebar({
       >
         <div
           className={cn(
-            "group relative flex items-center rounded-xl text-xs font-medium transition-all duration-200 select-none",
+            "group relative flex items-center rounded-xl text-xs font-medium transition-all duration-150 select-none",
             isActive
-              ? "bg-gradient-to-r from-[rgba(0,229,255,0.13)] via-[rgba(0,229,255,0.05)] to-transparent text-[#00e5ff] border border-[rgba(0,229,255,0.22)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_2px_12px_rgba(0,229,255,0.08)]"
-              : "border border-transparent text-slate-400 hover:bg-white/[0.05] hover:text-slate-100 hover:border-white/[0.04]",
+              ? "bg-[#181920] text-white border border-[#272935] shadow-sm"
+              : "border border-transparent text-[#8a8f9d] hover:bg-white/[0.04] hover:text-[#f4f4f5]",
             depth > 0 && !collapsed && "ml-3",
             collapsed && "justify-center px-0 py-1"
           )}
         >
-          {/* Active indicator glowing bar (macOS Tahoe style) */}
+          {/* Active indicator bar */}
           {isActive && (
             <span
               className={cn(
-                "absolute rounded-full bg-[#00e5ff] shadow-[0_0_10px_rgba(0,229,255,0.9)] transition-all duration-300",
+                "absolute rounded-full bg-blue-500 transition-all duration-200",
                 collapsed
                   ? "top-1/2 left-0 h-4 w-[3px] -translate-y-1/2"
                   : "top-1/2 left-1 h-3.5 w-[2.5px] -translate-y-1/2"
@@ -570,10 +570,10 @@ export function Sidebar({
             >
               <span
                 className={cn(
-                  "relative flex items-center justify-center transition-all duration-200",
+                  "relative flex items-center justify-center transition-all duration-150",
                   isActive
-                    ? "text-[#00e5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.8)]"
-                    : "text-slate-400 group-hover:text-slate-100"
+                    ? "text-blue-400"
+                    : "text-[#8a8f9d] group-hover:text-white"
                 )}
               >
                 {item.icon}
@@ -596,10 +596,10 @@ export function Sidebar({
                 >
                   <span
                     className={cn(
-                      "relative flex-shrink-0 transition-all duration-200",
+                      "relative flex-shrink-0 transition-all duration-150",
                       isActive
-                        ? "text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.8)]"
-                        : "text-slate-400 group-hover:text-slate-200"
+                        ? "text-blue-400"
+                        : "text-[#8a8f9d] group-hover:text-white"
                     )}
                   >
                     {item.icon}
@@ -607,15 +607,15 @@ export function Sidebar({
                   <span
                     className={cn(
                       "flex-1 truncate tracking-wide text-[12px]",
-                      isActive ? "font-semibold text-slate-100" : "text-slate-300 group-hover:text-white"
+                      isActive ? "font-semibold text-white" : "text-[#8a8f9d] group-hover:text-white"
                     )}
                   >
                     {item.label}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 text-slate-400 transition-transform duration-200",
-                      isExpanded && "rotate-180 text-cyan-400"
+                      "h-3.5 w-3.5 text-[#8a8f9d] transition-transform duration-150",
+                      isExpanded && "rotate-180 text-white"
                     )}
                   />
                 </button>
@@ -626,24 +626,18 @@ export function Sidebar({
                 >
                   <span
                     className={cn(
-                      "relative flex-shrink-0 transition-all duration-200",
+                      "relative flex-shrink-0 transition-all duration-150",
                       isActive
-                        ? "text-[#00e5ff] drop-shadow-[0_0_6px_rgba(0,229,255,0.8)]"
-                        : "text-slate-400 group-hover:text-slate-200"
+                        ? "text-blue-400"
+                        : "text-[#8a8f9d] group-hover:text-white"
                     )}
                   >
                     {item.icon}
-                    {item.href === "/dashboard/settings" && !isConfigured && (
-                      <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
-                      </span>
-                    )}
                   </span>
                   <span
                     className={cn(
                       "flex-1 truncate tracking-wide text-[12px]",
-                      isActive ? "font-semibold text-slate-100" : "text-slate-300 group-hover:text-white"
+                      isActive ? "font-semibold text-white" : "text-[#8a8f9d] group-hover:text-white"
                     )}
                   >
                     {item.label}
@@ -788,26 +782,20 @@ export function Sidebar({
         />
       )}
 
-      {/* ── DESKTOP Sidebar / MOBILE Drawer (Liquid macOS / VisionOS Island) ── */}
+      {/* ── DESKTOP Sidebar / MOBILE Drawer (Linear Minimalist Dark) ── */}
       <aside
         className={cn(
-          "relative hidden flex-col transition-[width,transform] duration-200 ease-out select-none lg:flex transform-gpu",
-          "lg:my-3 lg:ml-3 lg:h-[calc(100vh-24px)] lg:rounded-[24px]",
-          "lg:border lg:border-white/[0.09]",
-          "bg-[#050917]/85 backdrop-blur-xl saturate-[170%]",
-          collapsed ? "lg:w-[72px]" : "lg:w-[252px]",
+          "relative hidden flex-col transition-[width,transform] duration-200 ease-out select-none lg:flex",
+          "lg:my-2.5 lg:ml-2.5 lg:h-[calc(100vh-20px)] lg:rounded-2xl",
+          "lg:border lg:border-[#1e2027]",
+          "bg-[#0d0e12]",
+          collapsed ? "lg:w-[70px]" : "lg:w-[248px]",
           // Mobile drawer modes
-          "max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:flex max-lg:w-72 max-lg:h-screen max-lg:shadow-2xl max-lg:border-r max-lg:border-white/[0.08]",
+          "max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:flex max-lg:w-72 max-lg:h-screen max-lg:shadow-2xl max-lg:border-r max-lg:border-[#1e2027] max-lg:bg-[#0d0e12]",
           mobileOpen ? "max-lg:translate-x-0" : "max-lg:-translate-x-full",
           "max-lg:transition-transform max-lg:duration-200"
         )}
-        style={{
-          boxShadow:
-            "inset 0 1px 0 0 rgba(255, 255, 255, 0.15), inset 0 0 15px 0 rgba(0, 229, 255, 0.02), 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 1px 1px rgba(255, 255, 255, 0.05)",
-        }}
       >
-        {/* Specular light highlight on top curve */}
-        <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
         {/* ── macOS Window Header (Traffic Lights & OS Badge) ──────── */}
         <div className="flex items-center justify-between px-3.5 pt-3.5 pb-2">
