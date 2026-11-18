@@ -269,3 +269,56 @@
   from { opacity: 0; transform: scaleX(0.4); }
   to   { opacity: 1; transform: scaleX(1); }
 }
+
+/* ── Lava Lamp Subtle Motion (LinkStation Ambient) ──────── */
+@keyframes lava-blob-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(60px, -50px) scale(1.15);
+  }
+  66% {
+    transform: translate(-40px, 40px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes lava-blob-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-70px, 60px) scale(1.18);
+  }
+  66% {
+    transform: translate(50px, -40px) scale(0.88);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes lava-blob-3 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(50px, 45px) scale(1.22);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-lava-1 {
+  animation: lava-blob-1 20s ease-in-out infinite;
+}
+.animate-lava-2 {
+  animation: lava-blob-2 26s ease-in-out infinite;
+}
+.animate-lava-3 {
+  animation: lava-blob-3 32s ease-in-out infinite;
+}

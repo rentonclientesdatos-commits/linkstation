@@ -117,17 +117,36 @@ const SOLUTIONS: EnterpriseSolution[] = [
     statBadge: "+120 demos / mes",
     rating: "★ 5.0",
   },
+  {
+    id: "restaurant",
+    industry: "Gastronomía & Restaurantes",
+    pillLabel: "🍽️ Restaurantes & Reservas",
+    statusBadge: "Mesa Reservada",
+    statusColor: "text-amber-400 border-amber-500/20 bg-amber-500/10",
+    meetingTitle: "Reserva de Mesa & Menú Degustación",
+    meetingSubtitle: "Bistró Palermo · Salón Principal & Terraza",
+    priorities: "Mesa 4 Personas · Terraza Calefaccionada · 21:00h",
+    bullet: "Confirmación instantánea de disponibilidad, recordatorio 2h antes y envío de carta digital por WhatsApp.",
+    promptText: "Confirmar reserva para las 21:00h y notificar al maitre en cocina...",
+    companyHeader: "🍽️ GRUPO GASTRONÓMICO · RESTAURANTES",
+    quote: "La IA gestiona nuestras reservas en horas punta y fines de semana sin saturar la línea telefónica ni perder comensales.",
+    authorName: "Martín Benítez",
+    authorRole: "Gerente Operativo · Bistró Palermo & Cava",
+    authorInitials: "MB",
+    statBadge: "+850 reservas / mes",
+    rating: "★ 4.9",
+  },
 ];
 
 function LinkStationBrandLogo() {
   return (
-    <div className="flex items-center py-1">
+    <div className="flex items-center justify-center py-2 w-full">
       <NextImage
-        src="/logo-login.png"
+        src="/logo-linkstation-transparent.png"
         alt="LinkStation Enterprise"
-        width={360}
-        height={90}
-        className="h-10 w-auto max-w-[220px] object-contain drop-shadow-md"
+        width={420}
+        height={108}
+        className="h-12 sm:h-14 w-auto object-contain drop-shadow-[0_0_24px_rgba(59,130,246,0.35)] transition-all hover:scale-[1.02]"
         priority
       />
     </div>
@@ -185,17 +204,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#07080a] p-4 md:p-8 antialiased">
-      {/* Background ambient lighting */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[520px] w-[880px] rounded-full bg-blue-600/[0.04] blur-[150px]" />
+    <div className="relative flex min-h-screen items-center justify-center bg-[#07080a] p-4 md:p-8 antialiased overflow-hidden">
+      {/* Lava Lamp Motion Background - LinkStation subtle ambient blobs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        {/* Blob 1: LinkStation Royal / Electric Blue */}
+        <div className="absolute top-[8%] left-[12%] h-[440px] w-[440px] rounded-full bg-blue-600/20 blur-[120px] animate-lava-1 mix-blend-screen" />
+        
+        {/* Blob 2: Cyan / Neon Sky Blue */}
+        <div className="absolute bottom-[10%] right-[10%] h-[480px] w-[480px] rounded-full bg-cyan-500/15 blur-[130px] animate-lava-2 mix-blend-screen" />
+        
+        {/* Blob 3: Indigo / Violet Accent */}
+        <div className="absolute top-[40%] right-[32%] h-[400px] w-[400px] rounded-full bg-indigo-600/15 blur-[110px] animate-lava-3 mix-blend-screen" />
+        
+        {/* Blob 4: Bottom Center Floating Deep Blue */}
+        <div className="absolute -bottom-[10%] left-[26%] h-[360px] w-[360px] rounded-full bg-sky-500/15 blur-[120px] animate-lava-1 mix-blend-screen" />
+        
+        {/* Ambient radial overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(59,130,246,0.08),rgba(0,0,0,0))]" />
+      </div>
 
       {/* Main Split-Screen Container */}
-      <div className="relative z-10 grid w-full max-w-[1060px] overflow-hidden rounded-[28px] border border-[#23252e] bg-[#0c0d12] shadow-2xl lg:grid-cols-2">
+      <div className="relative z-10 grid w-full max-w-[1060px] overflow-hidden rounded-[28px] border border-[#23252e] bg-[#0c0d12]/95 shadow-2xl backdrop-blur-sm lg:grid-cols-2">
         {/* LEFT COLUMN: Authentication Form */}
         <div className="flex flex-col justify-between p-8 sm:p-12 lg:p-14">
           <div>
-            {/* Brand Logo: LinkStation Enterprise */}
-            <div className="mb-8">
+            {/* Brand Logo: LinkStation Enterprise (Centered, Large & Transparent) */}
+            <div className="mb-8 flex justify-center w-full">
               <LinkStationBrandLogo />
             </div>
 
@@ -280,7 +314,7 @@ export default function LoginPage() {
                   El Copiloto de IA para tus Citas y Ventas
                 </h1>
                 <p className="mt-2 text-xs leading-relaxed text-[#8a8f9d]">
-                  Atención 24/7, cualificación omnicanal y agendamiento inteligente para clínicas, inmobiliarias y empresas B2B.
+                  Atención 24/7, cualificación omnicanal y agendamiento inteligente para clínicas, restaurantes, inmobiliarias y empresas B2B.
                 </p>
 
                 {/* Features & capabilities badges pill row */}
