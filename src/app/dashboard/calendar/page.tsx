@@ -114,6 +114,9 @@ export default function CalendarPage() {
     template:
       "Hola {nombre}, 👋 te recordamos que tienes una cita programada con un asesor de Esden hoy a las {hora} (hora España). ¡Te esperamos!",
   });
+  const [miniMonthDate, setMiniMonthDate] = useState<Date>(new Date());
+  const [filterAdvisorId, setFilterAdvisorId] = useState<string>("all");
+  const [selectedDayFilter, setSelectedDayFilter] = useState<Date | null>(null);
 
   const loadData = useCallback(async () => {
     const [advisorsRes, aptsRes, leadsRes] = await Promise.all([
@@ -273,24 +276,82 @@ export default function CalendarPage() {
 
   // Build week display
   const now = new Date();
+  const dayOfWeek = (now.getDay() + 6) % 7; // Monday = 0, Sunday = 6
   const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay() + 1 + weekOffset * 7); // Monday
+  weekStart.setDate(now.getDate() - dayOfWeek + weekOffset * 7);
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
     d.setDate(weekStart.getDate() + i);
     return d;
   });
 
+  // Mini month calendar days calculation
+  const miniYear = miniMonthDate.getFullYear();
+  const miniMonth = miniMonthDate.getMonth();
+  const firstDayOfMonth = new Date(miniYear, miniMonth, 1);
+  const startDayIndex = (firstDayOfMonth.getDay() + 6) % 7; // Monday = 0
+  const daysInMonth = new Date(miniYear, miniMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(miniYear, miniMonth, 0).getDate();
+
+  const miniCalendarDays: { day: number; currentMonth: boolean; date: Date }[] = [];
+  for (let i = startDayIndex - 1; i >= 0; i--) {
+    const d = new Date(miniYear, miniMonth - 1, daysInPrevMonth - i);
+    miniCalendarDays.push({ day: daysInPrevMonth - i, currentMonth: false, date: d });
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    const d = new Date(miniYear, miniMonth, i);
+    miniCalendarDays.push({ day: i, currentMonth: true, date: d });
+  }
+  const remainingCells = (7 - (miniCalendarDays.length % 7)) % 7;
+  for (let i = 1; i <= remainingCells; i++) {
+    const d = new Date(miniYear, miniMonth + 1, i);
+    miniCalendarDays.push({ day: i, currentMonth: false, date: d });
+  }
+
+  const handleSelectMiniDate = (targetDate: Date) => {
+    setSelectedDayFilter(targetDate);
+    const today = new Date();
+    const todayMon = new Date(today);
+    todayMon.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    todayMon.setHours(0, 0, 0, 0);
+
+    const targetMon = new Date(targetDate);
+    targetMon.setDate(targetDate.getDate() - ((targetDate.getDay() + 6) % 7));
+    targetMon.setHours(0, 0, 0, 0);
+
+    const diffWeeks = Math.round((targetMon.getTime() - todayMon.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    setWeekOffset(diffWeeks);
+  };
+
   const getAppointmentsForDay = (date: Date) =>
     appointments.filter((apt) => {
+      if (filterAdvisorId !== "all") {
+        const advId = apt.advisor_id;
+        if (advId !== filterAdvisorId) return false;
+      }
       const aptDate = new Date(apt.scheduled_at);
-      // Compare year, month, date to be precise
       return (
         aptDate.getFullYear() === date.getFullYear() &&
         aptDate.getMonth() === date.getMonth() &&
         aptDate.getDate() === date.getDate()
       );
     });
+
+  const displayedAppointments = appointments.filter((apt) => {
+    if (filterAdvisorId !== "all") {
+      const advId = apt.advisor_id;
+      if (advId !== filterAdvisorId) return false;
+    }
+    if (selectedDayFilter) {
+      const aptDate = new Date(apt.scheduled_at);
+      return (
+        aptDate.getFullYear() === selectedDayFilter.getFullYear() &&
+        aptDate.getMonth() === selectedDayFilter.getMonth() &&
+        aptDate.getDate() === selectedDayFilter.getDate()
+      );
+    }
+    return true;
+  });
 
   async function handleSaveAdvisor() {
     if (!editingAdvisor?.name) return;
@@ -472,31 +533,31 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-white">
+    <div className="min-h-screen bg-[#090a0d] text-white">
       {/* HEADER */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white/40 px-8 py-6 backdrop-blur-xl dark:border-white/5 dark:bg-white/[0.02]">
-        <div className="flex items-center gap-4">
-          <div className="bg-primary/10 border-primary/20 flex h-12 w-12 items-center justify-center rounded-2xl border">
-            <Calendar className="text-primary h-6 w-6" />
+      <div className="flex flex-col gap-4 border-b border-[#23252e] bg-[#0d0e12] px-6 py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#23252e] bg-[#16171d] text-[#3b82f6]">
+            <Calendar className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight uppercase">Calendario & Agendas</h1>
-            <p className="text-xs font-bold tracking-widest text-slate-500 uppercase dark:text-white/40">
+            <h1 className="text-lg font-bold tracking-tight text-white uppercase">Calendario & Agendas</h1>
+            <p className="text-[11px] font-medium text-[#8a8f9d]">
               Round Robin · Asesores · Citas Automáticas
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 overflow-x-auto rounded-xl border border-[#23252e] bg-[#121317] p-1">
           {(["agenda", "advisors", "slots", "reminders", "tools"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               title={t}
               className={cn(
-                "h-9 rounded-xl px-4 text-[10px] font-black tracking-widest uppercase transition-all",
+                "h-8 rounded-lg px-3.5 text-[11px] font-semibold whitespace-nowrap transition-all",
                 tab === t
-                  ? "bg-primary text-primary-foreground shadow-primary/20 shadow-lg"
-                  : "bg-slate-200/50 text-slate-500 hover:bg-slate-200 dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10"
+                  ? "border border-[#2d3139] bg-[#1e2027] text-white shadow-sm"
+                  : "text-[#8a8f9d] hover:bg-white/[0.04] hover:text-white"
               )}
             >
               {t === "agenda"
@@ -513,317 +574,498 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="p-8">
-        {/* ── AGENDA TAB ─────────────────────────────────────────── */}
+      <div className="p-6 md:p-8">
+        {/* ── AGENDA TAB (Month + Week Split) ─────────────────────────── */}
         {tab === "agenda" && (
-          <div className="space-y-6">
-            {/* Week Navigator */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setWeekOffset((w) => w - 1)}
-                title="Semana anterior"
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-200/50 transition-all hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <h2 className="text-sm font-black tracking-widest text-slate-500 uppercase dark:text-white/60">
-                {weekDays[0].toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
-                {" — "}
-                {weekDays[6].toLocaleDateString("es-ES", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setWeekOffset(0)}
-                  title="Semana actual"
-                  className="h-9 rounded-xl border border-slate-200 bg-slate-200/50 px-3 text-[10px] font-black tracking-widest text-slate-500 uppercase transition-all hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10"
+          <div className="flex flex-col gap-6 xl:flex-row">
+            {/* LEFT SIDEBAR: Mini Month Calendar + Filters + Summary */}
+            <div className="w-full shrink-0 space-y-4 xl:w-72">
+              {/* Mini Month Calendar */}
+              <div className="rounded-2xl border border-[#23252e] bg-[#121317] p-4 shadow-sm">
+                {/* Month Navigator Header */}
+                <div className="flex items-center justify-between border-b border-[#23252e] pb-3">
+                  <button
+                    onClick={() => {
+                      const prev = new Date(miniMonthDate);
+                      prev.setMonth(prev.getMonth() - 1);
+                      setMiniMonthDate(prev);
+                    }}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#23252e] bg-[#16171d] text-[#8a8f9d] transition-all hover:bg-[#1e2027] hover:text-white"
+                    title="Mes anterior"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="text-[12px] font-bold tracking-wider text-white capitalize">
+                    {miniMonthDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const next = new Date(miniMonthDate);
+                      next.setMonth(next.getMonth() + 1);
+                      setMiniMonthDate(next);
+                    }}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#23252e] bg-[#16171d] text-[#8a8f9d] transition-all hover:bg-[#1e2027] hover:text-white"
+                    title="Mes siguiente"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {/* Weekdays header */}
+                <div className="grid grid-cols-7 pt-3 pb-1 text-center text-[10px] font-bold text-[#8a8f9d]">
+                  {["L", "M", "X", "J", "V", "S", "D"].map((d, i) => (
+                    <div key={i}>{d}</div>
+                  ))}
+                </div>
+
+                {/* Days Grid */}
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {miniCalendarDays.map((item, idx) => {
+                    const isSelectedDay =
+                      selectedDayFilter &&
+                      item.date.toDateString() === selectedDayFilter.toDateString();
+                    const isToday = item.date.toDateString() === new Date().toDateString();
+                    const hasApts = appointments.some((apt) => {
+                      const d = new Date(apt.scheduled_at);
+                      return d.toDateString() === item.date.toDateString();
+                    });
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleSelectMiniDate(item.date)}
+                        className={cn(
+                          "relative mx-auto flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-medium transition-all",
+                          !item.currentMonth && "text-zinc-600 opacity-30",
+                          item.currentMonth &&
+                            !isSelectedDay &&
+                            !isToday &&
+                            "text-zinc-300 hover:bg-[#1a1b22] hover:text-white",
+                          isToday && !isSelectedDay && "border border-blue-500/40 font-bold text-blue-400",
+                          isSelectedDay && "bg-blue-600 font-bold text-white shadow-md shadow-blue-600/30"
+                        )}
+                        title={item.date.toLocaleDateString("es-ES")}
+                      >
+                        {item.day}
+                        {hasApts && (
+                          <span
+                            className={cn(
+                              "absolute bottom-1 h-1 w-1 rounded-full",
+                              isSelectedDay ? "bg-white" : "bg-blue-400"
+                            )}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick Summary Metric Cards */}
+              <div className="space-y-2.5 rounded-2xl border border-[#23252e] bg-[#121317] p-4 shadow-sm">
+                <div className="text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                  Resumen de Citas
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-2.5">
+                    <p className="text-[10px] text-[#8a8f9d]">Total</p>
+                    <p className="text-base font-bold text-white">{appointments.length}</p>
+                  </div>
+                  <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-2.5">
+                    <p className="text-[10px] text-amber-400">Pendientes</p>
+                    <p className="text-base font-bold text-white">
+                      {appointments.filter((a) => a.status === "PENDING").length}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-2.5">
+                    <p className="text-[10px] text-emerald-400">Confirmadas</p>
+                    <p className="text-base font-bold text-white">
+                      {appointments.filter((a) => a.status === "CONFIRMED").length}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-2.5">
+                    <p className="text-[10px] text-blue-400">Esta Semana</p>
+                    <p className="text-base font-bold text-white">
+                      {weekDays.reduce((acc, d) => acc + getAppointmentsForDay(d).length, 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advisor Filter Dropdown */}
+              <div className="space-y-2 rounded-2xl border border-[#23252e] bg-[#121317] p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                    Filtrar por Asesor
+                  </span>
+                  {filterAdvisorId !== "all" && (
+                    <button
+                      onClick={() => setFilterAdvisorId("all")}
+                      className="text-[10px] text-blue-400 hover:underline"
+                    >
+                      Todos
+                    </button>
+                  )}
+                </div>
+                <select
+                  value={filterAdvisorId}
+                  onChange={(e) => setFilterAdvisorId(e.target.value)}
+                  className="w-full rounded-xl border border-[#23252e] bg-[#16171d] px-3 py-2 text-[12px] font-medium text-zinc-200 outline-none transition-all focus:border-blue-500"
+                  title="Filtrar por asesor"
                 >
-                  Hoy
-                </button>
-                <button
-                  onClick={() => setWeekOffset((w) => w + 1)}
-                  title="Semana siguiente"
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-200/50 transition-all hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+                  <option value="all" className="bg-[#121317] text-white">Todos los asesores</option>
+                  {advisors.map((adv) => (
+                    <option key={adv.id} value={adv.id} className="bg-[#121317] text-white">
+                      {adv.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            {/* Week Grid */}
-            <div className="grid grid-cols-7 gap-3">
-              {weekDays.map((day, i) => {
-                const dayApts = getAppointmentsForDay(day);
-                const isToday = day.toDateString() === new Date().toDateString();
-
-                // Group by time to detect overlaps visually (Using Spain Time as primary)
-                const timeGroups: Record<string, Appointment[]> = {};
-                dayApts.forEach((apt) => {
-                  const spainTime = new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZone: "Europe/Madrid",
-                  });
-                  if (!timeGroups[spainTime]) timeGroups[spainTime] = [];
-                  timeGroups[spainTime].push(apt);
-                });
-
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "min-h-[160px] space-y-2 rounded-2xl border p-4",
-                      isToday
-                        ? "border-primary/30 bg-primary/5"
-                        : "border-slate-200 bg-slate-100/50 dark:border-white/5 dark:bg-white/[0.02]"
-                    )}
+            {/* RIGHT MAIN AREA: Week Grid + Appointments Table */}
+            <div className="min-w-0 flex-1 space-y-5">
+              {/* Week Navigator Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#23252e] bg-[#121317] p-3 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setWeekOffset((w) => w - 1)}
+                    title="Semana anterior"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#23252e] bg-[#16171d] text-[#8a8f9d] transition-all hover:bg-[#1e2027] hover:text-white"
                   >
-                    <div className="mb-3 text-center">
-                      <p className="text-[9px] font-black tracking-widest text-slate-400 uppercase dark:text-white/30">
-                        {day.toLocaleDateString("es-ES", { weekday: "short" })}
-                      </p>
-                      <p
-                        className={cn(
-                          "text-xl font-black",
-                          isToday ? "text-primary" : "text-slate-800 dark:text-white/70"
-                        )}
-                      >
-                        {day.getDate()}
-                      </p>
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setWeekOffset(0);
+                      setSelectedDayFilter(null);
+                      setMiniMonthDate(new Date());
+                    }}
+                    title="Semana actual"
+                    className="h-8 rounded-lg border border-[#23252e] bg-[#16171d] px-3 text-[11px] font-semibold text-zinc-300 transition-all hover:bg-[#1e2027] hover:text-white"
+                  >
+                    Hoy
+                  </button>
+                  <button
+                    onClick={() => setWeekOffset((w) => w + 1)}
+                    title="Semana siguiente"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#23252e] bg-[#16171d] text-[#8a8f9d] transition-all hover:bg-[#1e2027] hover:text-white"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <h2 className="text-xs font-bold tracking-wider text-zinc-300 uppercase">
+                  {weekDays[0].toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  {" — "}
+                  {weekDays[6].toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </h2>
+
+                <div className="flex items-center gap-2">
+                  {selectedDayFilter && (
+                    <button
+                      onClick={() => setSelectedDayFilter(null)}
+                      className="flex items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-[10px] font-semibold text-blue-400 hover:bg-blue-500/20"
+                    >
+                      <span>Viendo: {selectedDayFilter.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Week Grid */}
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+                {weekDays.map((day, i) => {
+                  const dayApts = getAppointmentsForDay(day);
+                  const isToday = day.toDateString() === new Date().toDateString();
+                  const isSelected =
+                    selectedDayFilter && day.toDateString() === selectedDayFilter.toDateString();
+
+                  // Group by time to detect overlaps visually
+                  const timeGroups: Record<string, Appointment[]> = {};
+                  dayApts.forEach((apt) => {
+                    const spainTime = new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: "Europe/Madrid",
+                    });
+                    if (!timeGroups[spainTime]) timeGroups[spainTime] = [];
+                    timeGroups[spainTime].push(apt);
+                  });
+
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => setSelectedDayFilter(isSelected ? null : day)}
+                      className={cn(
+                        "min-h-[170px] cursor-pointer space-y-2 rounded-xl border p-3 transition-all",
+                        isSelected
+                          ? "border-blue-500 bg-[#161c2c] ring-1 ring-blue-500"
+                          : isToday
+                            ? "border-blue-500/40 bg-[#121622]"
+                            : "border-[#23252e] bg-[#121317] hover:border-[#353945]"
+                      )}
+                    >
+                      <div className="flex items-center justify-between border-b border-[#23252e]/60 pb-2">
+                        <span className="text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                          {day.toLocaleDateString("es-ES", { weekday: "short" })}
+                        </span>
+                        <span
+                          className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
+                            isToday
+                              ? "bg-blue-600 text-white"
+                              : "text-zinc-300"
+                          )}
+                        >
+                          {day.getDate()}
+                        </span>
+                      </div>
+
+                      {dayApts.length === 0 ? (
+                        <p className="pt-4 text-center text-[10px] text-[#52525b]">
+                          Sin citas
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {Object.entries(timeGroups).map(([time, apts]) => {
+                            const hasOverlap = apts.length > 1;
+                            return apts.map((apt, idx) => {
+                              const sc =
+                                STATUS_CONFIG[apt.status as keyof typeof STATUS_CONFIG] ||
+                                STATUS_CONFIG.PENDING;
+                              return (
+                                <div
+                                  key={apt.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAppointment(apt);
+                                  }}
+                                  className={cn(
+                                    "group relative cursor-pointer rounded-lg border p-2 text-[9px] font-medium transition-all hover:scale-[1.02]",
+                                    sc.color,
+                                    hasOverlap && "border-red-500/50 shadow-[0_0_8px_rgba(239,68,68,0.2)]"
+                                  )}
+                                >
+                                  {hasOverlap && idx === 0 && (
+                                    <div className="absolute -top-1.5 -right-1.5 z-10 flex h-4 items-center justify-center rounded-full bg-red-500 px-1 text-[7px] font-bold text-white">
+                                      CONFLICTO
+                                    </div>
+                                  )}
+                                  <div className="flex items-center justify-between font-bold">
+                                    <span>{time} <span className="opacity-50">ES</span></span>
+                                    <span className="flex items-center gap-0.5 opacity-70">
+                                      <Globe className="h-2 w-2" />
+                                      {new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        timeZone: resolveTimezoneFromPhone(apt.lead?.telefono),
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div className="mt-0.5 truncate font-semibold text-white">
+                                    {apt.lead?.nombre} {apt.lead?.apellido}
+                                  </div>
+                                  <div className="truncate text-[8px] opacity-60">
+                                    {apt.advisors?.name || "Sin asignar"}
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })}
+                        </div>
+                      )}
                     </div>
-                    {dayApts.length === 0 && (
-                      <p className="text-center text-[9px] text-slate-300 dark:text-white/10">
-                        Sin citas
-                      </p>
+                  );
+                })}
+              </div>
+
+              {/* Appointment List Table */}
+              <div className="overflow-hidden rounded-2xl border border-[#23252e] bg-[#121317] shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 border-b border-[#23252e] px-5 py-3.5">
+                  {displayedAppointments.length > 0 && (
+                    <input
+                      type="checkbox"
+                      checked={
+                        displayedAppointments.slice(0, 20).length > 0 &&
+                        selectedAptIds.length === displayedAppointments.slice(0, 20).length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedAptIds(displayedAppointments.slice(0, 20).map((apt) => apt.id));
+                        } else {
+                          setSelectedAptIds([]);
+                        }
+                      }}
+                      className="h-4 w-4 cursor-pointer rounded border-[#23252e] bg-[#16171d] text-blue-600 focus:ring-blue-500"
+                      title="Seleccionar todas"
+                    />
+                  )}
+                  <Clock className="h-4 w-4 text-[#8a8f9d]" />
+                  <span className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase">
+                    {selectedDayFilter
+                      ? `Citas del ${selectedDayFilter.toLocaleDateString("es-ES", { day: "numeric", month: "long" })}`
+                      : "Todas las Citas"}
+                  </span>
+
+                  {selectedAptIds.length > 0 && (
+                    <button
+                      onClick={handleDeleteSelected}
+                      className="ml-auto flex h-7 items-center gap-1.5 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 text-[10px] font-semibold text-rose-400 transition-all hover:bg-rose-500/20"
+                      title="Eliminar citas seleccionadas"
+                    >
+                      <Trash2 className="h-3 w-3" /> Eliminar ({selectedAptIds.length})
+                    </button>
+                  )}
+
+                  <button
+                    onClick={exportAppointmentsToCSV}
+                    className={cn(
+                      "flex h-7 items-center gap-1.5 rounded-lg border border-[#23252e] bg-[#16171d] px-3 text-[10px] font-semibold text-zinc-200 transition-all hover:bg-[#1e2027]",
+                      selectedAptIds.length === 0 && "ml-auto"
                     )}
-                    {Object.entries(timeGroups).map(([time, apts]) => {
-                      const hasOverlap = apts.length > 1;
-                      return apts.map((apt, idx) => {
-                        const sc =
-                          STATUS_CONFIG[apt.status as keyof typeof STATUS_CONFIG] ||
-                          STATUS_CONFIG.PENDING;
-                        return (
-                          <div
-                            key={apt.id}
-                            onClick={() => setSelectedAppointment(apt)}
-                            className={cn(
-                              "relative cursor-pointer rounded-lg border p-2 text-[9px] font-bold transition-all hover:scale-[1.02]",
-                              sc.color,
-                              hasOverlap && "border-red-500/50 shadow-[0_0_5px_rgba(239,68,68,0.3)]"
-                            )}
-                          >
-                            {hasOverlap && idx === 0 && (
-                              <div className="absolute -top-1.5 -right-1.5 z-10 flex h-4 animate-pulse items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-black text-white">
-                                ! CONFLICTO
-                              </div>
-                            )}
-                            <div className="flex items-center justify-between">
-                              <div className="font-black">
-                                {time}{" "}
-                                <span className="ml-1 text-[7px] font-bold opacity-40">ES</span>
-                              </div>
-                              <div className="flex items-center gap-0.5 text-[7px] opacity-70">
-                                <Globe className="h-2 w-2" />
+                    title="Exportar citas a CSV"
+                  >
+                    <Download className="h-3 w-3" /> Exportar CSV
+                  </button>
+                  <span className="border-l border-[#23252e] pl-3 text-[10px] font-medium text-[#8a8f9d]">
+                    {displayedAppointments.length} registros
+                  </span>
+                </div>
+
+                {displayedAppointments.length === 0 ? (
+                  <div className="py-14 text-center text-[#8a8f9d]">
+                    <Calendar className="mx-auto mb-2 h-10 w-10 opacity-20" />
+                    <p className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+                      Sin citas registradas
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#52525b]">
+                      Las citas se crean automáticamente cuando el orquestador cualifica un prospecto.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-[#1d1f27]">
+                    {displayedAppointments.slice(0, 20).map((apt) => {
+                      const sc =
+                        STATUS_CONFIG[apt.status as keyof typeof STATUS_CONFIG] ||
+                        STATUS_CONFIG.PENDING;
+                      const isSelected = selectedAptIds.includes(apt.id);
+                      return (
+                        <div
+                          key={apt.id}
+                          onClick={() => setSelectedAppointment(apt)}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-4 px-5 py-3.5 transition-all hover:bg-white/[0.02]",
+                            isSelected && "border-l-2 border-l-blue-500 bg-blue-500/[0.04]"
+                          )}
+                        >
+                          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAptIds((prev) => [...prev, apt.id]);
+                                } else {
+                                  setSelectedAptIds((prev) => prev.filter((id) => id !== apt.id));
+                                }
+                              }}
+                              className="h-4 w-4 cursor-pointer rounded border-[#23252e] bg-[#16171d] text-blue-600 focus:ring-blue-500"
+                              title="Seleccionar cita"
+                              aria-label={`Seleccionar cita de ${apt.lead?.nombre || "prospecto"}`}
+                            />
+                          </div>
+                          <div className="w-44 shrink-0">
+                            <p className="text-xs font-semibold text-white">
+                              {new Date(apt.scheduled_at).toLocaleDateString("es-ES", {
+                                day: "numeric",
+                                month: "short",
+                                timeZone: "Europe/Madrid",
+                              })}
+                            </p>
+                            <div className="mt-0.5 flex items-center gap-2">
+                              <p className="text-[10px] font-bold text-blue-400">
+                                {new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: "Europe/Madrid",
+                                })}{" "}
+                                ES
+                              </p>
+                              <div className="h-2.5 w-[1px] bg-[#23252e]" />
+                              <p className="flex items-center gap-1 text-[10px] text-[#8a8f9d]">
+                                <Globe className="h-2.5 w-2.5" />
                                 {new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   timeZone: resolveTimezoneFromPhone(apt.lead?.telefono),
-                                })}
-                              </div>
+                                })}{" "}
+                                Local
+                              </p>
                             </div>
-                            <div className="mt-0.5 truncate opacity-80">
-                              {apt.lead?.nombre} {apt.lead?.apellido}
-                            </div>
-                            <div className="opacity-60">{apt.advisors?.name || "Sin asignar"}</div>
                           </div>
-                        );
-                      });
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-semibold text-white">
+                              {apt.lead?.nombre} {apt.lead?.apellido}
+                            </p>
+                            <p className="text-[10px] text-[#8a8f9d]">
+                              {apt.lead?.telefono}
+                            </p>
+                          </div>
+                          <div className="hidden w-28 truncate text-[11px] text-zinc-300 md:block">
+                            {apt.advisors?.name || "Sin asignar"}
+                          </div>
+                          {apt.ab_variant && (
+                            <span className="hidden rounded-md border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[9px] font-bold text-purple-400 sm:inline">
+                              {apt.ab_variant === "A" ? "Agente A" : "Agente B"}
+                            </span>
+                          )}
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-semibold",
+                              sc.color
+                            )}
+                          >
+                            {sc.label}
+                          </span>
+                          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                            {apt.status === "PENDING" && (
+                              <>
+                                <button
+                                  onClick={() => handleStatusChange(apt.id, "CONFIRMED")}
+                                  title="Confirmar"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10 transition-all hover:bg-emerald-500/20"
+                                >
+                                  <Check className="h-3 w-3 text-emerald-400" />
+                                </button>
+                                <button
+                                  onClick={() => handleStatusChange(apt.id, "CANCELLED")}
+                                  title="Cancelar"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 transition-all hover:bg-red-500/20"
+                                >
+                                  <X className="h-3 w-3 text-red-400" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handleDeleteAppointment(apt.id)}
+                              title="Eliminar definitivamente"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 transition-all hover:bg-rose-500/20"
+                            >
+                              <Trash2 className="h-3 w-3 text-rose-400" />
+                            </button>
+                          </div>
+                        </div>
+                      );
                     })}
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Appointment List */}
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-white/5 dark:bg-white/[0.02]">
-              <div className="flex items-center gap-4 border-b border-slate-100 px-6 py-4 dark:border-white/5">
-                {appointments.length > 0 && (
-                  <input
-                    type="checkbox"
-                    checked={
-                      appointments.slice(0, 20).length > 0 &&
-                      selectedAptIds.length === appointments.slice(0, 20).length
-                    }
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedAptIds(appointments.slice(0, 20).map((apt) => apt.id));
-                      } else {
-                        setSelectedAptIds([]);
-                      }
-                    }}
-                    className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-slate-300 bg-transparent dark:border-white/10"
-                    title="Seleccionar todas"
-                  />
                 )}
-                <Clock className="h-4 w-4 text-slate-400 dark:text-white/30" />
-                <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase dark:text-white/40">
-                  Todas las Citas
-                </span>
-
-                {selectedAptIds.length > 0 && (
-                  <button
-                    onClick={handleDeleteSelected}
-                    className="ml-auto flex h-7 animate-pulse items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 text-[9px] font-black tracking-widest text-rose-400 uppercase transition-all hover:bg-rose-500/20"
-                    title="Eliminar citas seleccionadas"
-                  >
-                    <Trash2 className="h-3 w-3" /> Eliminar Seleccionadas ({selectedAptIds.length})
-                  </button>
-                )}
-
-                <button
-                  onClick={exportAppointmentsToCSV}
-                  className={cn(
-                    "bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary flex h-7 items-center gap-2 rounded-lg border px-3 text-[9px] font-black tracking-widest uppercase transition-all",
-                    selectedAptIds.length === 0 && "ml-auto"
-                  )}
-                  title="Exportar citas a CSV"
-                >
-                  <Download className="h-3 w-3" /> Exportar CSV
-                </button>
-                <span className="border-l border-slate-100 pl-4 text-[9px] font-bold text-slate-300 dark:border-white/10 dark:text-white/20">
-                  {appointments.length} registros
-                </span>
               </div>
-              {appointments.length === 0 ? (
-                <div className="py-16 text-center text-slate-400 dark:text-white/20">
-                  <Calendar className="mx-auto mb-3 h-12 w-12 opacity-20" />
-                  <p className="text-xs font-bold tracking-widest uppercase">
-                    Sin citas programadas
-                  </p>
-                  <p className="mt-1 text-[10px] opacity-60">
-                    Las citas se crean automáticamente cuando el orquestador cualifica un lead.
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y divide-white/5">
-                  {appointments.slice(0, 20).map((apt) => {
-                    const sc =
-                      STATUS_CONFIG[apt.status as keyof typeof STATUS_CONFIG] ||
-                      STATUS_CONFIG.PENDING;
-                    const isSelected = selectedAptIds.includes(apt.id);
-                    return (
-                      <div
-                        key={apt.id}
-                        onClick={() => setSelectedAppointment(apt)}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-6 px-6 py-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02]",
-                          isSelected && "bg-primary/5 dark:bg-primary/10 border-primary border-l-2"
-                        )}
-                      >
-                        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedAptIds((prev) => [...prev, apt.id]);
-                              } else {
-                                setSelectedAptIds((prev) => prev.filter((id) => id !== apt.id));
-                              }
-                            }}
-                            className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-slate-300 bg-transparent dark:border-white/10"
-                            title="Seleccionar cita"
-                            aria-label={`Seleccionar cita de ${apt.lead?.nombre || "prospecto"}`}
-                          />
-                        </div>
-                        <div className="w-48 flex-shrink-0">
-                          <p className="text-xs font-bold text-slate-900 dark:text-white">
-                            {new Date(apt.scheduled_at).toLocaleDateString("es-ES", {
-                              day: "numeric",
-                              month: "short",
-                              timeZone: "Europe/Madrid",
-                            })}
-                          </p>
-                          <div className="mt-0.5 flex items-center gap-2">
-                            <p className="text-primary text-[10px] font-black">
-                              {new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                timeZone: "Europe/Madrid",
-                              })}{" "}
-                              ES
-                            </p>
-                            <div className="h-3 w-[1px] bg-slate-200 dark:bg-white/10" />
-                            <p className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-white/40">
-                              <Globe className="h-2.5 w-2.5" />
-                              {new Date(apt.scheduled_at).toLocaleTimeString("es-ES", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                timeZone: resolveTimezoneFromPhone(apt.lead?.telefono),
-                              })}{" "}
-                              Local
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
-                            {apt.lead?.nombre} {apt.lead?.apellido}
-                          </p>
-                          <p className="text-[10px] text-slate-500 dark:text-white/40">
-                            {apt.lead?.telefono}
-                          </p>
-                        </div>
-                        <div className="w-32 text-xs font-medium text-slate-600 dark:text-white/60">
-                          {apt.advisors?.name || "Sin asignar"}
-                        </div>
-                        {apt.ab_variant && (
-                          <span className="rounded-lg border border-purple-500/20 bg-purple-500/10 px-2 py-1 text-[9px] font-black text-purple-400">
-                            {apt.ab_variant === "A" ? "🤖 Agente A" : "🤖 Agente B"}
-                          </span>
-                        )}
-                        <span
-                          className={cn(
-                            "flex-shrink-0 rounded-lg border px-2 py-1 text-[9px] font-black",
-                            sc.color
-                          )}
-                        >
-                          {sc.label}
-                        </span>
-                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                          {apt.status === "PENDING" && (
-                            <>
-                              <button
-                                onClick={() => handleStatusChange(apt.id, "CONFIRMED")}
-                                title="Confirmar"
-                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10 transition-all hover:bg-emerald-500/20"
-                              >
-                                <Check className="h-3 w-3 text-emerald-400" />
-                              </button>
-                              <button
-                                onClick={() => handleStatusChange(apt.id, "CANCELLED")}
-                                title="Cancelar"
-                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 transition-all hover:bg-red-500/20"
-                              >
-                                <X className="h-3 w-3 text-red-400" />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleDeleteAppointment(apt.id)}
-                            title="Eliminar definitivamente"
-                            className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 transition-all hover:bg-rose-500/20"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-rose-400" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -1878,27 +2120,27 @@ export default function CalendarPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-[40px] border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#0b0e14]"
+              className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-[#23252e] bg-[#121317] shadow-2xl"
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-8 dark:border-white/5 dark:bg-black/20">
-                <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between border-b border-[#23252e] bg-[#0d0e12] p-6">
+                <div className="flex items-center gap-3.5">
                   <div
                     className={cn(
-                      "flex h-14 w-14 items-center justify-center rounded-2xl border",
+                      "flex h-12 w-12 items-center justify-center rounded-xl border",
                       (
                         STATUS_CONFIG[selectedAppointment.status as keyof typeof STATUS_CONFIG] ||
                         STATUS_CONFIG.PENDING
                       ).color
                     )}
                   >
-                    <CalendarPlus className="h-7 w-7" />
+                    <CalendarPlus className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase dark:text-white">
+                    <h2 className="text-lg font-bold tracking-tight text-white uppercase">
                       Detalle de la Cita
                     </h2>
-                    <p className="mt-1 text-[10px] font-bold tracking-widest text-slate-500 uppercase dark:text-white/40">
+                    <p className="mt-0.5 text-[10px] font-medium tracking-wider text-[#8a8f9d] uppercase">
                       ID: {selectedAppointment.id.split("-")[0]}
                     </p>
                   </div>
@@ -1906,35 +2148,35 @@ export default function CalendarPage() {
                 <button
                   onClick={() => setSelectedAppointment(null)}
                   title="Cerrar detalle"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-white/5"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-[#8a8f9d] transition-all hover:bg-white/[0.04] hover:text-white"
                 >
-                  <X className="h-5 w-5 text-slate-400 dark:text-white/40" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Content */}
-              <div className="custom-scrollbar max-h-[60vh] space-y-8 overflow-y-auto p-8">
+              <div className="custom-scrollbar max-h-[60vh] space-y-6 overflow-y-auto p-6">
                 {/* Lead Info Section */}
-                <div className="space-y-4">
-                  <h3 className="text-primary flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
-                    <Users className="h-3 w-3" /> Información del Prospecto
+                <div className="space-y-3">
+                  <h3 className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                    <Users className="h-3.5 w-3.5 text-blue-400" /> Información del Prospecto
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                      <p className="mb-1 text-[9px] font-black tracking-widest text-slate-500 uppercase dark:text-white/30">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-3.5">
+                      <p className="mb-1 text-[10px] font-medium text-[#8a8f9d]">
                         Nombre Completo
                       </p>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      <p className="text-sm font-semibold text-white">
                         {selectedAppointment.lead?.nombre} {selectedAppointment.lead?.apellido}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                      <p className="mb-1 text-[9px] font-black tracking-widest text-slate-500 uppercase dark:text-white/30">
+                    <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-3.5">
+                      <p className="mb-1 text-[10px] font-medium text-[#8a8f9d]">
                         Teléfono
                       </p>
                       <div className="flex items-center gap-2">
-                        <Phone className="text-primary h-3 w-3" />
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        <Phone className="h-3.5 w-3.5 text-blue-400" />
+                        <p className="text-sm font-semibold text-white">
                           {selectedAppointment.lead?.telefono}
                         </p>
                       </div>
@@ -1943,23 +2185,23 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Appointment Schedule Section */}
-                <div className="space-y-4">
-                  <h3 className="text-primary flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
-                    <Clock className="h-3 w-3" /> Horarios de la Cita
+                <div className="space-y-3">
+                  <h3 className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                    <Clock className="h-3.5 w-3.5 text-blue-400" /> Horarios de la Cita
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                      <p className="mb-1 text-[9px] font-black tracking-widest text-slate-500 uppercase dark:text-white/30">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-3.5">
+                      <p className="mb-1 text-[10px] font-medium text-[#8a8f9d]">
                         Hora España (ES)
                       </p>
-                      <p className="text-primary text-lg font-black">
+                      <p className="text-base font-bold text-blue-400">
                         {new Date(selectedAppointment.scheduled_at).toLocaleTimeString("es-ES", {
                           hour: "2-digit",
                           minute: "2-digit",
                           timeZone: "Europe/Madrid",
                         })}
                       </p>
-                      <p className="mt-1 text-[10px] font-medium text-slate-400">
+                      <p className="mt-1 text-[11px] text-zinc-400">
                         {new Date(selectedAppointment.scheduled_at).toLocaleDateString("es-ES", {
                           weekday: "long",
                           day: "numeric",
@@ -1967,13 +2209,13 @@ export default function CalendarPage() {
                         })}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                      <p className="mb-1 text-[9px] font-black tracking-widest text-slate-500 uppercase dark:text-white/30">
+                    <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-3.5">
+                      <p className="mb-1 text-[10px] font-medium text-[#8a8f9d]">
                         Hora Local del Lead
                       </p>
                       <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-emerald-500" />
-                        <p className="text-lg font-black text-slate-900 dark:text-white">
+                        <Globe className="h-4 w-4 text-emerald-400" />
+                        <p className="text-base font-bold text-white">
                           {new Date(selectedAppointment.scheduled_at).toLocaleTimeString("es-ES", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -1981,7 +2223,7 @@ export default function CalendarPage() {
                           })}
                         </p>
                       </div>
-                      <p className="mt-1 text-[9px] font-bold tracking-tighter text-slate-500 uppercase dark:text-white/40">
+                      <p className="mt-1 text-[10px] font-medium text-[#8a8f9d]">
                         Zona: {resolveTimezoneFromPhone(selectedAppointment.lead?.telefono)}
                       </p>
                     </div>
@@ -1989,15 +2231,15 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Status & Advisor Section */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <h3 className="text-primary flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
-                      <Check className="h-3 w-3" /> Estado y Asesor
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-3">
+                    <h3 className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                      <Check className="h-3.5 w-3.5 text-blue-400" /> Estado y Asesor
                     </h3>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                    <div className="rounded-xl border border-[#23252e] bg-[#16171d] p-3.5">
                       <div
                         className={cn(
-                          "mb-3 inline-flex rounded-full border px-3 py-1 text-[10px] font-black tracking-widest uppercase",
+                          "mb-2.5 inline-flex rounded-md border px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
                           (
                             STATUS_CONFIG[
                               selectedAppointment.status as keyof typeof STATUS_CONFIG
@@ -2013,25 +2255,25 @@ export default function CalendarPage() {
                           ).label
                         }
                       </div>
-                      <p className="mb-1 text-[9px] font-black tracking-widest text-slate-500 uppercase dark:text-white/30">
+                      <p className="mb-1 text-[10px] font-medium text-[#8a8f9d]">
                         Asesor Asignado
                       </p>
                       <div className="flex items-center gap-2">
-                        <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-lg">
-                          <Users className="text-primary h-3 w-3" />
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[#23252e] text-blue-400">
+                          <Users className="h-3 w-3" />
                         </div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        <p className="text-sm font-semibold text-white">
                           {selectedAppointment.advisors?.name || "Sin asignar"}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <h3 className="text-primary flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
-                      <Terminal className="h-3 w-3" /> Notas del Agente
+                  <div className="space-y-3">
+                    <h3 className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-[#8a8f9d] uppercase">
+                      <Terminal className="h-3.5 w-3.5 text-blue-400" /> Notas del Agente
                     </h3>
-                    <div className="min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                      <p className="text-xs leading-relaxed font-medium text-slate-600 italic dark:text-white/60">
+                    <div className="min-h-[96px] rounded-xl border border-[#23252e] bg-[#16171d] p-3.5">
+                      <p className="text-xs leading-relaxed font-normal text-zinc-300 italic">
                         {selectedAppointment.notes || "No hay notas adicionales para esta cita."}
                       </p>
                     </div>
@@ -2040,17 +2282,17 @@ export default function CalendarPage() {
               </div>
 
               {/* Footer Actions */}
-              <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 p-8 dark:border-white/5 dark:bg-black/20">
+              <div className="flex items-center justify-between border-t border-[#23252e] bg-[#0d0e12] p-5">
                 <button
                   onClick={() => handleDeleteAppointment(selectedAppointment.id)}
-                  className="flex h-11 items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 text-[11px] font-black tracking-widest text-rose-400 uppercase transition-all hover:bg-rose-500/20"
+                  className="flex h-9 items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 text-[11px] font-semibold text-rose-400 transition-all hover:bg-rose-500/20"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Eliminar Cita
                 </button>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedAppointment(null)}
-                    className="h-11 rounded-2xl px-6 text-[11px] font-black tracking-widest text-slate-500 uppercase transition-all hover:bg-slate-200 dark:text-white/40 dark:hover:bg-white/5"
+                    className="h-9 rounded-xl px-4 text-[11px] font-semibold text-[#8a8f9d] transition-all hover:bg-white/[0.04] hover:text-white"
                   >
                     Cerrar Detalle
                   </button>
@@ -2060,7 +2302,7 @@ export default function CalendarPage() {
                         handleStatusChange(selectedAppointment.id, "CONFIRMED");
                         setSelectedAppointment(null);
                       }}
-                      className="h-11 rounded-2xl bg-emerald-500 px-6 text-[11px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+                      className="h-9 rounded-xl bg-emerald-600 px-5 text-[11px] font-semibold text-white shadow-sm transition-all hover:bg-emerald-500"
                     >
                       Confirmar Cita
                     </button>

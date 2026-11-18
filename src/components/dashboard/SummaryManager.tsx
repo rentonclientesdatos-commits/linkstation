@@ -608,252 +608,185 @@ export function SummaryManager({
             "bg-zinc-800": ["#71717a", "#18181b"],
           };
 
-          const svgW = 500;
-          const total = steps.length;
-          const topR = 220;
-          const botR = 55;
-          const rowH = 64;
-          const ellipseRY = 14;
-          const svgH = total * rowH + ellipseRY * 2 + 10;
-
-          function rx(idx: number) {
-            return topR - (topR - botR) * (idx / total);
-          }
-
           return (
-            <div className="relative mx-auto mb-8 flex w-full max-w-[900px] flex-col items-center overflow-hidden rounded-2xl border border-[#23252e] bg-[#121317] px-6 py-10 shadow-sm">
+            <div className="relative mx-auto mb-8 flex w-full max-w-[850px] flex-col items-center overflow-hidden rounded-2xl border border-[#23252e] bg-[#121317] px-6 py-8 shadow-sm">
+              {/* Funnel Header info */}
+              <div className="mb-6 flex w-full items-center justify-between border-b border-[#23252e] pb-4">
+                <div>
+                  <h3 className="text-sm font-semibold tracking-wide text-white uppercase">
+                    Embudo de Conversión
+                  </h3>
+                  <p className="text-[11px] text-[#8a8f9d]">
+                    Rendimiento por etapa desde leads ingresados hasta agendamiento
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md border border-[#23252e] bg-[#16171d] px-2.5 py-1 text-[11px] font-medium text-[#8a8f9d]">
+                    {steps.length} etapas activas
+                  </span>
+                </div>
+              </div>
 
-              {/* SVG Funnel */}
-              <div className="relative flex w-full justify-center">
-                <svg
-                  viewBox={`0 0 ${svgW} ${svgH}`}
-                  width="100%"
-                  className="max-w-[520px] overflow-visible"
-                >
-                  <defs>
-                    {steps.map((k, idx) => {
-                      const [c1, c2] = COLORS[k.color || "bg-blue-600"] || ["#3b82f6", "#1d4ed8"];
-                      // Intensity: 1.0 = max value (darkest), 0.35 = min (lightest)
-                      const intensity = 0.35 + 0.65 * (rawVals[idx] / maxVal);
-                      return (
-                        <linearGradient
-                          key={`g${k.id}`}
-                          id={`grad${k.id}`}
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="0%"
-                        >
-                          <stop offset="0%" stopColor={c2} stopOpacity={intensity} />
-                          <stop offset="30%" stopColor={c1} stopOpacity={intensity} />
-                          <stop offset="70%" stopColor={c1} stopOpacity={intensity} />
-                          <stop offset="100%" stopColor={c2} stopOpacity={intensity} />
-                        </linearGradient>
-                      );
-                    })}
-                    {/* Dark overlay mask for low-intensity steps */}
-                    {steps.map((k, idx) => {
-                      const intensity = 0.35 + 0.65 * (rawVals[idx] / maxVal);
-                      const dimAmount = 1 - intensity; // 0 = no dim (high data), up to 0.65 (low data)
-                      return (
-                        <linearGradient
-                          key={`dim${k.id}`}
-                          id={`dim${k.id}`}
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="0%"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor="rgba(0,0,0,0)"
-                            stopOpacity={dimAmount * 0.4}
-                          />
-                          <stop
-                            offset="50%"
-                            stopColor="rgba(0,0,0,0)"
-                            stopOpacity={dimAmount * 0.15}
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="rgba(0,0,0,0)"
-                            stopOpacity={dimAmount * 0.4}
-                          />
-                        </linearGradient>
-                      );
-                    })}
-                  </defs>
-
-                  {steps.map((k, idx) => {
-                    const [c1, c2] = COLORS[k.color || "bg-blue-600"] || ["#3b82f6", "#1d4ed8"];
-                    const cx = svgW / 2;
-                    const rTop = rx(idx);
-                    const rBot = rx(idx + 1);
-                    const yTop = idx * rowH + ellipseRY + 5;
-                    const yBot = yTop + rowH;
-                    const bodyPath = `M ${cx - rTop} ${yTop} L ${cx + rTop} ${yTop} L ${cx + rBot} ${yBot} L ${cx - rBot} ${yBot} Z`;
-
-                    let val: number | string = k.staticKey
-                      ? (values[k.staticKey as keyof KpiGenerales] as number)
-                      : (previewValues[k.id] ?? dynamicValues[k.id] ?? 0);
-                    if (typeof val === "number") {
-                      const isDuration =
-                        k.valType === "duration" ||
-                        k.staticKey?.includes("segundos") ||
-                        k.suffix === " seg";
-                      if (isDuration) {
-                        const m = Math.floor(val / 60);
-                        const s = Math.round(val % 60);
-                        val = s > 0 ? `${m}m ${s}s` : `${m}m`;
-                      } else {
-                        val = k.isPercentage ? val.toFixed(1) : val.toLocaleString("es-ES");
-                      }
+              {/* Horizontal Bar Funnel */}
+              <div className="w-full max-w-[720px] space-y-1">
+                {steps.map((k, idx) => {
+                  let val: number | string = k.staticKey
+                    ? (values[k.staticKey as keyof KpiGenerales] as number)
+                    : (previewValues[k.id] ?? dynamicValues[k.id] ?? 0);
+                  if (typeof val === "number") {
+                    const isDuration =
+                      k.valType === "duration" ||
+                      k.staticKey?.includes("segundos") ||
+                      k.suffix === " seg";
+                    if (isDuration) {
+                      const m = Math.floor(val / 60);
+                      const s = Math.round(val % 60);
+                      val = s > 0 ? `${m}m ${s}s` : `${m}m`;
+                    } else {
+                      val = k.isPercentage ? val.toFixed(1) : val.toLocaleString("es-ES");
                     }
-                    const dval = k.isPercentage ? `${val}%` : k.suffix ? `${val}${k.suffix}` : val;
-                    const yCtr = yTop + rowH / 2;
+                  }
+                  const dval = k.isPercentage ? `${val}%` : k.suffix ? `${val}${k.suffix}` : val;
 
-                    const intensity = 0.35 + 0.65 * (rawVals[idx] / maxVal);
-                    // Text opacity: brighter when more data
-                    const textAlpha = 0.55 + 0.45 * (rawVals[idx] / maxVal);
+                  const rawVal = rawVals[idx];
+                  const barPct = maxVal > 0 ? Math.max((rawVal / maxVal) * 100, rawVal > 0 ? 8 : 4) : 4;
+                  const [c1, c2] = COLORS[k.color || "bg-blue-600"] || ["#3b82f6", "#1d4ed8"];
 
-                    return (
-                      <g key={k.id}>
-                        {/* Gradient body */}
-                        <path d={bodyPath} fill={`url(#grad${k.id})`} />
-                        {/* Top rim */}
-                        <ellipse
-                          cx={cx}
-                          cy={yTop}
-                          rx={rTop}
-                          ry={ellipseRY}
-                          fill={c1}
-                          fillOpacity={intensity}
-                        />
-                        <ellipse
-                          cx={cx}
-                          cy={yTop}
-                          rx={rTop * 0.85}
-                          ry={ellipseRY * 0.55}
-                          fill="white"
-                          fillOpacity={intensity * 0.18}
-                        />
-                        {/* Bottom shadow rim */}
-                        <ellipse
-                          cx={cx}
-                          cy={yBot}
-                          rx={rBot}
-                          ry={ellipseRY * 0.7}
-                          fill={c2}
-                          fillOpacity={intensity * 0.7}
-                        />
+                  // Conversion calculation between current and next step
+                  const nextRaw = idx < steps.length - 1 ? rawVals[idx + 1] : null;
+                  const convPct =
+                    nextRaw !== null && rawVal > 0
+                      ? ((nextRaw / rawVal) * 100).toFixed(1)
+                      : null;
+                  const dropPct =
+                    convPct !== null ? (100 - parseFloat(convPct)).toFixed(1) : null;
 
-                        {/* Label */}
-                        <text
-                          x={cx}
-                          y={yCtr - 5}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fill={`rgba(255,255,255,${textAlpha})`}
-                          fontSize="12"
-                          fontWeight="600"
-                          className="font-outfit tracking-[0.08em] uppercase"
-                        >
-                          {k.label}
-                        </text>
-                        {/* Value */}
-                        <text
-                          x={cx}
-                          y={yCtr + 13}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fill={`rgba(255,255,255,${Math.min(textAlpha + 0.15, 1)})`}
-                          fontSize="17"
-                          fontWeight="800"
-                          className="font-outfit"
-                        >
-                          {dval}
-                        </text>
+                  return (
+                    <div key={k.id} className="relative">
+                      {/* Funnel Step Row */}
+                      <div className="group relative flex items-center gap-3 rounded-xl border border-transparent p-2 transition-all hover:border-[#23252e] hover:bg-white/[0.02]">
+                        {/* Stage Number & Label */}
+                        <div className="w-44 shrink-0">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1e2027] text-[10px] font-bold text-[#8a8f9d]">
+                              {idx + 1}
+                            </span>
+                            <span
+                              className="truncate text-[12px] font-semibold tracking-wide text-zinc-200 uppercase"
+                              title={k.label}
+                            >
+                              {k.label}
+                            </span>
+                          </div>
+                        </div>
 
-                        {/* ── Edit buttons (visible only in editing mode) ── */}
-                        {isEditing && (
-                          <foreignObject
-                            x={cx + rTop + 6}
-                            y={yCtr - 22}
-                            width={50}
-                            height={44}
-                            className="overflow-visible"
-                          >
-                            <div className="flex flex-col gap-1">
-                              {/* Configure data */}
-                              <button
-                                onClick={() => setEditingKpiId(k.id)}
-                                title="Configurar datos del paso"
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(0,229,255,0.2)] bg-[rgba(10,15,30,0.8)] text-[#00e5ff] shadow-lg transition-transform hover:scale-110"
-                              >
-                                <Settings className="h-3.5 w-3.5" />
-                              </button>
-                              {/* Toggle visibility */}
-                              <button
-                                onClick={() =>
-                                  updateKpi(k.id, {
-                                    isVisible: k.isVisible === false ? true : false,
-                                  })
-                                }
-                                title={k.isVisible === false ? "Mostrar paso" : "Ocultar paso"}
-                                className={cn(
-                                  "flex h-8 w-8 items-center justify-center rounded-full border shadow-lg transition-transform hover:scale-110",
-                                  k.isVisible === false
-                                    ? "border-slate-300 bg-slate-400 text-white"
-                                    : "border-[rgba(0,229,255,0.15)] bg-[rgba(10,15,30,0.6)] text-slate-400"
-                                )}
-                              >
-                                {k.isVisible === false ? (
-                                  <X className="h-3.5 w-3.5" />
-                                ) : (
-                                  <Check className="h-3.5 w-3.5" />
-                                )}
-                              </button>
+                        {/* Centered Symmetrical Bar */}
+                        <div className="relative flex flex-1 items-center justify-center">
+                          <div className="relative h-10 w-full overflow-hidden rounded-xl border border-[#23252e] bg-[#16171d]">
+                            {/* Symmetric / Centered fill bar */}
+                            <div
+                              className="absolute top-0 bottom-0 rounded-lg transition-all duration-700 ease-out"
+                              style={{
+                                left: `${(100 - barPct) / 2}%`,
+                                width: `${barPct}%`,
+                                background: `linear-gradient(90deg, ${c2}88 0%, ${c1} 50%, ${c2}88 100%)`,
+                                boxShadow: `0 0 12px ${c1}22`,
+                              }}
+                            />
+
+                            {/* Centered Value inside Bar */}
+                            <div className="absolute inset-0 flex items-center justify-center px-4">
+                              <span className="text-[13px] font-bold text-white drop-shadow-sm">
+                                {dval}
+                              </span>
                             </div>
-                          </foreignObject>
-                        )}
-                      </g>
-                    );
-                  })}
+                          </div>
+                        </div>
 
-                  {/* Bottom rim of last step */}
-                  {steps.length > 0 &&
-                    (() => {
-                      const last = steps[steps.length - 1];
-                      const [, c2] = COLORS[last.color || "bg-blue-600"] || ["#3b82f6", "#1d4ed8"];
-                      const yBot = steps.length * rowH + ellipseRY + 5;
-                      const rBot = rx(steps.length);
-                      const lastIntensity = 0.35 + 0.65 * (rawVals[steps.length - 1] / maxVal);
-                      return (
-                        <ellipse
-                          cx={svgW / 2}
-                          cy={yBot}
-                          rx={rBot}
-                          ry={ellipseRY}
-                          fill={c2}
-                          fillOpacity={lastIntensity}
-                        />
-                      );
-                    })()}
-                </svg>
+                        {/* Right stats: % of max */}
+                        <div className="w-20 shrink-0 text-right">
+                          <span className="text-[12px] font-semibold text-zinc-300">
+                            {maxVal > 0 ? ((rawVal / maxVal) * 100).toFixed(0) : 0}%
+                          </span>
+                          <span className="block text-[9px] text-[#8a8f9d]">del total</span>
+                        </div>
+
+                        {/* Edit action buttons (edit mode only) */}
+                        {isEditing && (
+                          <div className="flex items-center gap-1 pl-1">
+                            <button
+                              onClick={() => setEditingKpiId(k.id)}
+                              title="Configurar datos del paso"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#23252e] bg-[#16171d] text-[#3b82f6] transition-transform hover:scale-110"
+                            >
+                              <Settings className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                updateKpi(k.id, {
+                                  isVisible: k.isVisible === false ? true : false,
+                                })
+                              }
+                              title={k.isVisible === false ? "Mostrar paso" : "Ocultar paso"}
+                              className={cn(
+                                "flex h-7 w-7 items-center justify-center rounded-lg border transition-transform hover:scale-110",
+                                k.isVisible === false
+                                  ? "border-zinc-700 bg-zinc-800 text-zinc-500"
+                                  : "border-[#23252e] bg-[#16171d] text-emerald-400"
+                              )}
+                            >
+                              {k.isVisible === false ? (
+                                <X className="h-3.5 w-3.5" />
+                              ) : (
+                                <Check className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Conversion connection indicator between rows */}
+                      {idx < steps.length - 1 && (
+                        <div className="my-0.5 flex items-center justify-center">
+                          <div className="flex items-center gap-2 rounded-full border border-[#23252e] bg-[#0d0e12] px-3 py-0.5 text-[10px]">
+                            <span className="text-[#8a8f9d]">↓ etapa {idx + 1} a {idx + 2}:</span>
+                            <span
+                              className={cn(
+                                "font-bold",
+                                Number(convPct) >= 50
+                                  ? "text-emerald-400"
+                                  : Number(convPct) > 0
+                                    ? "text-amber-400"
+                                    : "text-zinc-500"
+                              )}
+                            >
+                              {convPct !== null ? `${convPct}% conversión` : "—"}
+                            </span>
+                            {dropPct !== null && Number(dropPct) > 0 && (
+                              <span className="text-[9px] text-[#6b7280]">
+                                ({dropPct}% pérdida)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* ── Inline Color Picker (edit mode only) ───────────────── */}
               {isEditing && (
-                <div className="mt-6 w-full max-w-[520px] space-y-2">
-                  <p className="mb-3 text-center text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase dark:text-slate-500">
+                <div className="mt-6 w-full max-w-[560px] space-y-2">
+                  <p className="mb-3 text-center text-[10px] font-bold tracking-[0.2em] text-[#8a8f9d] uppercase">
                     Color por nivel del embudo
                   </p>
                   {steps.map((k) => (
                     <div
                       key={`cp-${k.id}`}
-                      className="flex items-center gap-3 rounded-2xl border border-[rgba(0,229,255,0.1)] bg-[rgba(10,15,30,0.7)] px-4 py-2.5 shadow-sm"
+                      className="flex items-center gap-3 rounded-xl border border-[#23252e] bg-[#16171d] px-4 py-2.5 shadow-sm"
                     >
-                      <span className="flex-1 truncate text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                      <span className="flex-1 truncate text-[11px] font-medium text-zinc-300">
                         {k.label}
                       </span>
                       <div className="flex flex-wrap justify-end gap-1.5">
@@ -866,7 +799,7 @@ export function SummaryManager({
                               "h-5 w-5 rounded-full transition-all duration-200",
                               c.class,
                               k.color === c.class
-                                ? "scale-125 ring-2 ring-slate-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800"
+                                ? "scale-125 ring-2 ring-white/80 ring-offset-2 ring-offset-[#121317]"
                                 : "opacity-60 hover:scale-110 hover:opacity-100"
                             )}
                           />
