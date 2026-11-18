@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import NextImage from "next/image";
 import { loginAction, resetPasswordAction } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +11,11 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
   Building2,
-  GraduationCap,
   Stethoscope,
   Briefcase,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -62,22 +61,22 @@ const SOLUTIONS: EnterpriseSolution[] = [
     rating: "★ 4.9",
   },
   {
-    id: "esden",
-    industry: "Educación Superior",
-    pillLabel: "🎓 Educación & Posgrados",
-    statusBadge: "Entrevista Online",
+    id: "renton",
+    industry: "Consultoría & Automatización",
+    pillLabel: "🚀 Renton Connective",
+    statusBadge: "Sesión Activa",
     statusColor: "text-blue-400 border-blue-500/20 bg-blue-500/10",
-    meetingTitle: "Entrevista de Admisión · MBA Global",
-    meetingSubtitle: "Esden Business School · Asesor Senior Asignado",
-    priorities: "Cualificación Directiva · Madrid (ES) & Latam",
-    bullet: "Evaluación de años de experiencia profesional, titulación previa y asignación de beca internacional.",
-    promptText: "Enviar dossier del MBA en PDF y sincronizar entrevista con el comité académico...",
-    companyHeader: "🎓 ESDEN BUSINESS SCHOOL · MADRID / LATAM",
-    quote: "El agente atiende a postulantes de 8 países en sus propios horarios, aumentando las matrículas efectivas en un 64%.",
-    authorName: "Elena Rocamora",
-    authorRole: "Directora de Admisiones Internacionales · Esden",
-    authorInitials: "ER",
-    statBadge: "+3,200 postulantes / cohorte",
+    meetingTitle: "Consultoría en IA & Automatización",
+    meetingSubtitle: "Renton Connective · Arquitectura de Agentes",
+    priorities: "Auditoría Operativa · Reducción de Tiempos a Segundos",
+    bullet: "Diagnóstico de volumen operativo, arquitectura omnicanal y agentes de voz para agendamiento.",
+    promptText: "Generar propuesta técnica de implementación para Renton Connective...",
+    companyHeader: "🚀 RENTON CONNECTIVE · AUTOMATIZACIÓN",
+    quote: "LinkStation nos permitió automatizar la captación y atención corporativa reduciendo los tiempos de respuesta a segundos.",
+    authorName: "Esteban Morales",
+    authorRole: "Director de Innovación · Renton Connective",
+    authorInitials: "RC",
+    statBadge: "+3,200 leads automatizados",
     rating: "★ 4.9",
   },
   {
@@ -122,34 +121,15 @@ const SOLUTIONS: EnterpriseSolution[] = [
 
 function LinkStationBrandLogo() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-500/30 bg-blue-600/10 text-blue-400 shadow-md">
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="m4.93 4.93 4.24 4.24" />
-          <path d="m14.83 9.17 4.24-4.24" />
-          <path d="m14.83 14.83 4.24 4.24" />
-          <path d="m9.17 14.83-4.24 4.24" />
-          <circle cx="12" cy="12" r="4" />
-        </svg>
-      </div>
-      <div>
-        <span className="text-base font-extrabold tracking-tight text-white uppercase">
-          LinkStation
-        </span>
-        <span className="block text-[10px] font-semibold tracking-widest text-[#8a8f9d] uppercase">
-          Enterprise AI Platform
-        </span>
-      </div>
+    <div className="flex items-center py-1">
+      <NextImage
+        src="/logo-login.png"
+        alt="LinkStation Enterprise"
+        width={360}
+        height={90}
+        className="h-10 w-auto max-w-[220px] object-contain drop-shadow-md"
+        priority
+      />
     </div>
   );
 }
@@ -300,22 +280,22 @@ export default function LoginPage() {
                   El Copiloto de IA para tus Citas y Ventas
                 </h1>
                 <p className="mt-2 text-xs leading-relaxed text-[#8a8f9d]">
-                  Atención 24/7, cualificación omnicanal y agendamiento inteligente para clínicas, universidades, inmobiliarias y empresas B2B.
+                  Atención 24/7, cualificación omnicanal y agendamiento inteligente para clínicas, inmobiliarias y empresas B2B.
                 </p>
 
                 {/* Industry badges pill row */}
                 <div className="mt-3.5 flex flex-wrap gap-1.5">
                   <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
-                    <Stethoscope className="h-2.5 w-2.5 text-blue-400" /> Salud & Clínicas
+                    <Stethoscope className="h-2.5 w-2.5 text-blue-400" /> Clínica DentiPro
                   </span>
-                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
-                    <GraduationCap className="h-2.5 w-2.5 text-blue-400" /> Educación
+                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-blue-400">
+                    <Zap className="h-2.5 w-2.5 text-blue-400" /> Renton Connective
                   </span>
                   <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
                     <Building2 className="h-2.5 w-2.5 text-blue-400" /> Inmobiliarias
                   </span>
                   <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
-                    <Briefcase className="h-2.5 w-2.5 text-blue-400" /> Servicios B2B
+                    <Briefcase className="h-2.5 w-2.5 text-blue-400" /> Consultoría B2B
                   </span>
                 </div>
 
@@ -437,58 +417,32 @@ export default function LoginPage() {
           <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/10 blur-3xl" />
 
-          {/* Header Switcher: Industrias Enterprise */}
-          <div className="relative z-10 space-y-3">
-            <div className="flex items-center justify-between">
+          {/* Header: Solución Enterprise Activa */}
+          <div className="relative z-10 space-y-2">
+            <div className="flex items-center justify-between border-b border-[#23252e]/80 pb-3">
               <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-blue-400">
-                <Sparkles className="h-3 w-3" /> Casos de Éxito Enterprise
+                <Sparkles className="h-3 w-3" /> Solución Enterprise Activa
               </span>
-              {/* Pagination controls */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveSolutionIdx(
-                      (prev) => (prev - 1 + SOLUTIONS.length) % SOLUTIONS.length
-                    )
-                  }
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-[#23252e] bg-[#161720] text-[#8a8f9d] transition-all hover:bg-[#1e2029] hover:text-white"
-                  title="Caso anterior"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </button>
-                <span className="px-1 text-[10px] font-mono font-semibold text-zinc-400">
-                  {activeSolutionIdx + 1}/{SOLUTIONS.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveSolutionIdx((prev) => (prev + 1) % SOLUTIONS.length)
-                  }
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-[#23252e] bg-[#161720] text-[#8a8f9d] transition-all hover:bg-[#1e2029] hover:text-white"
-                  title="Siguiente caso"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
+              <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-blue-300">
+                {activeSolution.industry}
+              </span>
             </div>
 
-            {/* Switcher Pills (Horizontal scrolling if needed) */}
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
-              {SOLUTIONS.map((sol, idx) => (
+            {/* Subtle Minimal Dots (without scrollbar or 4/4 selector) */}
+            <div className="flex items-center justify-end gap-1 pt-0.5">
+              {SOLUTIONS.map((_, idx) => (
                 <button
-                  key={sol.id}
+                  key={idx}
                   type="button"
                   onClick={() => setActiveSolutionIdx(idx)}
                   className={cn(
-                    "rounded-lg px-2.5 py-1 text-[10px] font-semibold tracking-wide whitespace-nowrap transition-all",
+                    "h-1 rounded-full transition-all duration-500",
                     activeSolutionIdx === idx
-                      ? "border border-blue-500/40 bg-blue-500/10 text-blue-300 shadow-sm"
-                      : "border border-[#23252e] bg-[#14151e] text-[#8a8f9d] hover:bg-white/[0.03] hover:text-zinc-300"
+                      ? "w-5 bg-blue-500"
+                      : "w-1.5 bg-zinc-700/60 hover:bg-zinc-500"
                   )}
-                >
-                  {sol.pillLabel}
-                </button>
+                  title={`Caso ${idx + 1}`}
+                />
               ))}
             </div>
           </div>

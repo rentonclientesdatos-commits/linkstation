@@ -112,7 +112,7 @@ export default function CalendarPage() {
     repetitions: 1,
     mode: "manual" as "manual" | "ai",
     template:
-      "Hola {nombre}, 👋 te recordamos que tienes una cita programada con un asesor de Esden hoy a las {hora} (hora España). ¡Te esperamos!",
+      "Hola {nombre}, 👋 te recordamos que tienes una cita programada con nuestro equipo hoy a las {hora}. ¡Te esperamos!",
   });
   const [miniMonthDate, setMiniMonthDate] = useState<Date>(new Date());
   const [filterAdvisorId, setFilterAdvisorId] = useState<string>("all");
@@ -491,7 +491,7 @@ export default function CalendarPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `citas_esden_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute("download", `citas_linkstation_${new Date().toISOString().split("T")[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
