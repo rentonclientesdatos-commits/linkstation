@@ -2,6 +2,8 @@
 
 import type { KpiMinutos } from "@/lib/actions/analytics";
 import { cn, formatDuration } from "@/lib/utils";
+import { BubbleClusterChart } from "@/components/charts/BubbleClusterChart";
+
 import {
   AreaChart,
   Area,
@@ -254,57 +256,13 @@ export function MinutosCharts({ data }: Props) {
         )}
       </ChartCard>
 
-      {/* 4. Distribución de duración – Donut */}
+      {/* 4. Distribución de duración – Bubble Cluster ("Streams Sources" style) */}
       <div className="lg:col-span-2">
-        <ChartCard title="Distribución de Duración de Llamadas IA">
-          {distribucion_duracion.every((r) => r.value === 0) ? (
-            <Empty />
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={distribucion_duracion.map((r) => ({ ...r, name: r.label }))}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={75}
-                  outerRadius={110}
-                  paddingAngle={4}
-                  dataKey="value"
-                  nameKey="name"
-                  stroke="#ffffff"
-                  strokeWidth={3}
-                >
-                  {distribucion_duracion.map((_, i) => (
-                    <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<TooltipPie />} />
-                <Legend
-                  layout="vertical"
-                  align="right"
-                  verticalAlign="middle"
-                  iconType="circle"
-                  iconSize={8}
-                  formatter={(val) => (
-                    <span className="text-muted-foreground ml-1 text-xs font-bold">{val}</span>
-                  )}
-                />
-                {/* Center label */}
-                <text
-                  x="50%"
-                  y="50%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={22}
-                  fontWeight={900}
-                  className="fill-card-foreground"
-                >
-                  {distribucion_duracion.reduce((s, r) => s + r.value, 0).toLocaleString("es-ES")}
-                </text>
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
+        <BubbleClusterChart
+          title="Distribución de Duración de Llamadas IA"
+          subtitle="Este período"
+          data={distribucion_duracion.map((r) => ({ name: r.label, value: r.value }))}
+        />
       </div>
     </div>
   );

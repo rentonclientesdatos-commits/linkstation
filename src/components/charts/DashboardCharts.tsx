@@ -21,6 +21,8 @@ import {
 } from "recharts";
 import type { ChartRow } from "@/lib/actions/analytics";
 import { cn } from "@/lib/utils";
+import { BubbleClusterChart, BubbleItem } from "@/components/charts/BubbleClusterChart";
+
 
 // Professional B2B SaaS color palette
 const PALETTE = [
@@ -274,7 +276,7 @@ export function VerticalBarChart({ title, data }: { title: string; data: ChartRo
   );
 }
 
-/* ── Pie / Donut ───────────────────────────── */
+/* ── Pie / Donut (Upgraded to Bubble Cluster "Streams Sources" Style) ── */
 export function DonutChart({
   title,
   data,
@@ -286,56 +288,17 @@ export function DonutChart({
   centerLabel?: string;
   isDonut?: boolean;
 }) {
-  const pie = withPct(data);
-  const total = data.reduce((s, r) => s + r.value, 0);
+  const bubbleData: BubbleItem[] = data.map((r) => ({
+    name: r.label,
+    value: r.value,
+  }));
 
   return (
-    <ChartCard title={title}>
-      <ResponsiveContainer width="100%" height="100%" minHeight={280}>
-        <PieChart>
-          <Pie
-            data={pie}
-            cx="50%"
-            cy="50%"
-            innerRadius={isDonut ? 75 : 0}
-            outerRadius={100}
-            paddingAngle={isDonut ? 3 : 0}
-            dataKey="value"
-            nameKey="name"
-            stroke={isDonut ? "transparent" : "#ffffff"}
-            strokeWidth={2}
-          >
-            {pie.map((_, i) => (
-              <Cell key={`cell-${i}`} fill={PALETTE[i % PALETTE.length]} radius={4} />
-            ))}
-          </Pie>
-
-          <Tooltip content={<CustomTooltipPie />} />
-          <Legend
-            layout="vertical"
-            align="right"
-            verticalAlign="middle"
-            iconType="circle"
-            iconSize={8}
-            formatter={(val) => (
-              <span className="text-muted-foreground ml-1 text-xs font-bold">{val}</span>
-            )}
-          />
-          {isDonut && centerLabel && (
-            <text
-              x="50%"
-              y="50%"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="fill-card-foreground font-black"
-              fontSize={24}
-            >
-              {centerLabel === "total" ? total.toLocaleString() : centerLabel}
-            </text>
-          )}
-        </PieChart>
-      </ResponsiveContainer>
-    </ChartCard>
+    <BubbleClusterChart
+      title={title}
+      subtitle="Este período"
+      data={bubbleData}
+    />
   );
 }
 
