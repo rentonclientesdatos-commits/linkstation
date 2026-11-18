@@ -12,10 +12,10 @@ import {
   CheckCircle2,
   Lock,
   Sparkles,
-  Building2,
-  Stethoscope,
-  Briefcase,
-  Zap,
+  PhoneCall,
+  MessageSquare,
+  Calendar,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -283,19 +283,22 @@ export default function LoginPage() {
                   Atención 24/7, cualificación omnicanal y agendamiento inteligente para clínicas, inmobiliarias y empresas B2B.
                 </p>
 
-                {/* Industry badges pill row */}
+                {/* Features & capabilities badges pill row */}
                 <div className="mt-3.5 flex flex-wrap gap-1.5">
-                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
-                    <Stethoscope className="h-2.5 w-2.5 text-blue-400" /> Clínica DentiPro
+                  <span className="flex items-center gap-1.5 rounded-lg border border-[#23252e] bg-[#14151e] px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
+                    <PhoneCall className="h-3 w-3 text-blue-400" /> Llamadas 24/7
                   </span>
-                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-blue-400">
-                    <Zap className="h-2.5 w-2.5 text-blue-400" /> Renton Connective
+                  <span className="flex items-center gap-1.5 rounded-lg border border-[#23252e] bg-[#14151e] px-2.5 py-1 text-[10px] font-semibold text-blue-400">
+                    <MessageSquare className="h-3 w-3 text-blue-400" /> WhatsApp Multi-Agentes
                   </span>
-                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
-                    <Building2 className="h-2.5 w-2.5 text-blue-400" /> Inmobiliarias
+                  <span className="flex items-center gap-1.5 rounded-lg border border-[#23252e] bg-[#14151e] px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
+                    <Calendar className="h-3 w-3 text-blue-400" /> Calendario
                   </span>
-                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
-                    <Briefcase className="h-2.5 w-2.5 text-blue-400" /> Consultoría B2B
+                  <span className="flex items-center gap-1.5 rounded-lg border border-[#23252e] bg-[#14151e] px-2.5 py-1 text-[10px] font-semibold text-zinc-300">
+                    <FileText className="h-3 w-3 text-blue-400" /> Cotizaciones
+                  </span>
+                  <span className="flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-[10px] font-semibold text-blue-300">
+                    <Sparkles className="h-3 w-3 text-blue-400" /> y más
                   </span>
                 </div>
 
