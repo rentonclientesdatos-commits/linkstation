@@ -444,6 +444,7 @@ export function ChartManager({
       </div>
 
       <DndContext
+        id={`chart-dnd-${configKey || "default"}`}
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}

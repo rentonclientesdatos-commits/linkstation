@@ -974,6 +974,7 @@ export function SummaryManager({
         })()
       ) : (
         <DndContext
+          id={`summary-dnd-${configKey || "default"}`}
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}

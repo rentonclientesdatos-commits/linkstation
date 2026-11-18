@@ -263,7 +263,7 @@ export function HistorialColumnManager({
       </div>
 
       <div className="bg-muted/30 border-border rounded-[32px] border p-8">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext id="historial-columns-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={columns.map((c) => c.key)} strategy={verticalListSortingStrategy}>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {columns.map((col) => (

@@ -299,7 +299,7 @@ export function PipelineManager({
       </div>
 
       {/* Kanban Board Container */}
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      <DndContext id="pipeline-dnd-board" sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
         <div className="mt-6 flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
           {stages.map((stage) => {
             const stageLeads = stageLeadMap.get(stage.segmentKey.toUpperCase()) || [];
