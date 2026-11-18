@@ -13,79 +13,117 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Building2,
+  GraduationCap,
+  Stethoscope,
+  Briefcase,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface EnterpriseSolution {
   id: string;
-  badge: string;
+  industry: string;
   pillLabel: string;
+  statusBadge: string;
+  statusColor: string;
   meetingTitle: string;
   meetingSubtitle: string;
   priorities: string;
   bullet: string;
   promptText: string;
+  companyHeader: string;
   quote: string;
   authorName: string;
   authorRole: string;
   authorInitials: string;
   statBadge: string;
+  rating: string;
 }
 
 const SOLUTIONS: EnterpriseSolution[] = [
   {
-    id: "scheduling",
-    badge: "Agendamiento 24/7",
-    pillLabel: "Agendamiento 24/7",
+    id: "dentipro",
+    industry: "Salud & Odontología",
+    pillLabel: "🏥 Salud & Clínicas",
+    statusBadge: "Sillón Activo",
+    statusColor: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
     meetingTitle: "Valoración & Diagnóstico Dental",
-    meetingSubtitle: "Paciente Nuevo · Ortodoncia & Limpieza",
+    meetingSubtitle: "Clínica DentiPro · Box 1 · Ortodoncia & Implantes",
     priorities: "00:00 - 08:30 · Asignación de Sillón 1",
-    bullet: "Cualificar motivo de consulta, previsión/cobertura y disponibilidad horaria del paciente.",
-    promptText: "Confirmar cita por WhatsApp y sincronizar con la agenda de DentiPro...",
-    quote: "LinkStation agenda y reprograma pacientes 24/7 sin que se nos escape ninguna consulta ni en fines de semana.",
+    bullet: "Cualificar cobertura dental, molestia principal y confirmación interactiva por WhatsApp.",
+    promptText: "Reasignar cita cancelada a paciente en lista de espera inmediata...",
+    companyHeader: "🦷 CLÍNICA DENTIPRO · RED DENTAL",
+    quote: "Redujimos el ausentismo en un 82% y los sillones dentales se mantienen con ocupación completa de lunes a sábado.",
     authorName: "Dr. Roberto Valenzuela",
     authorRole: "Director Clínico · Clínica DentiPro",
     authorInitials: "RV",
     statBadge: "+1,450 citas / mes",
+    rating: "★ 4.9",
   },
   {
-    id: "qualification",
-    badge: "Triaje Inteligente",
-    pillLabel: "Triaje de Tratamientos",
-    meetingTitle: "Cualificación de Implantes & Cirugía",
-    meetingSubtitle: "Paciente Premium · Rehabilitación Oral Completa",
-    priorities: "00:00 - 10:15 · Box Quirúrgico",
-    bullet: "Detectar urgencia odontológica, tratamientos previos y presupuesto estimado del paciente.",
-    promptText: "Enviar cotización inicial y agendar escaneo 3D con especialista...",
-    quote: "Los pacientes llegan al box dental informados y con el tratamiento pre-aprobado, duplicando la tasa de aceptación.",
-    authorName: "Dra. Camila Soto",
-    authorRole: "Especialista en Implantología · Clínica DentiPro",
-    authorInitials: "CS",
-    statBadge: "94% aceptación de casos",
+    id: "esden",
+    industry: "Educación Superior",
+    pillLabel: "🎓 Educación & Posgrados",
+    statusBadge: "Entrevista Online",
+    statusColor: "text-blue-400 border-blue-500/20 bg-blue-500/10",
+    meetingTitle: "Entrevista de Admisión · MBA Global",
+    meetingSubtitle: "Esden Business School · Asesor Senior Asignado",
+    priorities: "Cualificación Directiva · Madrid (ES) & Latam",
+    bullet: "Evaluación de años de experiencia profesional, titulación previa y asignación de beca internacional.",
+    promptText: "Enviar dossier del MBA en PDF y sincronizar entrevista con el comité académico...",
+    companyHeader: "🎓 ESDEN BUSINESS SCHOOL · MADRID / LATAM",
+    quote: "El agente atiende a postulantes de 8 países en sus propios horarios, aumentando las matrículas efectivas en un 64%.",
+    authorName: "Elena Rocamora",
+    authorRole: "Directora de Admisiones Internacionales · Esden",
+    authorInitials: "ER",
+    statBadge: "+3,200 postulantes / cohorte",
+    rating: "★ 4.9",
   },
   {
-    id: "anti-noshow",
-    badge: "Control Anti No-Show",
-    pillLabel: "Anti No-Show & Reactivación",
-    meetingTitle: "Confirmación Automática Multicanal",
-    meetingSubtitle: "Controles Periódicos & Limpieza Profiláctica",
-    priorities: "Recordatorio 24h & 2h antes · Canal WhatsApp",
-    bullet: "Reconfirmación interactiva con botón de asistencia y reubicación automática de huecos libres.",
-    promptText: "Reasignar sillón liberado a paciente en lista de espera inmediata...",
-    quote: "Redujimos la tasa de inasistencia en un 82% y reactivamos a más de 120 pacientes inactivos en el primer mes.",
-    authorName: "Ignacio Tapia",
-    authorRole: "Gerente de Operaciones · Clínica DentiPro",
-    authorInitials: "IT",
-    statBadge: "-82% inasistencias",
+    id: "realestate",
+    industry: "Inmobiliaria & Real Estate",
+    pillLabel: "🏢 Inmobiliaria & Bienes Raíces",
+    statusBadge: "Visita en Terreno",
+    statusColor: "text-amber-400 border-amber-500/20 bg-amber-500/10",
+    meetingTitle: "Visita a Propiedad · Loft Las Condes",
+    meetingSubtitle: "Habitat Desarrollos · Agente en Terreno",
+    priorities: "Rango $180k - $240k USD · Pre-aprobación Bancaria",
+    bullet: "Filtrar capacidad crediticia, verificar intención de compra y enviar pin de ubicación por Google Maps.",
+    promptText: "Confirmar visita presencial para mañana a las 11:00h y enviar ficha técnica por WhatsApp...",
+    companyHeader: "🏢 HABITAT REAL ESTATE · DESARROLLOS",
+    quote: "Filtra a los curiosos de portales web y solo agenda visitas con compradores que ya tienen pre-aprobación hipotecaria.",
+    authorName: "Matías Silva",
+    authorRole: "Gerente Comercial · Habitat Real Estate",
+    authorInitials: "MS",
+    statBadge: "4.2x visitas calificadas",
+    rating: "★ 4.8",
+  },
+  {
+    id: "b2b",
+    industry: "Servicios B2B & Consultoría",
+    pillLabel: "💼 Servicios B2B & Tech",
+    statusBadge: "Demo Agendada",
+    statusColor: "text-purple-400 border-purple-500/20 bg-purple-500/10",
+    meetingTitle: "Reunión de Diagnóstico Estratégico",
+    meetingSubtitle: "Andes Advisory · Videollamada Google Meet",
+    priorities: "Empresas 50+ colaboradores · Decisor C-Level",
+    bullet: "Validar presupuesto anual, software en uso actual y fecha límite para la toma de decisión.",
+    promptText: "Generar minuta ejecutiva de la llamada y crear oportunidad en el pipeline CRM...",
+    companyHeader: "💼 ANDES ADVISORY · CONSULTORÍA B2B",
+    quote: "Nuestros consultores entran a las llamadas con el 80% del trabajo de diagnóstico hecho por el agente de voz.",
+    authorName: "Sofía Arancibia",
+    authorRole: "VP of Client Operations · Andes Advisory",
+    authorInitials: "SA",
+    statBadge: "+120 demos / mes",
+    rating: "★ 5.0",
   },
 ];
 
-function DentiProLogo() {
+function LinkStationBrandLogo() {
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-500/30 bg-blue-600/10 text-blue-400 shadow-md">
-        {/* Dental / Health Cross & Tooth Icon */}
         <svg
           width="22"
           height="22"
@@ -96,17 +134,20 @@ function DentiProLogo() {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M12 2C8.5 2 6 4.5 6 8c0 3.5 1.5 6 2.5 9 .8 2.3 1.5 5 3.5 5s2.7-2.7 3.5-5c1-3 2.5-5.5 2.5-9 0-3.5-2.5-6-6-6z" />
-          <path d="M9 10h6" />
-          <path d="M12 7v6" />
+          <circle cx="12" cy="12" r="10" />
+          <path d="m4.93 4.93 4.24 4.24" />
+          <path d="m14.83 9.17 4.24-4.24" />
+          <path d="m14.83 14.83 4.24 4.24" />
+          <path d="m9.17 14.83-4.24 4.24" />
+          <circle cx="12" cy="12" r="4" />
         </svg>
       </div>
       <div>
         <span className="text-base font-extrabold tracking-tight text-white uppercase">
-          Clínica DentiPro
+          LinkStation
         </span>
         <span className="block text-[10px] font-semibold tracking-widest text-[#8a8f9d] uppercase">
-          Portal Enterprise · LinkStation
+          Enterprise AI Platform
         </span>
       </div>
     </div>
@@ -166,16 +207,16 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[#07080a] p-4 md:p-8 antialiased">
       {/* Background ambient lighting */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[520px] w-[850px] rounded-full bg-blue-600/[0.04] blur-[150px]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[520px] w-[880px] rounded-full bg-blue-600/[0.04] blur-[150px]" />
 
       {/* Main Split-Screen Container */}
       <div className="relative z-10 grid w-full max-w-[1060px] overflow-hidden rounded-[28px] border border-[#23252e] bg-[#0c0d12] shadow-2xl lg:grid-cols-2">
         {/* LEFT COLUMN: Authentication Form */}
         <div className="flex flex-col justify-between p-8 sm:p-12 lg:p-14">
           <div>
-            {/* Brand Logo: Clínica DentiPro */}
+            {/* Brand Logo: LinkStation Enterprise */}
             <div className="mb-8">
-              <DentiProLogo />
+              <LinkStationBrandLogo />
             </div>
 
             {isForgotPassword ? (
@@ -189,7 +230,7 @@ export default function LoginPage() {
                     Correo enviado
                   </h1>
                   <p className="text-xs leading-relaxed text-[#8a8f9d]">
-                    Si <strong className="text-white">{email}</strong> está registrado en el sistema de Clínica DentiPro, recibirás las instrucciones para restablecer tu contraseña.
+                    Si <strong className="text-white">{email}</strong> está registrado en la plataforma, recibirás las instrucciones para restablecer tu contraseña.
                   </p>
                   <Button
                     onClick={() => {
@@ -217,18 +258,18 @@ export default function LoginPage() {
                     Recuperar contraseña
                   </h1>
                   <p className="mt-2 mb-6 text-xs text-[#8a8f9d]">
-                    Ingresa tu correo institucional de Clínica DentiPro para recibir el acceso.
+                    Ingresa tu correo corporativo para recibir el enlace seguro de acceso.
                   </p>
 
                   <form onSubmit={handleResetPassword} className="space-y-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="reset-email" className="text-xs font-medium text-zinc-300">
-                        Correo Electrónico
+                        Correo Corporativo
                       </Label>
                       <Input
                         id="reset-email"
                         type="email"
-                        placeholder="doctor@dentipro.com"
+                        placeholder="tu-nombre@empresa.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -256,28 +297,30 @@ export default function LoginPage() {
               /* Standard login mode */
               <div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-                  El Asistente de IA para Clínica DentiPro
+                  El Copiloto de IA para tus Citas y Ventas
                 </h1>
-                <p className="mt-3 text-xs leading-relaxed text-[#8a8f9d]">
-                  Acceso exclusivo para el equipo médico y administrativo de{" "}
-                  <strong className="text-zinc-200">Clínica DentiPro</strong>. Al iniciar sesión, aceptas nuestros{" "}
-                  <Link
-                    href="/privacy-policy"
-                    className="text-zinc-300 underline underline-offset-4 hover:text-white"
-                  >
-                    Términos de Servicio
-                  </Link>{" "}
-                  y la{" "}
-                  <Link
-                    href="/privacy-policy"
-                    className="text-zinc-300 underline underline-offset-4 hover:text-white"
-                  >
-                    Política de Privacidad
-                  </Link>.
+                <p className="mt-2 text-xs leading-relaxed text-[#8a8f9d]">
+                  Atención 24/7, cualificación omnicanal y agendamiento inteligente para clínicas, universidades, inmobiliarias y empresas B2B.
                 </p>
 
+                {/* Industry badges pill row */}
+                <div className="mt-3.5 flex flex-wrap gap-1.5">
+                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
+                    <Stethoscope className="h-2.5 w-2.5 text-blue-400" /> Salud & Clínicas
+                  </span>
+                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
+                    <GraduationCap className="h-2.5 w-2.5 text-blue-400" /> Educación
+                  </span>
+                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
+                    <Building2 className="h-2.5 w-2.5 text-blue-400" /> Inmobiliarias
+                  </span>
+                  <span className="flex items-center gap-1 rounded-md border border-[#23252e] bg-[#14151e] px-2 py-0.5 text-[9px] font-semibold text-zinc-300">
+                    <Briefcase className="h-2.5 w-2.5 text-blue-400" /> Servicios B2B
+                  </span>
+                </div>
+
                 {/* Form */}
-                <form onSubmit={handleLogin} className="mt-8 space-y-4">
+                <form onSubmit={handleLogin} className="mt-7 space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="email" className="text-xs font-medium text-zinc-300">
                       Correo Electrónico
@@ -285,7 +328,7 @@ export default function LoginPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="admin@dentipro.com"
+                      placeholder="nombre@empresa.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -352,36 +395,53 @@ export default function LoginPage() {
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2">
-                        Ingresar a DentiPro
+                        Ingresar a LinkStation
                         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                       </span>
                     )}
                   </Button>
                 </form>
+
+                <p className="mt-4 text-[11px] text-[#8a8f9d]">
+                  Al continuar, aceptas nuestros{" "}
+                  <Link
+                    href="/privacy-policy"
+                    className="text-zinc-400 underline underline-offset-4 hover:text-white"
+                  >
+                    Términos
+                  </Link>{" "}
+                  y{" "}
+                  <Link
+                    href="/privacy-policy"
+                    className="text-zinc-400 underline underline-offset-4 hover:text-white"
+                  >
+                    Privacidad
+                  </Link>.
+                </p>
               </div>
             )}
           </div>
 
           {/* Bottom Security / Trust Footer */}
-          <div className="mt-8 pt-6 border-t border-[#1e2027]/80">
+          <div className="mt-6 pt-5 border-t border-[#1e2027]/80">
             <div className="flex items-center justify-center gap-2 text-[10px] font-bold tracking-widest uppercase text-emerald-400/90">
               <Lock className="h-3 w-3" />
-              <span>HIPAA COMPLIANT · SOC 2 TYPE II · DATOS MÉDICOS CIFRADOS 256-BIT</span>
+              <span>SOC 2 TYPE II · HIPAA COMPLIANT · GDPR · 256-BIT ENCRYPTION</span>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Showcase de Soluciones Enterprise DentiPro */}
+        {/* RIGHT COLUMN: Multi-Industry Enterprise Showcase */}
         <div className="relative hidden lg:flex flex-col justify-between border-l border-[#23252e] bg-[#0f1017]/90 p-10 xl:p-12 overflow-hidden">
           {/* Subtle Ambient Glows */}
           <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-cyan-600/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-600/10 blur-3xl" />
 
-          {/* Header Switcher: Soluciones Enterprise */}
+          {/* Header Switcher: Industrias Enterprise */}
           <div className="relative z-10 space-y-3">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-blue-400">
-                <Sparkles className="h-3 w-3" /> Soluciones Enterprise DentiPro
+                <Sparkles className="h-3 w-3" /> Casos de Éxito Enterprise
               </span>
               {/* Pagination controls */}
               <div className="flex items-center gap-1">
@@ -393,7 +453,7 @@ export default function LoginPage() {
                     )
                   }
                   className="flex h-6 w-6 items-center justify-center rounded-md border border-[#23252e] bg-[#161720] text-[#8a8f9d] transition-all hover:bg-[#1e2029] hover:text-white"
-                  title="Solución anterior"
+                  title="Caso anterior"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
@@ -406,14 +466,14 @@ export default function LoginPage() {
                     setActiveSolutionIdx((prev) => (prev + 1) % SOLUTIONS.length)
                   }
                   className="flex h-6 w-6 items-center justify-center rounded-md border border-[#23252e] bg-[#161720] text-[#8a8f9d] transition-all hover:bg-[#1e2029] hover:text-white"
-                  title="Siguiente solución"
+                  title="Siguiente caso"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Switcher Pills */}
+            {/* Switcher Pills (Horizontal scrolling if needed) */}
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {SOLUTIONS.map((sol, idx) => (
                 <button
@@ -433,27 +493,32 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Center: Mock Clinical Card (Dynamic per solution) */}
+          {/* Center: Live Action Mock Card (Dynamic per industry) */}
           <div className="relative z-10 my-4 space-y-4">
             <div className="rounded-2xl border border-[#23252e] bg-[#14151e]/95 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300">
               <div className="flex items-center justify-between border-b border-[#23252e]/80 pb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-white">
+                <div className="min-w-0 pr-3">
+                  <h3 className="truncate text-sm font-bold text-white">
                     {activeSolution.meetingTitle}
                   </h3>
-                  <p className="text-[11px] text-[#8a8f9d]">
+                  <p className="truncate text-[11px] text-[#8a8f9d]">
                     {activeSolution.meetingSubtitle}
                   </p>
                 </div>
-                <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Sillón Activo
+                <span
+                  className={cn(
+                    "shrink-0 flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold",
+                    activeSolution.statusColor
+                  )}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                  {activeSolution.statusBadge}
                 </span>
               </div>
 
               <div className="my-3.5 space-y-2">
                 <div className="flex items-center gap-2 text-[11px] font-semibold text-blue-400">
-                  <span>🎯 Prioridades Clínicas:</span>
+                  <span>🎯 Prioridades de Cualificación:</span>
                   <span className="font-mono text-[10px] text-zinc-400">
                     {activeSolution.priorities}
                   </span>
@@ -467,7 +532,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Clinical AI Prompt Bar */}
+              {/* AI Prompt Action Bar */}
               <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#272935] bg-[#181924] p-2">
                 <div className="flex items-center gap-1 pl-1 text-[#8a8f9d]">
                   <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#23252e] text-[9px] font-bold text-blue-400">
@@ -487,17 +552,17 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Bottom: Testimonial & Metrics of Clínica DentiPro */}
+          {/* Bottom: Testimonial & Industry Metric */}
           <div className="relative z-10 space-y-3.5 border-t border-[#1e2027]/80 pt-5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-white">
-                🦷 CLÍNICA DENTIPRO · RED DENTAL
+              <span className="text-[10px] font-bold tracking-widest uppercase text-white truncate max-w-[260px]">
+                {activeSolution.companyHeader}
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 shrink-0">
                 <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px]">
                   {activeSolution.statBadge}
                 </span>
-                <span className="text-amber-400">★ 4.9</span>
+                <span className="text-amber-400">{activeSolution.rating}</span>
               </div>
             </div>
 
@@ -506,7 +571,7 @@ export default function LoginPage() {
             </p>
 
             <div className="flex items-center gap-3 pt-1">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-cyan-600 text-xs font-bold text-white shadow-sm ring-1 ring-white/10">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-sm ring-1 ring-white/10">
                 {activeSolution.authorInitials}
               </div>
               <div>
