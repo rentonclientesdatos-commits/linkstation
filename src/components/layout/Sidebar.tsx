@@ -189,12 +189,12 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
 
-  // ── Métricas & Logs ───────────────────────────────────
+  // ── Métricas ─────────────────────────────────────────
   {
     label: "Métricas",
-    href: "/dashboard",
-    section: "MÉTRICAS & LOGS",
-    icon: <LayoutDashboard className="h-4 w-4" strokeWidth={1.5} />,
+    href: "/dashboard/minutos",
+    section: "MÉTRICAS & CANALES",
+    icon: <Clock className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "dashboard",
     subItems: [
       {
@@ -207,35 +207,6 @@ const NAV_ITEMS: NavItem[] = [
         href: "/dashboard/whatsapp",
         icon: <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} />,
       },
-      {
-        label: "Lista de Leads",
-        href: "/dashboard/historial",
-        icon: <History className="h-3.5 w-3.5" strokeWidth={1.5} />,
-      },
-    ],
-  },
-  {
-    label: "Pruebas y Logs",
-    href: "/dashboard/simulator",
-    section: "MÉTRICAS & LOGS",
-    icon: <FlaskConical className="h-4 w-4" strokeWidth={1.5} />,
-    moduleId: "simulator",
-    subItems: [
-      {
-        label: "Simulador",
-        href: "/dashboard/simulator",
-        icon: <FlaskConical className="h-3.5 w-3.5" strokeWidth={1.5} />,
-      },
-      {
-        label: "Playground",
-        href: "/dashboard/playground",
-        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
-      },
-      {
-        label: "Auditoría Logs",
-        href: "/dashboard/logs",
-        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
-      },
     ],
   },
 
@@ -243,7 +214,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Negocio",
     href: "/dashboard/costs",
-    section: "GESTIÓN & DOCS",
+    section: "GESTIÓN & CONFIGURACIÓN",
     icon: <DollarSign className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "costs",
     subItems: [
@@ -263,7 +234,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Ajustes",
     href: "/dashboard/settings",
-    section: "GESTIÓN & DOCS",
+    section: "GESTIÓN & CONFIGURACIÓN",
     icon: <Settings className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "integrations",
     subItems: [
@@ -296,26 +267,56 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    label: "Docs",
-    href: "/dashboard/docs",
-    section: "GESTIÓN & DOCS",
-    icon: <BookOpen className="h-4 w-4" strokeWidth={1.5} />,
-    moduleId: "docs",
-  },
-  {
-    label: "Doc Admin",
-    href: "/dashboard/docs-admin",
-    section: "GESTIÓN & DOCS",
-    icon: <ShieldCheck className="h-4 w-4" strokeWidth={1.5} />,
-    superAdminOnly: true,
-    moduleId: "docs",
-  },
-  {
-    label: "Docs Clientes",
+    label: "Documentación",
     href: "/dashboard/docs-clientes",
-    section: "GESTIÓN & DOCS",
+    section: "GESTIÓN & CONFIGURACIÓN",
     icon: <BookOpen className="h-4 w-4" strokeWidth={1.5} />,
     moduleId: "docs",
+    subItems: [
+      {
+        label: "Guías de Clientes",
+        href: "/dashboard/docs-clientes",
+        icon: <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} />,
+      },
+      {
+        label: "API & Integraciones",
+        href: "/dashboard/docs",
+        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
+      },
+      {
+        label: "Manual Administrador",
+        href: "/dashboard/docs-admin",
+        icon: <ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.5} />,
+        superAdminOnly: true,
+      },
+    ],
+  },
+
+  // ── Herramientas de Desarrollo ────────────────────────
+  {
+    label: "Herramientas Dev",
+    href: "/dashboard/simulator",
+    section: "DESARROLLO",
+    icon: <FlaskConical className="h-4 w-4 text-cyan-400" strokeWidth={1.5} />,
+    moduleId: "simulator",
+    adminOnly: true,
+    subItems: [
+      {
+        label: "Simulador",
+        href: "/dashboard/simulator",
+        icon: <FlaskConical className="h-3.5 w-3.5" strokeWidth={1.5} />,
+      },
+      {
+        label: "Playground",
+        href: "/dashboard/playground",
+        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
+      },
+      {
+        label: "Auditoría Logs",
+        href: "/dashboard/logs",
+        icon: <Terminal className="h-3.5 w-3.5" strokeWidth={1.5} />,
+      },
+    ],
   },
 ];
 
